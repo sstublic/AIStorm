@@ -22,6 +22,12 @@ DO NOT read or modify:
 Whenever project specifications are changed or updated, update `docs/specs.md` file to reflect that and to keep it up to date.
 Reread `docs/specs.md` often and whenever you need to refresh your context with what the project is about and we agreed about it so far.
 
+## Behavior Guidelines
+
+1. Don't guess and do things which you are not certain about. Ask the user instead.
+2. Don't rush things.
+3. Don't do or add code unrelated to user specific request and context at the moment.
+
 ## Conventions
 
 1. Update `## Convention Rules` section of `.clinerules` file whenever user specifies a specific way he wants the code to look or the project to be organized. These rules should be **generic** and not tied to **this specific project**. If you want to document the rule you inferred from this project, generalize it first and don't use any names specific to the project.
@@ -37,3 +43,6 @@ Reread `docs/specs.md` often and whenever you need to refresh your context with 
 2. C# project folder and file names do not include namespaces.
 3. Namespaces follow the pattern `{ProjectName}.{Module}`
 4. Use `appsettings.json` for application settings and `appsettings.local.json` for local development settings (not committed to Git)
+5. Markdown files should follow these formatting rules:
+   - Headings should be surrounded by blank lines
+   - Lists should be surrounded by blank lines
