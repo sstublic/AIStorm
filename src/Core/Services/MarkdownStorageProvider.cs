@@ -63,9 +63,6 @@ public class MarkdownStorageProvider : IStorageProvider
     {
         return $@"<aistorm type=""{agent.AIServiceType}"" model=""{agent.AIModel}"" />
 
-# {agent.Name}
-
-{agent.SystemPrompt}
-";
+{agent.SystemPrompt}";
     }
 }

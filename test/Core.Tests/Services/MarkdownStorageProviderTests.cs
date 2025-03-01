@@ -11,11 +11,13 @@ public class MarkdownStorageProviderTests
 
     public MarkdownStorageProviderTests()
     {
-        testBasePath = Path.Combine(Directory.GetCurrentDirectory(), "TestData");
+        // Use the TestData/SessionExample directory for test data
+        // The files are copied to the output directory during build
+        testBasePath = Path.Combine(Directory.GetCurrentDirectory(), "TestData", "SessionExample");
         
         if (!Directory.Exists(testBasePath))
         {
-            Directory.CreateDirectory(testBasePath);
+            throw new DirectoryNotFoundException($"Test data directory not found: {testBasePath}");
         }
         
         storageProvider = new MarkdownStorageProvider(testBasePath);
@@ -25,23 +27,8 @@ public class MarkdownStorageProviderTests
     public void LoadAgent_ValidFile_ReturnsAgent()
     {
         // Arrange
-        var agentName = "TestAgent";
+        var agentName = "Creative Thinker";
         var agentPath = Path.Combine("Agents", $"{agentName}.md");
-        var fullPath = Path.Combine(testBasePath, agentPath);
-        var directoryPath = Path.GetDirectoryName(fullPath);
-        
-        if (!Directory.Exists(directoryPath))
-        {
-            Directory.CreateDirectory(directoryPath);
-        }
-
-        var agentContent = @"<aistorm type=""OpenAI"" model=""gpt-4"" />
-
-# TestAgent
-
-This is a test agent for unit testing.";
-
-        File.WriteAllText(fullPath, agentContent);
 
         // Act
         var agent = storageProvider.LoadAgent(agentPath);
@@ -51,17 +38,18 @@ This is a test agent for unit testing.";
         Assert.Equal(agentName, agent.Name);
         Assert.Equal("OpenAI", agent.AIServiceType);
         Assert.Equal("gpt-4", agent.AIModel);
-        Assert.Contains("This is a test agent for unit testing.", agent.SystemPrompt);
+        Assert.Contains("You are a creative thinking expert", agent.SystemPrompt);
     }
 
     [Fact]
     public void SaveAgent_ValidAgent_CreatesFile()
     {
         // Arrange
-        var agentName = "SavedAgent";
+        var agentName = "TestSavedAgent";
         var agentPath = Path.Combine("Agents", $"{agentName}.md");
         var fullPath = Path.Combine(testBasePath, agentPath);
         
+        // Clean up any existing test file
         if (File.Exists(fullPath))
         {
             File.Delete(fullPath);
@@ -69,34 +57,64 @@ This is a test agent for unit testing.";
 
         var agent = new Agent(agentName, "OpenAI", "gpt-4", "This is a saved test agent.");
 
-        // Act
-        storageProvider.SaveAgent(agentPath, agent);
+        try
+        {
+            // Act
+            storageProvider.SaveAgent(agentPath, agent);
 
-        // Assert
-        Assert.True(File.Exists(fullPath));
-        var content = File.ReadAllText(fullPath);
-        Assert.Contains("<aistorm type=\"OpenAI\" model=\"gpt-4\" />", content);
-        Assert.Contains("# SavedAgent", content);
-        Assert.Contains("This is a saved test agent.", content);
+            // Assert
+            Assert.True(File.Exists(fullPath));
+            var content = File.ReadAllText(fullPath);
+            Assert.Contains("<aistorm type=\"OpenAI\" model=\"gpt-4\" />", content);
+            Assert.Contains("This is a saved test agent.", content);
+        }
+        finally
+        {
+            // Clean up
+            if (File.Exists(fullPath))
+            {
+                File.Delete(fullPath);
+            }
+        }
     }
 
     [Fact]
     public void LoadAgent_SavedAgent_RoundTrip()
     {
         // Arrange
-        var agentName = "RoundTripAgent";
+        var agentName = "TestRoundTripAgent";
         var agentPath = Path.Combine("Agents", $"{agentName}.md");
+        var fullPath = Path.Combine(testBasePath, agentPath);
+        
+        // Clean up any existing test file
+        if (File.Exists(fullPath))
+        {
+            File.Delete(fullPath);
+        }
+        
+        // Use literal strings for metadata values
         var originalAgent = new Agent(agentName, "OpenAI", "gpt-4", "This is a round trip test agent.");
 
-        // Act
-        storageProvider.SaveAgent(agentPath, originalAgent);
-        var loadedAgent = storageProvider.LoadAgent(agentPath);
+        try
+        {
+            // Act
+            storageProvider.SaveAgent(agentPath, originalAgent);
+            var loadedAgent = storageProvider.LoadAgent(agentPath);
 
-        // Assert
-        Assert.NotNull(loadedAgent);
-        Assert.Equal(originalAgent.Name, loadedAgent.Name);
-        Assert.Equal(originalAgent.AIServiceType, loadedAgent.AIServiceType);
-        Assert.Equal(originalAgent.AIModel, loadedAgent.AIModel);
-        Assert.Equal(originalAgent.SystemPrompt, loadedAgent.SystemPrompt);
+            // Assert
+            Assert.NotNull(loadedAgent);
+            Assert.Equal(originalAgent.Name, loadedAgent.Name);
+            Assert.Equal(originalAgent.AIServiceType, loadedAgent.AIServiceType);
+            Assert.Equal(originalAgent.AIModel, loadedAgent.AIModel);
+            Assert.Equal(originalAgent.SystemPrompt, loadedAgent.SystemPrompt);
+        }
+        finally
+        {
+            // Clean up
+            if (File.Exists(fullPath))
+            {
+                File.Delete(fullPath);
+            }
+        }
     }
 }

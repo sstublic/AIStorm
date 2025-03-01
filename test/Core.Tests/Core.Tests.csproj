@@ -22,4 +22,10 @@
     <ProjectReference Include="..\..\src\Core\Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="TestData\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>

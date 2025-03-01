@@ -45,18 +45,20 @@ AIStorm/
 │       └── Services/           # Services
 │           ├── IStorageProvider.cs      # Storage provider interface
 │           └── MarkdownStorageProvider.cs # Markdown implementation
-├── test/
-│   └── Core.Tests/             # Tests for Core project
-│       └── Services/           # Tests for services
-│           └── MarkdownStorageProviderTests.cs # Tests for MarkdownStorageProvider
-└── AIStormSessions/           # Root folder for brainstorming sessions
-    └── Example/               # Example session
-        ├── Agents/            # Agent definitions
-        │   ├── Creative Thinker.md
-        │   ├── Critical Analyst.md
-        │   └── Practical Implementer.md
-        └── conversation-log.md # Conversation log
+└── test/
+    └── Core.Tests/             # Tests for Core project
+        ├── Services/           # Tests for services
+        │   └── MarkdownStorageProviderTests.cs # Tests for MarkdownStorageProvider
+        └── TestData/           # Test data for unit tests
+            └── SessionExample/ # Example session for testing
+                ├── Agents/     # Agent definitions
+                │   ├── Creative Thinker.md
+                │   ├── Critical Analyst.md
+                │   └── Practical Implementer.md
+                └── conversation-log.md # Conversation log
 ```
+
+The application will create an `AIStormSessions` directory at runtime to store user sessions.
 
 ## AI Agent System
 
@@ -84,12 +86,10 @@ AIStorm/
 
 ### Agent Definition Files
 
-Agent definition files are stored in the `Agents` subfolder. The filename is used as the agent name (e.g., `Creative Thinker.md`). XML tags are used for metadata:
+Agent definition files are stored in the `Agents` subfolder. The filename is used as the agent name (e.g., `Creative Thinker.md`). XML tags are used for metadata, and the content after the tag is used as the system prompt:
 
 ```markdown
 <aistorm type="OpenAI" model="gpt-4" />
-
-# Creative Thinker
 
 You are a creative thinking expert who specializes in generating innovative ideas.
 Always think outside the box and challenge conventional wisdom.
