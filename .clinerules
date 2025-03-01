@@ -36,3 +36,4 @@ Reread `docs/specs.md` often and whenever you need to refresh your context with 
 1. Project structure with `docs/` and `src/` folders
 2. C# project folder and file names do not include namespaces.
 3. Namespaces follow the pattern `{ProjectName}.{Module}`
+4. Use `appsettings.json` for application settings and `appsettings.local.json` for local development settings (not committed to Git)
