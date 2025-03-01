@@ -1,5 +1,9 @@
 # AIStorm - Specifications
 
+## Useful info
+
+Cline data is at `%APPDATA%\Roaming\Code\User\globalStorage\saoudrizwan.claude-dev\tasks`.
+
 ## Project Overview
 
 AIStorm is a Blazor Server application that allows users to set up brainstorming sessions with multiple AI agents as participants. The application uses markdown files as a database to store conversations, with one folder per conversation.
@@ -32,10 +36,26 @@ AIStorm is a Blazor Server application that allows users to set up brainstorming
 ```
 AIStorm/
 ├── docs/
-│   └── specs.md       # Specifications document
-└── src/
-    ├── Server/        # Blazor Server application (includes UI logic)
-    └── Core/          # Core business logic (includes storage logic)
+│   └── specs.md                # Specifications document
+├── src/
+│   ├── Server/                 # Blazor Server application (includes UI logic)
+│   └── Core/                   # Core business logic (includes storage logic)
+│       ├── Models/             # Domain models
+│       │   └── Agent.cs        # Agent model
+│       └── Services/           # Services
+│           ├── IStorageProvider.cs      # Storage provider interface
+│           └── MarkdownStorageProvider.cs # Markdown implementation
+├── test/
+│   └── Core.Tests/             # Tests for Core project
+│       └── Services/           # Tests for services
+│           └── MarkdownStorageProviderTests.cs # Tests for MarkdownStorageProvider
+└── AIStormSessions/           # Root folder for brainstorming sessions
+    └── Example/               # Example session
+        ├── Agents/            # Agent definitions
+        │   ├── Creative Thinker.md
+        │   ├── Critical Analyst.md
+        │   └── Practical Implementer.md
+        └── conversation-log.md # Conversation log
 ```
 
 ## AI Agent System
@@ -103,10 +123,28 @@ Building on those creative ideas, here are some practical considerations...
 
 ### Storage Implementation
 
-- File system operations for reading/writing markdown files
-- XML tag parsing for metadata extraction
-- Markdown rendering for displaying conversations
-- Indexing mechanism for searching across conversations
+#### Storage Provider Interface
+
+The `IStorageProvider` interface defines the contract for storage providers:
+
+- `LoadAgent` - Loads an agent from storage by ID
+- `SaveAgent` - Saves an agent to storage
+
+#### Markdown Storage Provider
+
+The `MarkdownStorageProvider` implements the `IStorageProvider` interface for markdown files:
+
+- Parses agent markdown files to extract metadata and system prompts
+- Generates markdown files for agents with proper formatting
+- Handles file system operations for reading and writing files
+
+#### Testing
+
+The storage implementation is tested with xUnit tests:
+
+- Tests for loading agents from markdown files
+- Tests for saving agents to markdown files
+- Round-trip tests to ensure data integrity
 
 ## User Experience
 
@@ -123,13 +161,15 @@ Building on those creative ideas, here are some practical considerations...
 ### Naming and Organization
 
 - **Namespaces**: `AIStorm.{Module}` (e.g., `AIStorm.Core`, `AIStorm.Server`)
-- **Example Classes**:
-  - `ConversationManager` - Manages brainstorming conversations
-  - `AgentConfiguration` - Configures AI agent properties
-  - `MarkdownStorage` - Handles markdown file operations
-- **Example Interfaces**:
-  - `IStorageService` - Interface for storage operations
-  - `IAgentFactory` - Interface for creating AI agents
+- **Implemented Classes**:
+  - `Agent` - Represents an AI agent with name, service type, model, and system prompt
+  - `MarkdownStorageProvider` - Handles reading and writing markdown files
+- **Implemented Interfaces**:
+  - `IStorageProvider` - Interface for storage operations
+- **Planned Classes**:
+  - `BrainstormingSession` - Manages a brainstorming session with multiple agents
+  - `Message` - Represents a message in a conversation
+- **Planned Interfaces**:
   - `IAIServiceClient` - Interface for AI service API clients
 
 ### Documentation
@@ -140,8 +180,9 @@ Building on those creative ideas, here are some practical considerations...
 
 ## Open Questions
 
-- What specific AI service APIs will be supported initially?
-- What is the detailed structure of the markdown files?
-- Are there any specific visualization requirements for the brainstorming results?
+- What specific AI service APIs will be supported initially? (OpenAI is implemented)
+- How should we handle the parsing of the conversation log to extract messages?
+- How should we implement the UI for the brainstorming session?
+- What visualization features should be included for the brainstorming results?
 - What export formats should be supported?
 - Are there any authentication or user management requirements?

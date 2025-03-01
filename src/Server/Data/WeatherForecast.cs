@@ -1,4 +1,4 @@
-namespace Server.Data;
+namespace AIStorm.Server.Data;
 
 public class WeatherForecast
 {

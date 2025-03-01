@@ -1,6 +1,6 @@
+using AIStorm.Server.Data;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
-using Server.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -2,7 +2,7 @@
 
 ## Security
 
-## Sensitive Files
+### Sensitive Files
 
 DO NOT read or modify:
 
@@ -11,7 +11,7 @@ DO NOT read or modify:
 3. \*_/_.pem
 4. Any file containing API keys, tokens, or credentials
 
-## Security Practices
+### Security Practices
 
 1. Never commit sensitive files
 2. Use environment variables for secrets
@@ -59,3 +59,4 @@ Reread `docs/specs.md` often and whenever you need to refresh your context with 
 9. Private fields should not be prefixed with underscore
    - In constructors, parameters should have the same name as fields
    - Use `this.fieldName = fieldName` pattern for assignment
+10. Always use `var` when the type is obvious from the right side of the assignment
