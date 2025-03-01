@@ -55,10 +55,16 @@ AIStorm/
                 │   ├── Creative Thinker.md
                 │   ├── Critical Analyst.md
                 │   └── Practical Implementer.md
-                └── conversation-log.md # Conversation log
+                └── SessionExample.md # Conversation log
 ```
 
 The application will create an `AIStormSessions` directory at runtime to store user sessions.
+
+### File Structure Changes
+
+Recent changes to the file structure:
+- Session data is now stored in a single file with the session ID as the filename (e.g., `SessionExample.md`) rather than in a `conversation-log.md` file within a session directory
+- Session ID is derived from the filename without extension rather than the directory name
 
 ## AI Agent System
 
@@ -82,7 +88,7 @@ The application will create an `AIStormSessions` directory at runtime to store u
 - One subfolder per session with a user-descriptive name (e.g., "Example")
 - Each session folder contains:
   - An `Agents` subfolder for agent definitions
-  - A `conversation-log.md` file for the conversation content
+  - A markdown file with the session ID as the filename (e.g., `SessionExample.md`) for the conversation content
 
 ### Agent Definition Files
 
@@ -99,20 +105,20 @@ Provide ideas that are both creative and practical.
 
 ### Conversation Log Format
 
-The conversation is stored in `conversation-log.md` with XML tags as separators:
+The conversation is stored in a markdown file with the session ID as the filename (e.g., `SessionExample.md`) with XML tags as separators:
 
 ```markdown
-<aistorm type="session" created="2025-03-01T15:00:00Z" description="Brainstorming session for new product ideas" />
+<aistorm type="session" created="2025-03-01T15:00:00" description="Brainstorming session for new product ideas" />
 
 # Brainstorming Session: New Product Ideas
 
-<aistorm type="message" from="user" timestamp="2025-03-01T15:01:00Z" />
+<aistorm type="message" from="user" timestamp="2025-03-01T15:01:00" />
 
 ## [user]:
 
 Let's brainstorm ideas for a new mobile app that helps people connect with local businesses.
 
-<aistorm type="message" from="Creative Thinker" timestamp="2025-03-01T15:01:30Z" />
+<aistorm type="message" from="Creative Thinker" timestamp="2025-03-01T15:01:30" />
 
 ## [Creative Thinker]:
 
@@ -120,7 +126,7 @@ Here are some innovative ideas for a local business connection app:
 
 1. **Neighborhood Pulse**: An app that uses AR to display real-time information about businesses as you walk past them.
 
-<aistorm type="message" from="Practical Analyst" timestamp="2025-03-01T15:02:00Z" />
+<aistorm type="message" from="Practical Analyst" timestamp="2025-03-01T15:02:00" />
 
 ## [Practical Analyst]:
 
@@ -135,6 +141,8 @@ The `IStorageProvider` interface defines the contract for storage providers:
 
 - `LoadAgent` - Loads an agent from storage by ID
 - `SaveAgent` - Saves an agent to storage
+- `LoadSession` - Loads a session from storage by ID
+- `SaveSession` - Saves a session to storage
 
 #### Markdown Storage Provider
 
@@ -142,7 +150,18 @@ The `MarkdownStorageProvider` implements the `IStorageProvider` interface for ma
 
 - Parses agent markdown files to extract metadata and system prompts
 - Generates markdown files for agents with proper formatting
+- Parses session markdown files to extract metadata and messages
+- Generates markdown files for sessions with proper formatting
 - Handles file system operations for reading and writing files
+
+#### Markdown Serialization
+
+The storage implementation uses several classes to handle markdown serialization:
+
+- `MarkdownSerializer` - Handles serialization and deserialization of markdown documents
+- `MarkdownSegment` - Represents a segment of a markdown document with properties and content
+- `OrderedProperties` - Maintains deterministic property ordering in markdown tags
+- `Tools` - Provides utility functions for handling dates and times
 
 #### Testing
 
@@ -150,7 +169,10 @@ The storage implementation is tested with xUnit tests:
 
 - Tests for loading agents from markdown files
 - Tests for saving agents to markdown files
-- Round-trip tests to ensure data integrity
+- Tests for loading sessions from markdown files
+- Tests for saving sessions to markdown files
+- Tests for markdown serialization and deserialization
+- Round-trip tests to ensure data integrity for both agents and sessions
 
 ## User Experience
 
@@ -172,6 +194,10 @@ The storage implementation is tested with xUnit tests:
   - `Session` - Represents a brainstorming session with metadata and a list of messages
   - `Message` - Represents a message in a conversation with agent name, timestamp, and content
   - `MarkdownStorageProvider` - Handles reading and writing markdown files
+  - `MarkdownSerializer` - Handles serialization and deserialization of markdown documents
+  - `MarkdownSegment` - Represents a segment of a markdown document with properties and content
+  - `OrderedProperties` - Maintains deterministic property ordering in markdown tags
+  - `Tools` - Provides utility functions for handling dates and times
 - **Implemented Interfaces**:
   - `IStorageProvider` - Interface for storage operations
 - **Planned Classes**:
@@ -188,7 +214,6 @@ The storage implementation is tested with xUnit tests:
 ## Open Questions
 
 - What specific AI service APIs will be supported initially? (OpenAI is implemented)
-- How should we handle the parsing of the conversation log to extract messages?
 - How should we implement the UI for the brainstorming session?
 - What visualization features should be included for the brainstorming results?
 - What export formats should be supported?

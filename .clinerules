@@ -28,6 +28,8 @@ Reread `docs/specs.md` often and whenever you need to refresh your context with 
 2. Don't rush things.
 3. Don't do or add code unrelated to user specific request and context at the moment.
 4. When using git, only stage changes and propose a commit message. Let the user review the changes and commit them.
+5. **Always** prior to finishing a task and considering it completed, revise all the changes and update specs.md
+6. **Always** prior to finishing a task and considering it completed, try to git stage everything and suggest commit message
 
 ## Conventions
 
