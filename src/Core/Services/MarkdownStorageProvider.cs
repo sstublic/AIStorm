@@ -76,11 +76,27 @@ public class MarkdownStorageProvider : IStorageProvider
 
     public Session LoadSession(string id)
     {
-        string fullPath = Path.Combine(basePath, id);
+        // Ensure the id has the .log.md extension
+        string sessionPath = id;
+        if (!sessionPath.EndsWith(".log.md"))
+        {
+            // If id already has .md extension, replace it with .log.md
+            if (sessionPath.EndsWith(".md"))
+            {
+                sessionPath = sessionPath.Substring(0, sessionPath.Length - 3) + ".log.md";
+            }
+            else
+            {
+                // Otherwise, append .log.md
+                sessionPath = sessionPath + ".log.md";
+            }
+        }
+        
+        string fullPath = Path.Combine(basePath, sessionPath);
         
         if (!File.Exists(fullPath))
         {
-            throw new FileNotFoundException($"Session file not found: {id}", fullPath);
+            throw new FileNotFoundException($"Session file not found: {sessionPath}", fullPath);
         }
 
         string fileContent = File.ReadAllText(fullPath);
@@ -103,6 +119,11 @@ public class MarkdownStorageProvider : IStorageProvider
         
         // Use the filename without extension as the session ID
         var sessionId = Path.GetFileNameWithoutExtension(fullPath);
+        // Remove .log suffix if present
+        if (sessionId.EndsWith(".log"))
+        {
+            sessionId = sessionId.Substring(0, sessionId.Length - 4);
+        }
         
         var session = new Session(sessionId, created, description);
         
@@ -134,7 +155,23 @@ public class MarkdownStorageProvider : IStorageProvider
 
     public void SaveSession(string id, Session session)
     {
-        var fullPath = Path.Combine(basePath, id);
+        // Ensure the id has the .log.md extension
+        string sessionPath = id;
+        if (!sessionPath.EndsWith(".log.md"))
+        {
+            // If id already has .md extension, replace it with .log.md
+            if (sessionPath.EndsWith(".md"))
+            {
+                sessionPath = sessionPath.Substring(0, sessionPath.Length - 3) + ".log.md";
+            }
+            else
+            {
+                // Otherwise, append .log.md
+                sessionPath = sessionPath + ".log.md";
+            }
+        }
+        
+        var fullPath = Path.Combine(basePath, sessionPath);
         var directoryPath = Path.GetDirectoryName(fullPath);
         
         if (directoryPath != null && !Directory.Exists(directoryPath))

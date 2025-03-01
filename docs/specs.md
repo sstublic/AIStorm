@@ -55,7 +55,7 @@ AIStorm/
                 │   ├── Creative Thinker.md
                 │   ├── Critical Analyst.md
                 │   └── Practical Implementer.md
-                └── SessionExample.md # Conversation log
+                └── SessionExample.log.md # Conversation log
 ```
 
 The application will create an `AIStormSessions` directory at runtime to store user sessions.
@@ -63,8 +63,10 @@ The application will create an `AIStormSessions` directory at runtime to store u
 ### File Structure Changes
 
 Recent changes to the file structure:
-- Session data is now stored in a single file with the session ID as the filename (e.g., `SessionExample.md`) rather than in a `conversation-log.md` file within a session directory
-- Session ID is derived from the filename without extension rather than the directory name
+
+- Session data is now stored in a single file with the session ID as the filename (e.g., `SessionExample.log.md`) rather than in a `conversation-log.md` file within a session directory
+- Session ID is derived from the filename without extension (excluding the `.log` suffix) rather than the directory name
+- Session files use the `.log.md` extension to distinguish them from `.ini.md` files that contain initial premises of the brainstorming session
 
 ## AI Agent System
 
@@ -88,7 +90,7 @@ Recent changes to the file structure:
 - One subfolder per session with a user-descriptive name (e.g., "Example")
 - Each session folder contains:
   - An `Agents` subfolder for agent definitions
-  - A markdown file with the session ID as the filename (e.g., `SessionExample.md`) for the conversation content
+  - A markdown file with the session ID as the filename (e.g., `SessionExample.log.md`) for the conversation content
 
 ### Agent Definition Files
 
@@ -105,7 +107,7 @@ Provide ideas that are both creative and practical.
 
 ### Conversation Log Format
 
-The conversation is stored in a markdown file with the session ID as the filename (e.g., `SessionExample.md`) with XML tags as separators:
+The conversation is stored in a markdown file with the session ID as the filename (e.g., `SessionExample.log.md`) with XML tags as separators:
 
 ```markdown
 <aistorm type="session" created="2025-03-01T15:00:00" description="Brainstorming session for new product ideas" />
