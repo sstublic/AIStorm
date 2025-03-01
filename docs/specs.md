@@ -83,6 +83,42 @@ Recent changes to the file structure:
 - Configurable API settings (endpoints, keys, etc.)
 - Abstraction layer to handle different API implementations
 
+#### Multi-Agent Conversation Format
+
+When implementing conversations with multiple AI agents, we need a strategy for representing the conversation context when sending requests to AI APIs. Most AI APIs (like OpenAI) only support basic "user" and "assistant" roles, which doesn't directly map to our multi-agent scenario.
+
+The recommended approach for AIStorm is to use a custom format in the system prompt:
+
+1. Use the system prompt to explain the multi-agent conversation format
+2. Mark the current agent's previous responses as "assistant" role
+3. Mark all other messages (from human user and other agents) as "user" role with clear name prefixes
+4. Include explicit instructions for when the agent should respond
+
+Example API request format when sending a message to "Agent B":
+
+```json
+{
+  "messages": [
+    { 
+      "role": "system", 
+      "content": "You are Agent B, a critical analyst in a multi-agent brainstorming session. Messages will be prefixed with the sender's name in [brackets]. Only respond when asked to provide Agent B's perspective. Your role is to analyze ideas critically and identify potential issues or improvements."
+    },
+    { "role": "user", "content": "[Human]: What are some ideas for a weekend project?" },
+    { "role": "assistant", "content": "[Agent B]: From an analytical perspective, we should consider time constraints and resource availability..." },
+    { "role": "user", "content": "[Agent A]: Here are some creative ideas: 1. Build a herb garden..." },
+    { "role": "user", "content": "[Agent C]: From a practical perspective, consider these factors..." },
+    { "role": "user", "content": "[Human]: Agent B, what do you think about these ideas?" }
+  ]
+}
+```
+
+Implementation considerations:
+
+- The `IAIServiceClient` interface should include methods for sending conversation context to an AI service
+- When preparing a request for a specific agent, the conversation history needs to be transformed into the appropriate format
+- The system prompt should combine the agent's base prompt (from its definition file) with instructions about the conversation format
+- Messages should be clearly labeled with the sender's identity to maintain conversation clarity
+
 ## Data Storage
 
 ### Markdown File Structure
