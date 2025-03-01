@@ -27,7 +27,7 @@ public class MarkdownStorageProviderSessionTests
     public void LoadSession_ValidFile_ReturnsSession()
     {
         // Arrange
-        var sessionPath = "conversation-log.md";
+        var sessionPath = "SessionExample.md";
 
         // Act
         var session = storageProvider.LoadSession(sessionPath);
@@ -54,7 +54,7 @@ public class MarkdownStorageProviderSessionTests
     {
         // Arrange
         var sessionId = "TestSession";
-        var sessionPath = Path.Combine(sessionId, "conversation-log.md");
+        var sessionPath = sessionId + ".md";
         var fullPath = Path.Combine(testBasePath, sessionPath);
         
         // Clean up any existing test file
@@ -120,7 +120,7 @@ public class MarkdownStorageProviderSessionTests
     {
         // Arrange
         var sessionId = "TestRoundTripSession";
-        var sessionPath = Path.Combine(sessionId, "conversation-log.md");
+        var sessionPath = sessionId + ".md";
         var fullPath = Path.Combine(testBasePath, sessionPath);
         
         // Clean up any existing test file

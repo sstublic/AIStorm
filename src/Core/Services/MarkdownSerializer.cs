@@ -81,7 +81,7 @@ public class MarkdownSerializer
         return sb.ToString();
     }
     
-    public MarkdownSegment FindSegment(List<MarkdownSegment> segments, string typeValue)
+    public MarkdownSegment? FindSegment(List<MarkdownSegment> segments, string typeValue)
     {
         return segments.FirstOrDefault(s => 
             s.Properties.TryGetValue("type", out var type) && type == typeValue);

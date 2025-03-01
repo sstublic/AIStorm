@@ -24,7 +24,7 @@ public class MarkdownStorageProvider : IStorageProvider
         
         if (!File.Exists(fullPath))
         {
-            return null;
+            throw new FileNotFoundException($"Agent file not found: {id}", fullPath);
         }
 
         string content = File.ReadAllText(fullPath);
@@ -56,10 +56,10 @@ public class MarkdownStorageProvider : IStorageProvider
 
     public void SaveAgent(string id, Agent agent)
     {
-        string fullPath = Path.Combine(basePath, id);
-        string directoryPath = Path.GetDirectoryName(fullPath);
+        var fullPath = Path.Combine(basePath, id);
+        var directoryPath = Path.GetDirectoryName(fullPath);
         
-        if (!Directory.Exists(directoryPath))
+        if (directoryPath != null && !Directory.Exists(directoryPath))
         {
             Directory.CreateDirectory(directoryPath);
         }
@@ -80,7 +80,7 @@ public class MarkdownStorageProvider : IStorageProvider
         
         if (!File.Exists(fullPath))
         {
-            return null;
+            throw new FileNotFoundException($"Session file not found: {id}", fullPath);
         }
 
         string fileContent = File.ReadAllText(fullPath);
@@ -101,13 +101,8 @@ public class MarkdownStorageProvider : IStorageProvider
         
         var created = Tools.ParseAsUtc(createdStr);
         
-        // Use the directory name as the session ID, or the parent directory if the path is just a filename
-        string sessionId = Path.GetDirectoryName(id) ?? Path.GetDirectoryName(Path.GetFullPath(Path.Combine(basePath, id)));
-        if (string.IsNullOrEmpty(sessionId))
-        {
-            // If we still don't have a directory name, use the parent directory of the base path
-            sessionId = Path.GetFileName(basePath);
-        }
+        // Use the filename without extension as the session ID
+        var sessionId = Path.GetFileNameWithoutExtension(fullPath);
         
         var session = new Session(sessionId, created, description);
         
@@ -139,10 +134,10 @@ public class MarkdownStorageProvider : IStorageProvider
 
     public void SaveSession(string id, Session session)
     {
-        string fullPath = Path.Combine(basePath, id);
-        string directoryPath = Path.GetDirectoryName(fullPath);
+        var fullPath = Path.Combine(basePath, id);
+        var directoryPath = Path.GetDirectoryName(fullPath);
         
-        if (!Directory.Exists(directoryPath))
+        if (directoryPath != null && !Directory.Exists(directoryPath))
         {
             Directory.CreateDirectory(directoryPath);
         }

@@ -39,10 +39,10 @@ public class MarkdownSegment
         return ordered;
     }
     
-    public T GetProperty<T>(string key, T defaultValue = default)
+    public T GetProperty<T>(string key, T? defaultValue = default)
     {
         if (!Properties.TryGetValue(key, out var value))
-            return defaultValue;
+            return defaultValue!;
             
         try
         {
@@ -50,7 +50,7 @@ public class MarkdownSegment
         }
         catch
         {
-            return defaultValue;
+            return defaultValue!;
         }
     }
 }

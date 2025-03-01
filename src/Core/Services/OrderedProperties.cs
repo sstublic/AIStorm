@@ -35,7 +35,7 @@ public class OrderedProperties
             }
         }
         
-        value = null;
+        value = string.Empty;
         return false;
     }
     
