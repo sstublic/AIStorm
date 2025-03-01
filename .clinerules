@@ -61,3 +61,6 @@ Reread `docs/specs.md` often and whenever you need to refresh your context with 
    - In constructors, parameters should have the same name as fields
    - Use `this.fieldName = fieldName` pattern for assignment
 10. Always use `var` when the type is obvious from the right side of the assignment
+11. Git commit messages should be concise and descriptive
+    - Focus on the "what" and "why" rather than the "how"
+    - Avoid listing specific properties, method names, or implementation details

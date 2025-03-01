@@ -4,9 +4,13 @@
 
 <aistorm type="message" from="user" timestamp="2025-03-01T15:01:00Z" />
 
+## [user]:
+
 What are some ideas for a weekend project?
 
 <aistorm type="message" from="Creative Thinker" timestamp="2025-03-01T15:01:30Z" />
+
+## [Creative Thinker]:
 
 Here are a few weekend project ideas:
 
@@ -16,6 +20,8 @@ Here are a few weekend project ideas:
 
 <aistorm type="message" from="Critical Analyst" timestamp="2025-03-01T15:02:00Z" />
 
+## [Critical Analyst]:
+
 Those are interesting ideas. Some considerations:
 
 - Herb garden: Requires some space and sunlight
@@ -23,6 +29,8 @@ Those are interesting ideas. Some considerations:
 - Bread baking: Will need specific ingredients and equipment
 
 <aistorm type="message" from="Practical Implementer" timestamp="2025-03-01T15:02:30Z" />
+
+## [Practical Implementer]:
 
 For the herb garden idea:
 
@@ -42,5 +50,7 @@ Steps:
 5. Water regularly
 
 <aistorm type="message" from="user" timestamp="2025-03-01T15:03:00Z" />
+
+## [user]:
 
 I like the herb garden idea. Thanks everyone!

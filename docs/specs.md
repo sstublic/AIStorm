@@ -108,15 +108,21 @@ The conversation is stored in `conversation-log.md` with XML tags as separators:
 
 <aistorm type="message" from="user" timestamp="2025-03-01T15:01:00Z" />
 
+## [user]:
+
 Let's brainstorm ideas for a new mobile app that helps people connect with local businesses.
 
 <aistorm type="message" from="Creative Thinker" timestamp="2025-03-01T15:01:30Z" />
+
+## [Creative Thinker]:
 
 Here are some innovative ideas for a local business connection app:
 
 1. **Neighborhood Pulse**: An app that uses AR to display real-time information about businesses as you walk past them.
 
 <aistorm type="message" from="Practical Analyst" timestamp="2025-03-01T15:02:00Z" />
+
+## [Practical Analyst]:
 
 Building on those creative ideas, here are some practical considerations...
 ```
@@ -163,12 +169,13 @@ The storage implementation is tested with xUnit tests:
 - **Namespaces**: `AIStorm.{Module}` (e.g., `AIStorm.Core`, `AIStorm.Server`)
 - **Implemented Classes**:
   - `Agent` - Represents an AI agent with name, service type, model, and system prompt
+  - `Session` - Represents a brainstorming session with metadata and a list of messages
+  - `Message` - Represents a message in a conversation with agent name, timestamp, and content
   - `MarkdownStorageProvider` - Handles reading and writing markdown files
 - **Implemented Interfaces**:
   - `IStorageProvider` - Interface for storage operations
 - **Planned Classes**:
   - `BrainstormingSession` - Manages a brainstorming session with multiple agents
-  - `Message` - Represents a message in a conversation
 - **Planned Interfaces**:
   - `IAIServiceClient` - Interface for AI service API clients
 
