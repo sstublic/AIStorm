@@ -27,6 +27,7 @@ Reread `docs/specs.md` often and whenever you need to refresh your context with 
 1. Don't guess and do things which you are not certain about. Ask the user instead.
 2. Don't rush things.
 3. Don't do or add code unrelated to user specific request and context at the moment.
+4. When using git, only stage changes and propose a commit message. Let the user review the changes and commit them.
 
 ## Conventions
 
