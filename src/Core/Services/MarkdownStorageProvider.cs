@@ -205,4 +205,87 @@ public class MarkdownStorageProvider : IStorageProvider
         var content = serializer.SerializeDocument(segments);
         File.WriteAllText(fullPath, content);
     }
+    
+    public SessionPremise LoadSessionPremise(string id)
+    {
+        // Ensure the id has the .ini.md extension
+        string premisePath = id;
+        if (!premisePath.EndsWith(".ini.md"))
+        {
+            // If id already has .md extension, replace it with .ini.md
+            if (premisePath.EndsWith(".md"))
+            {
+                premisePath = premisePath.Substring(0, premisePath.Length - 3) + ".ini.md";
+            }
+            else
+            {
+                // Otherwise, append .ini.md
+                premisePath = premisePath + ".ini.md";
+            }
+        }
+        
+        string fullPath = Path.Combine(basePath, premisePath);
+        
+        if (!File.Exists(fullPath))
+        {
+            throw new FileNotFoundException($"Session premise file not found: {premisePath}", fullPath);
+        }
+
+        string fileContent = File.ReadAllText(fullPath);
+        var segments = serializer.DeserializeDocument(fileContent);
+        
+        // Find the first segment (should be the only one)
+        if (segments.Count == 0)
+        {
+            throw new FormatException("Invalid session premise markdown format. Missing aistorm tag.");
+        }
+        
+        var premiseSegment = segments[0];
+        
+        // Use the filename without extension as the session ID
+        var sessionId = Path.GetFileNameWithoutExtension(fullPath);
+        // Remove .ini suffix if present
+        if (sessionId.EndsWith(".ini"))
+        {
+            sessionId = sessionId.Substring(0, sessionId.Length - 4);
+        }
+        
+        return new SessionPremise(sessionId, premiseSegment.Content);
+    }
+
+    public void SaveSessionPremise(string id, SessionPremise premise)
+    {
+        // Ensure the id has the .ini.md extension
+        string premisePath = id;
+        if (!premisePath.EndsWith(".ini.md"))
+        {
+            // If id already has .md extension, replace it with .ini.md
+            if (premisePath.EndsWith(".md"))
+            {
+                premisePath = premisePath.Substring(0, premisePath.Length - 3) + ".ini.md";
+            }
+            else
+            {
+                // Otherwise, append .ini.md
+                premisePath = premisePath + ".ini.md";
+            }
+        }
+        
+        var fullPath = Path.Combine(basePath, premisePath);
+        var directoryPath = Path.GetDirectoryName(fullPath);
+        
+        if (directoryPath != null && !Directory.Exists(directoryPath))
+        {
+            Directory.CreateDirectory(directoryPath);
+        }
+
+        var segments = new List<MarkdownSegment>();
+        
+        // Add empty aistorm tag segment with the content
+        var properties = new OrderedProperties();
+        segments.Add(new MarkdownSegment(properties, premise.Content));
+        
+        var content = serializer.SerializeDocument(segments);
+        File.WriteAllText(fullPath, content);
+    }
 }

@@ -67,6 +67,7 @@ Recent changes to the file structure:
 - Session data is now stored in a single file with the session ID as the filename (e.g., `SessionExample.log.md`) rather than in a `conversation-log.md` file within a session directory
 - Session ID is derived from the filename without extension (excluding the `.log` suffix) rather than the directory name
 - Session files use the `.log.md` extension to distinguish them from `.ini.md` files that contain initial premises of the brainstorming session
+- Session premise files use the `.ini.md` extension and contain the initial premise or context for a brainstorming session
 
 ## AI Agent System
 
@@ -103,6 +104,16 @@ You are a creative thinking expert who specializes in generating innovative idea
 Always think outside the box and challenge conventional wisdom.
 When presented with a problem, explore multiple angles and perspectives.
 Provide ideas that are both creative and practical.
+```
+
+### Session Premise Format
+
+The session premise is stored in a markdown file with the session ID as the filename (e.g., `SessionExample.ini.md`). It contains an empty `<aistorm>` tag and the premise content:
+
+```markdown
+<aistorm />
+
+This is an example session premise for a brainstorming session about weekend projects.
 ```
 
 ### Conversation Log Format
@@ -145,6 +156,8 @@ The `IStorageProvider` interface defines the contract for storage providers:
 - `SaveAgent` - Saves an agent to storage
 - `LoadSession` - Loads a session from storage by ID
 - `SaveSession` - Saves a session to storage
+- `LoadSessionPremise` - Loads a session premise from storage by ID
+- `SaveSessionPremise` - Saves a session premise to storage
 
 #### Markdown Storage Provider
 
@@ -173,8 +186,10 @@ The storage implementation is tested with xUnit tests:
 - Tests for saving agents to markdown files
 - Tests for loading sessions from markdown files
 - Tests for saving sessions to markdown files
+- Tests for loading session premises from markdown files
+- Tests for saving session premises to markdown files
 - Tests for markdown serialization and deserialization
-- Round-trip tests to ensure data integrity for both agents and sessions
+- Round-trip tests to ensure data integrity for agents, sessions, and session premises
 
 ## User Experience
 
@@ -194,6 +209,7 @@ The storage implementation is tested with xUnit tests:
 - **Implemented Classes**:
   - `Agent` - Represents an AI agent with name, service type, model, and system prompt
   - `Session` - Represents a brainstorming session with metadata and a list of messages
+  - `SessionPremise` - Represents the initial premise or context for a brainstorming session
   - `Message` - Represents a message in a conversation with agent name, timestamp, and content
   - `MarkdownStorageProvider` - Handles reading and writing markdown files
   - `MarkdownSerializer` - Handles serialization and deserialization of markdown documents
