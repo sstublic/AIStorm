@@ -1,14 +1,14 @@
-<aistorm type="session" created="2025-03-01T15:00:00Z" description="Simple example brainstorming session" />
+<aistorm type="session" created="2025-03-01T15:00:00" description="Simple example brainstorming session" />
 
 # Simple Brainstorming Example
 
-<aistorm type="message" from="user" timestamp="2025-03-01T15:01:00Z" />
+<aistorm type="message" from="user" timestamp="2025-03-01T15:01:00" />
 
 ## [user]:
 
 What are some ideas for a weekend project?
 
-<aistorm type="message" from="Creative Thinker" timestamp="2025-03-01T15:01:30Z" />
+<aistorm type="message" from="Creative Thinker" timestamp="2025-03-01T15:01:30" />
 
 ## [Creative Thinker]:
 
@@ -18,7 +18,7 @@ Here are a few weekend project ideas:
 2. Create a photo collage of your favorite memories
 3. Learn to bake bread from scratch
 
-<aistorm type="message" from="Critical Analyst" timestamp="2025-03-01T15:02:00Z" />
+<aistorm type="message" from="Critical Analyst" timestamp="2025-03-01T15:02:00" />
 
 ## [Critical Analyst]:
 
@@ -28,7 +28,7 @@ Those are interesting ideas. Some considerations:
 - Photo collage: Need to have photos ready or time to print them
 - Bread baking: Will need specific ingredients and equipment
 
-<aistorm type="message" from="Practical Implementer" timestamp="2025-03-01T15:02:30Z" />
+<aistorm type="message" from="Practical Implementer" timestamp="2025-03-01T15:02:30" />
 
 ## [Practical Implementer]:
 
@@ -49,7 +49,7 @@ Steps:
 4. Place in sunny location
 5. Water regularly
 
-<aistorm type="message" from="user" timestamp="2025-03-01T15:03:00Z" />
+<aistorm type="message" from="user" timestamp="2025-03-01T15:03:00" />
 
 ## [user]:
 

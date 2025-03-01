@@ -4,17 +4,18 @@ using AIStorm.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
-using System.Xml.Linq;
 
 public class MarkdownStorageProvider : IStorageProvider
 {
     private readonly string basePath;
+    private readonly MarkdownSerializer serializer;
 
     public MarkdownStorageProvider(string basePath)
     {
         this.basePath = basePath;
+        this.serializer = new MarkdownSerializer();
     }
 
     public Agent LoadAgent(string id)
@@ -27,7 +28,30 @@ public class MarkdownStorageProvider : IStorageProvider
         }
 
         string content = File.ReadAllText(fullPath);
-        return ParseAgent(content, Path.GetFileNameWithoutExtension(fullPath));
+        var segments = serializer.DeserializeDocument(content);
+        
+        if (segments.Count == 0)
+        {
+            throw new FormatException("Invalid agent markdown format. Missing aistorm tag.");
+        }
+        
+        var agentSegment = segments[0];
+        
+        // For agent files, the type property is the AI service type
+        var aiServiceType = agentSegment.Properties.ContainsKey("type") ? 
+            agentSegment.Properties["type"] : 
+            throw new FormatException("Invalid agent markdown format. Missing type property.");
+            
+        var aiModel = agentSegment.Properties.ContainsKey("model") ? 
+            agentSegment.Properties["model"] : 
+            throw new FormatException("Invalid agent markdown format. Missing model property.");
+        
+        return new Agent(
+            Path.GetFileNameWithoutExtension(fullPath),
+            aiServiceType,
+            aiModel,
+            agentSegment.Content
+        );
     }
 
     public void SaveAgent(string id, Agent agent)
@@ -40,32 +64,14 @@ public class MarkdownStorageProvider : IStorageProvider
             Directory.CreateDirectory(directoryPath);
         }
 
-        string content = GenerateAgentMarkdown(agent);
+        var properties = new OrderedProperties();
+        properties.Add("type", agent.AIServiceType);
+        properties.Add("model", agent.AIModel);
+        
+        var segment = new MarkdownSegment(properties, agent.SystemPrompt);
+        var content = serializer.SerializeDocument(new List<MarkdownSegment> { segment });
+        
         File.WriteAllText(fullPath, content);
-    }
-
-    private Agent ParseAgent(string markdown, string fileName)
-    {
-        var match = Regex.Match(markdown, @"<aistorm\s+type=""([^""]+)""\s+model=""([^""]+)""\s*/>");
-        
-        if (!match.Success)
-        {
-            throw new FormatException("Invalid agent markdown format. Missing or invalid aistorm tag.");
-        }
-
-        string aiServiceType = match.Groups[1].Value;
-        string aiModel = match.Groups[2].Value;
-        
-        string systemPrompt = markdown.Substring(match.Index + match.Length).Trim();
-
-        return new Agent(fileName, aiServiceType, aiModel, systemPrompt);
-    }
-
-    private string GenerateAgentMarkdown(Agent agent)
-    {
-        return $@"<aistorm type=""{agent.AIServiceType}"" model=""{agent.AIModel}"" />
-
-{agent.SystemPrompt}";
     }
 
     public Session LoadSession(string id)
@@ -77,8 +83,58 @@ public class MarkdownStorageProvider : IStorageProvider
             return null;
         }
 
-        string content = File.ReadAllText(fullPath);
-        return ParseSession(content, Path.GetDirectoryName(id));
+        string fileContent = File.ReadAllText(fullPath);
+        var segments = serializer.DeserializeDocument(fileContent);
+        
+        // Find session metadata segment
+        var sessionSegment = serializer.FindSegment(segments, "session");
+        if (sessionSegment == null)
+        {
+            throw new FormatException("Invalid session markdown format. Missing session tag.");
+        }
+        
+        if (!sessionSegment.Properties.TryGetValue("created", out var createdStr) ||
+            !sessionSegment.Properties.TryGetValue("description", out var description))
+        {
+            throw new FormatException("Invalid session markdown format. Missing required properties.");
+        }
+        
+        var created = Tools.ParseAsUtc(createdStr);
+        
+        // Use the directory name as the session ID, or the parent directory if the path is just a filename
+        string sessionId = Path.GetDirectoryName(id) ?? Path.GetDirectoryName(Path.GetFullPath(Path.Combine(basePath, id)));
+        if (string.IsNullOrEmpty(sessionId))
+        {
+            // If we still don't have a directory name, use the parent directory of the base path
+            sessionId = Path.GetFileName(basePath);
+        }
+        
+        var session = new Session(sessionId, created, description);
+        
+        // Find message segments
+        var messageSegments = serializer.FindSegments(segments, "message");
+        foreach (var messageSegment in messageSegments)
+        {
+            if (!messageSegment.Properties.TryGetValue("from", out var agentName) ||
+                !messageSegment.Properties.TryGetValue("timestamp", out var timestampStr))
+            {
+                continue; // Skip invalid messages
+            }
+            
+            var timestamp = Tools.ParseAsUtc(timestampStr);
+            var messageContent = messageSegment.Content;
+            
+            // Extract actual message content by removing the heading line if present
+            var lines = messageContent.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            if (lines.Length > 0 && lines[0].StartsWith("## ["))
+            {
+                messageContent = string.Join(Environment.NewLine, lines.Skip(1)).Trim();
+            }
+            
+            session.Messages.Add(new Message(agentName, timestamp, messageContent));
+        }
+        
+        return session;
     }
 
     public void SaveSession(string id, Session session)
@@ -91,65 +147,30 @@ public class MarkdownStorageProvider : IStorageProvider
             Directory.CreateDirectory(directoryPath);
         }
 
-        string content = GenerateSessionMarkdown(session);
-        File.WriteAllText(fullPath, content);
-    }
-
-    private Session ParseSession(string markdown, string sessionId)
-    {
-        // Parse session metadata
-        var sessionMatch = Regex.Match(markdown, @"<aistorm\s+type=""session""\s+created=""([^""]+)""\s+description=""([^""]+)""\s*/>");
+        var segments = new List<MarkdownSegment>();
         
-        if (!sessionMatch.Success)
-        {
-            throw new FormatException("Invalid session markdown format. Missing or invalid session tag.");
-        }
-
-        string createdStr = sessionMatch.Groups[1].Value;
-        string description = sessionMatch.Groups[2].Value;
+        // Add session metadata segment
+        var sessionProperties = new OrderedProperties();
+        sessionProperties.Add("type", "session");
+        sessionProperties.Add("created", Tools.UtcToString(session.Created));
+        sessionProperties.Add("description", session.Description);
         
-        DateTime created = DateTime.Parse(createdStr);
+        var sessionContent = $"# {session.Description}";
+        segments.Add(new MarkdownSegment(sessionProperties, sessionContent));
         
-        var session = new Session(sessionId, created, description);
-        
-        // Parse messages - this pattern now skips the heading line with the agent name
-        var messageMatches = Regex.Matches(markdown, @"<aistorm\s+type=""message""\s+from=""([^""]+)""\s+timestamp=""([^""]+)""\s*/>(?:.*?\n){0,3}(.*?)(?=<aistorm|$)", RegexOptions.Singleline);
-        
-        foreach (Match match in messageMatches)
-        {
-            string agentName = match.Groups[1].Value;
-            string timestampStr = match.Groups[2].Value;
-            string content = match.Groups[3].Value.Trim();
-            
-            DateTime timestamp = DateTime.Parse(timestampStr);
-            
-            session.Messages.Add(new Message(agentName, timestamp, content));
-        }
-        
-        return session;
-    }
-
-    private string GenerateSessionMarkdown(Session session)
-    {
-        var sb = new StringBuilder();
-        
-        // Add session metadata
-        sb.AppendLine($"<aistorm type=\"session\" created=\"{session.Created:yyyy-MM-ddTHH:mm:ssZ}\" description=\"{session.Description}\" />");
-        sb.AppendLine();
-        sb.AppendLine($"# {session.Description}");
-        sb.AppendLine();
-        
-        // Add messages
+        // Add message segments
         foreach (var message in session.Messages)
         {
-            sb.AppendLine($"<aistorm type=\"message\" from=\"{message.AgentName}\" timestamp=\"{message.Timestamp:yyyy-MM-ddTHH:mm:ssZ}\" />");
-            sb.AppendLine();
-            sb.AppendLine($"## [{message.AgentName}]:");
-            sb.AppendLine();
-            sb.AppendLine(message.Content);
-            sb.AppendLine();
+            var messageProperties = new OrderedProperties();
+            messageProperties.Add("type", "message");
+            messageProperties.Add("from", message.AgentName);
+            messageProperties.Add("timestamp", Tools.UtcToString(message.Timestamp));
+            
+            var messageContent = $"## [{message.AgentName}]:\n\n{message.Content}";
+            segments.Add(new MarkdownSegment(messageProperties, messageContent));
         }
         
-        return sb.ToString();
+        var content = serializer.SerializeDocument(segments);
+        File.WriteAllText(fullPath, content);
     }
 }
