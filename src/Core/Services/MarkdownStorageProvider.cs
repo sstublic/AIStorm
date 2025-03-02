@@ -72,26 +72,19 @@ public class MarkdownStorageProvider : IStorageProvider
         return segment;
     }
 
-    private string GetRequiredProperty(MarkdownSegment segment, string property)
-    {
-        if (!segment.Properties.TryGetValue(property, out var value))
-            throw new FormatException($"Missing required property: {property}");
-        return value;
-    }
-
     private Agent CreateAgentFromSegment(MarkdownSegment segment, string name)
     {
-        var aiServiceType = GetRequiredProperty(segment, "type");
-        var aiModel = GetRequiredProperty(segment, "model");
+        var aiServiceType = segment.GetRequiredProperty("type");
+        var aiModel = segment.GetRequiredProperty("model");
         
         return new Agent(name, aiServiceType, aiModel, segment.Content);
     }
 
     private Agent CreateAgentFromTemplate(MarkdownSegment segment)
     {
-        var name = GetRequiredProperty(segment, "name");
-        var service = GetRequiredProperty(segment, "service");
-        var model = GetRequiredProperty(segment, "model");
+        var name = segment.GetRequiredProperty("name");
+        var service = segment.GetRequiredProperty("service");
+        var model = segment.GetRequiredProperty("model");
         
         return new Agent(name, service, model, segment.Content);
     }
@@ -136,16 +129,12 @@ public class MarkdownStorageProvider : IStorageProvider
 
     private StormMessage CreateMessageFromSegment(MarkdownSegment segment)
     {
-        var agentName = GetRequiredProperty(segment, "from");
-        var timestampStr = GetRequiredProperty(segment, "timestamp");
-        var timestamp = Tools.ParseAsUtc(timestampStr);
+        var agentName = segment.GetRequiredProperty("from");
+        var timestamp = segment.GetRequiredTimestampUtc("timestamp");
         
+        // Keep the original message content including the agent prefix
+        // This is important for AI to understand which message came from which participant
         var messageContent = segment.Content;
-        var lines = messageContent.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-        if (lines.Length > 0 && lines[0].StartsWith("## ["))
-        {
-            messageContent = string.Join(Environment.NewLine, lines.Skip(1)).Trim();
-        }
         
         return new StormMessage(agentName, timestamp, messageContent);
     }
@@ -196,8 +185,8 @@ public class MarkdownStorageProvider : IStorageProvider
         
         var sessionSegment = GetRequiredSegment(segments, "session", "session");
         
-        var created = Tools.ParseAsUtc(GetRequiredProperty(sessionSegment, "created"));
-        var description = GetRequiredProperty(sessionSegment, "description");
+        var created = sessionSegment.GetRequiredTimestampUtc("created");
+        var description = sessionSegment.GetRequiredProperty("description");
         
         var premiseSegment = GetRequiredSegment(segments, "premise", "session");
         var premise = new SessionPremise(id, premiseSegment.Content);
@@ -263,43 +252,4 @@ public class MarkdownStorageProvider : IStorageProvider
         WriteFile(fullPath, content);
     }
     
-    public SessionPremise LoadSessionPremise(string id)
-    {
-        logger.LogWarning("LoadSessionPremise is deprecated. Use LoadSession instead and access the Premise property.");
-        
-        try
-        {
-            var session = LoadSession(id);
-            return session.Premise;
-        }
-        catch (FileNotFoundException)
-        {
-            var fullPath = Path.Combine(basePath, id + ".ini.md");
-            
-            if (!File.Exists(fullPath))
-                throw new FileNotFoundException($"Session premise file not found: {id}", fullPath);
-
-            var fileContent = ReadFile(fullPath);
-            var segments = serializer.DeserializeDocument(fileContent);
-            
-            if (segments.Count == 0)
-                throw new FormatException("Invalid session premise markdown format. Missing aistorm tag.");
-            
-            return new SessionPremise(id, segments[0].Content);
-        }
-    }
-
-    public void SaveSessionPremise(string id, SessionPremise premise)
-    {
-        logger.LogWarning("SaveSessionPremise is deprecated. Use SaveSession instead with a session that includes the premise.");
-        
-        var session = new Session(
-            id: premise.Id,
-            created: DateTime.UtcNow,
-            description: $"Session based on premise: {premise.Id}",
-            premise: premise
-        );
-        
-        SaveSession(id, session);
-    }
 }

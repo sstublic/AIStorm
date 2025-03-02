@@ -4,6 +4,7 @@ using AIStorm.Core.Services.Options;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
+using System;
 using System.IO;
 
 namespace Core.Tests.Services;
@@ -28,13 +29,14 @@ public class MarkdownStorageProviderPremiseTests
     }
 
     [Fact]
-    public void LoadSessionPremise_ValidFile_ReturnsSessionPremise()
+    public void GetSessionPremise_FromExistingSession_ReturnsPremise()
     {
-        // Arrange - we'll load from the session file instead
+        // Arrange
         var sessionId = "SessionExample";
 
         // Act
-        var premise = storageProvider.LoadSessionPremise(sessionId);
+        var session = storageProvider.LoadSession(sessionId);
+        var premise = session.Premise;
 
         // Assert
         Assert.NotNull(premise);
@@ -43,7 +45,7 @@ public class MarkdownStorageProviderPremiseTests
     }
 
     [Fact]
-    public void SaveSessionPremise_ValidPremise_CreatesFile()
+    public void SaveSession_WithPremise_CreatesFile()
     {
         // Arrange
         var sessionId = "TestPremise";
@@ -59,16 +61,22 @@ public class MarkdownStorageProviderPremiseTests
             sessionId,
             "This is a test session premise."
         );
+        
+        var session = new Session(
+            sessionId,
+            DateTime.UtcNow,
+            "Test Session with Premise",
+            premise
+        );
 
         try
         {
             // Act
-            storageProvider.SaveSessionPremise(sessionId, premise);
+            storageProvider.SaveSession(sessionId, session);
 
             // Assert
             Assert.True(File.Exists(fullPath));
             var content = File.ReadAllText(fullPath);
-            // Since it creates a self-contained session now
             Assert.Contains("<aistorm type=\"premise\" />", content);
             Assert.Contains("This is a test session premise.", content);
         }
@@ -83,7 +91,7 @@ public class MarkdownStorageProviderPremiseTests
     }
 
     [Fact]
-    public void LoadSessionPremise_SavedPremise_RoundTrip()
+    public void SessionPremise_RoundTrip()
     {
         // Arrange
         var sessionId = "TestRoundTripPremise";
@@ -99,12 +107,20 @@ public class MarkdownStorageProviderPremiseTests
             sessionId,
             "This is a round trip test session premise."
         );
+        
+        var originalSession = new Session(
+            sessionId,
+            DateTime.UtcNow,
+            "Round Trip Session Test",
+            originalPremise
+        );
 
         try
         {
             // Act
-            storageProvider.SaveSessionPremise(sessionId, originalPremise);
-            var loadedPremise = storageProvider.LoadSessionPremise(sessionId);
+            storageProvider.SaveSession(sessionId, originalSession);
+            var loadedSession = storageProvider.LoadSession(sessionId);
+            var loadedPremise = loadedSession.Premise;
 
             // Assert
             Assert.NotNull(loadedPremise);

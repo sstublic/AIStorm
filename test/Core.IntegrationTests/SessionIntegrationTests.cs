@@ -41,9 +41,10 @@ public class SessionIntegrationTests
             logger.LogInformation("Loaded agent: {AgentName} ({ServiceType}, {ModelName})", 
                 criticalAgent.Name, criticalAgent.AIServiceType, criticalAgent.AIModel);
             
-            // Load session premise
-            logger.LogInformation("Loading session premise");
-            var premise = storageProvider.LoadSessionPremise("SessionExample/SessionExample.ini.md");
+            // Load session with premise
+            logger.LogInformation("Loading session with premise");
+            var session = storageProvider.LoadSession("SessionExample");
+            var premise = session.Premise;
             logger.LogInformation("Loaded premise: {Content}", premise.Content);
             
             // Initialize session runner with agents and premise

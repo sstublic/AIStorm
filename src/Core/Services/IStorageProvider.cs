@@ -9,7 +9,4 @@ public interface IStorageProvider
     
     Session LoadSession(string id);
     void SaveSession(string id, Session session);
-    
-    SessionPremise LoadSessionPremise(string id);
-    void SaveSessionPremise(string id, SessionPremise premise);
 }

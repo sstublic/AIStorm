@@ -53,4 +53,17 @@ public class MarkdownSegment
             return defaultValue!;
         }
     }
+    
+    public string GetRequiredProperty(string property)
+    {
+        if (!Properties.TryGetValue(property, out var value))
+            throw new FormatException($"Missing required property: {property}");
+        return value;
+    }
+    
+    public DateTime GetRequiredTimestampUtc(string property)
+    {
+        var timestampStr = GetRequiredProperty(property);
+        return Tools.ParseAsUtc(timestampStr);
+    }
 }
