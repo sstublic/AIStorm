@@ -177,9 +177,8 @@ public class OpenAIProvider : IAIProvider
     {
         // Extend the system prompt to include the agent's name and formatting instructions
         string enhancedSystemPrompt = $"You are {agent.Name}. {agent.SystemPrompt}\n\n" +
-            $"Your responses will be automatically prefixed with [{agent.Name}]: - " +
-            "focus on providing the content without adding this prefix yourself. " +
-            "All messages in the conversation will follow the format [SpeakerName]: message content.";
+            $"You will be provided with the history of the conversation so far with each participant's message prefixed by the name of the speaker in the form `[<SpeakerName>]: `\n\n" +
+            "When responding, DO NOT add the prefix to your response!\n\n";
             
         var messages = new List<OpenAIMessage>
         {

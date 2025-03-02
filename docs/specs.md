@@ -277,6 +277,15 @@ An integration test is included that demonstrates a complete session workflow:
   - Error details in case of failures
   - Basic operation information (at Information level)
 
+### Integration Tests Logging
+
+- The Core.IntegrationTests project uses NLog for structured logging
+- Configured to write logs to file in addition to console output
+- Log files are stored in the `logs` directory relative to the output directory with pattern `aistorm-integration-tests-{date}.log`
+- Logs include timestamp, log level, logger name, and message with structured data
+- All test classes use ILogger<T> for consistent structured logging
+- NLog is properly initialized and shut down via the LogManager to ensure all logs are flushed
+
 ## User Experience
 
 ### Basic Workflow
