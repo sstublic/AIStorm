@@ -274,7 +274,7 @@ The storage implementation is tested with xUnit tests:
   - `Session` - Represents a brainstorming session with metadata and a list of messages
   - `SessionPremise` - Represents the initial premise or context for a brainstorming session
   - `StormMessage` - Represents a message in a conversation with agent name, timestamp, and content
-  - `SessionRunner` - Initializes from a list of agents and a SessionPremise, manages the conversation flow by relaying the current conversation to the next agent in line
+  - `SessionRunner` - Initializes from a list of agents and a SessionPremise, manages conversation flow by relaying messages between agents in sequential rotation
   - `MarkdownStorageProvider` - Handles reading and writing markdown files
   - `MarkdownSerializer` - Handles serialization and deserialization of markdown documents
   - `MarkdownSegment` - Represents a segment of a markdown document with properties and content
