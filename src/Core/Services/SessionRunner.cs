@@ -16,7 +16,7 @@ public class SessionRunner
     private Session session;
     private int currentAgentIndex = 0;
 
-    public SessionRunner(List<Agent> agents, SessionPremise premise, IAIProvider aiProvider, ILogger<SessionRunner> logger)
+    public SessionRunner(List<Agent> agents, SessionPremise premise, IAIProvider aiProvider, ILogger<SessionRunner> logger, Session? existingSession = null)
     {
         this.agents = agents ?? throw new ArgumentNullException(nameof(agents));
         
@@ -29,11 +29,22 @@ public class SessionRunner
         this.aiProvider = aiProvider ?? throw new ArgumentNullException(nameof(aiProvider));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         
-        session = new Session(
-            id: premise.Id,
-            created: DateTime.UtcNow,
-            description: $"Session based on premise: {premise.Id}"
-        );
+        if (existingSession != null)
+        {
+            this.session = existingSession;
+            // Determine which agent should be next in the rotation
+            this.currentAgentIndex = GetNextAgentIndexFromHistory(session.Messages, agents);
+            logger.LogInformation("Initialized SessionRunner with existing session: {SessionId}", session.Id);
+        }
+        else
+        {
+            this.session = new Session(
+                id: premise.Id,
+                created: DateTime.UtcNow,
+                description: $"Session based on premise: {premise.Id}"
+            );
+            logger.LogInformation("Initialized new SessionRunner with premise: {PremiseId}", premise.Id);
+        }
     }
 
     public Session Session => session;
@@ -78,5 +89,23 @@ public class SessionRunner
     {
         // Advance to the next agent in the rotation, wrapping around to the first agent after the last one
         currentAgentIndex = (currentAgentIndex + 1) % agents.Count;
+    }
+    
+    private static int GetNextAgentIndexFromHistory(List<StormMessage> messages, List<Agent> agentList)
+    {
+        // Get the last message from an agent (not from Human/user)
+        var lastAgentMessage = messages
+            .LastOrDefault(m => m.AgentName != "Human" && m.AgentName != "user");
+            
+        if (lastAgentMessage == null)
+            return 0; // No agent messages, start with first agent
+            
+        // Find the index of the last agent who spoke
+        var lastAgentIndex = agentList.FindIndex(a => a.Name == lastAgentMessage.AgentName);
+        
+        // If agent found, return next in rotation, otherwise return first agent
+        return lastAgentIndex >= 0 
+            ? (lastAgentIndex + 1) % agentList.Count 
+            : 0;
     }
 }

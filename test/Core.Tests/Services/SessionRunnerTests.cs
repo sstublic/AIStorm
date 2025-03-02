@@ -287,4 +287,58 @@ public class SessionRunnerTests
         Assert.Equal(agents[0].Name, messages[3].AgentName);
         Assert.Equal("Response from Agent1", messages[3].Content);
     }
+    
+    [Fact]
+    public void Constructor_WithExistingSession_DeterminesCorrectNextAgent()
+    {
+        // Arrange
+        var existingSession = new Session("test-session", DateTime.UtcNow, "Test Session");
+        
+        // Add messages in sequence: Human → Agent1 → Agent2
+        existingSession.Messages.Add(new StormMessage("Human", DateTime.UtcNow.AddMinutes(-30), "[Human]: Hello agents"));
+        existingSession.Messages.Add(new StormMessage("Agent1", DateTime.UtcNow.AddMinutes(-25), "Response from Agent1"));
+        existingSession.Messages.Add(new StormMessage("Agent2", DateTime.UtcNow.AddMinutes(-20), "Response from Agent2"));
+        
+        // Act
+        var runner = new SessionRunner(agents, premise, aiProviderMock.Object, loggerMock.Object, existingSession);
+        
+        // Assert
+        // After Agent2 spoke, Agent3 should be next in rotation
+        Assert.Equal(agents[2], runner.NextAgentToRespond);
+        
+        // Verify session is correctly set
+        Assert.Same(existingSession, runner.Session);
+        Assert.Equal(3, runner.GetConversationHistory().Count);
+    }
+    
+    [Fact]
+    public void Constructor_WithExistingSessionAndUnknownAgent_StartsWithFirstAgent()
+    {
+        // Arrange
+        var existingSession = new Session("test-session", DateTime.UtcNow, "Test Session");
+        
+        // Add message from an unknown agent
+        existingSession.Messages.Add(new StormMessage("Human", DateTime.UtcNow.AddMinutes(-30), "[Human]: Hello agents"));
+        existingSession.Messages.Add(new StormMessage("UnknownAgent", DateTime.UtcNow.AddMinutes(-25), "Response from UnknownAgent"));
+        
+        // Act
+        var runner = new SessionRunner(agents, premise, aiProviderMock.Object, loggerMock.Object, existingSession);
+        
+        // Assert
+        // Should default to first agent since last agent isn't in our list
+        Assert.Equal(agents[0], runner.NextAgentToRespond);
+    }
+    
+    [Fact]
+    public void Constructor_WithEmptyExistingSession_StartsWithFirstAgent()
+    {
+        // Arrange
+        var emptySession = new Session("test-session", DateTime.UtcNow, "Empty Test Session");
+        
+        // Act
+        var runner = new SessionRunner(agents, premise, aiProviderMock.Object, loggerMock.Object, emptySession);
+        
+        // Assert
+        Assert.Equal(agents[0], runner.NextAgentToRespond);
+    }
 }
