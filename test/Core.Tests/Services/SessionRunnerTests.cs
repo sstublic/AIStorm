@@ -41,7 +41,7 @@ public class SessionRunnerTests
         // Assert
         Assert.NotNull(runner.Session);
         Assert.Equal(premise.Id, runner.Session.Id);
-        Assert.Equal(agents[0], runner.CurrentAgent);
+        Assert.Equal(agents[0], runner.NextAgentToRespond);
         Assert.Empty(runner.GetConversationHistory());
     }
     
@@ -125,8 +125,8 @@ public class SessionRunnerTests
         Assert.Single(runner.Session.Messages);
         Assert.Equal(messages[0], runner.Session.Messages[0]);
         
-        // Verify the current agent has been rotated
-        Assert.Equal(agents[1], runner.CurrentAgent);
+        // Verify the next agent has been rotated
+        Assert.Equal(agents[1], runner.NextAgentToRespond);
         
         // Verify the AI provider was called with the correct parameters
         aiProviderMock.Verify(p => p.SendMessageAsync(
@@ -166,8 +166,8 @@ public class SessionRunnerTests
         Assert.Equal(2, runner.Session.Messages.Count);
         Assert.Equal(messages[1], runner.Session.Messages[1]);
         
-        // Verify the current agent has been rotated
-        Assert.Equal(agents[1], runner.CurrentAgent);
+        // Verify the next agent has been rotated
+        Assert.Equal(agents[1], runner.NextAgentToRespond);
         
         // Verify the AI provider was called with the correct parameters
         aiProviderMock.Verify(p => p.SendMessageAsync(
@@ -198,7 +198,7 @@ public class SessionRunnerTests
         Assert.Empty(runner.Session.Messages);
         
         // Verify the agent wasn't rotated
-        Assert.Equal(agents[0], runner.CurrentAgent);
+        Assert.Equal(agents[0], runner.NextAgentToRespond);
     }
     
     [Fact]
@@ -221,8 +221,8 @@ public class SessionRunnerTests
         Assert.Single(runner.Session.Messages);
         Assert.Equal(messages[0], runner.Session.Messages[0]);
         
-        // Verify the current agent hasn't changed
-        Assert.Equal(agents[0], runner.CurrentAgent);
+        // Verify the next agent hasn't changed
+        Assert.Equal(agents[0], runner.NextAgentToRespond);
     }
     
     [Fact]
@@ -251,7 +251,7 @@ public class SessionRunnerTests
             .ReturnsAsync("Response from Agent3");
         
         // Assert initial state
-        Assert.Equal(agents[0], runner.CurrentAgent);
+        Assert.Equal(agents[0], runner.NextAgentToRespond);
         
         // First cycle of rotation
         await runner.Next(); // Agent1 responds, moves to Agent2
@@ -259,7 +259,7 @@ public class SessionRunnerTests
         await runner.Next(); // Agent3 responds, moves to Agent1
         
         // Verify we're back to the first agent
-        Assert.Equal(agents[0], runner.CurrentAgent);
+        Assert.Equal(agents[0], runner.NextAgentToRespond);
         
         // Verify messages were created correctly and in the right order
         var messages = runner.GetConversationHistory();
@@ -278,7 +278,7 @@ public class SessionRunnerTests
         await runner.Next(); // Agent1 responds again, moves to Agent2
         
         // Verify we're now at Agent2
-        Assert.Equal(agents[1], runner.CurrentAgent);
+        Assert.Equal(agents[1], runner.NextAgentToRespond);
         
         // Verify the new message was added
         messages = runner.GetConversationHistory();

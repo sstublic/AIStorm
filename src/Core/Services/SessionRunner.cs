@@ -38,13 +38,13 @@ public class SessionRunner
 
     public Session Session => session;
 
-    public Agent CurrentAgent => agents[currentAgentIndex];
+    public Agent NextAgentToRespond => agents[currentAgentIndex];
 
     public async Task Next()
     {
-        Agent agent = CurrentAgent;
+        Agent agent = NextAgentToRespond;
         
-        logger.LogInformation("Getting response from agent: {AgentName}", agent.Name);
+        logger.LogInformation("Getting response from next agent: {AgentName}", agent.Name);
         
         List<StormMessage> conversationHistory = GetConversationHistory();
         
@@ -74,6 +74,7 @@ public class SessionRunner
 
     private void MoveToNextAgent()
     {
+        // Advance to the next agent in the rotation, wrapping around to the first agent after the last one
         currentAgentIndex = (currentAgentIndex + 1) % agents.Count;
     }
 }
