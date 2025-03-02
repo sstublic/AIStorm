@@ -9,8 +9,6 @@ using System.Threading.Tasks;
 
 public class SessionRunner
 {
-    private readonly List<Agent> agents;
-    private readonly SessionPremise premise;
     private readonly IAIProvider aiProvider;
     private readonly ILogger<SessionRunner> logger;
     private Session session;
@@ -18,14 +16,14 @@ public class SessionRunner
 
     public SessionRunner(List<Agent> agents, SessionPremise premise, IAIProvider aiProvider, ILogger<SessionRunner> logger, Session? existingSession = null)
     {
-        this.agents = agents ?? throw new ArgumentNullException(nameof(agents));
+        agents = agents ?? throw new ArgumentNullException(nameof(agents));
         
         if (agents.Count == 0)
         {
             throw new ArgumentException("At least one agent must be provided", nameof(agents));
         }
         
-        this.premise = premise ?? throw new ArgumentNullException(nameof(premise));
+        premise = premise ?? throw new ArgumentNullException(nameof(premise));
         this.aiProvider = aiProvider ?? throw new ArgumentNullException(nameof(aiProvider));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         
@@ -33,7 +31,8 @@ public class SessionRunner
         {
             this.session = existingSession;
             // Determine which agent should be next in the rotation
-            this.currentAgentIndex = GetNextAgentIndexFromHistory(session.Messages, agents);
+            List<Agent> agentsToUse = existingSession.Agents.Count > 0 ? existingSession.Agents : agents;
+            this.currentAgentIndex = GetNextAgentIndexFromHistory(session.Messages, agentsToUse);
             logger.LogInformation("Initialized SessionRunner with existing session: {SessionId}", session.Id);
         }
         else
@@ -41,15 +40,23 @@ public class SessionRunner
             this.session = new Session(
                 id: premise.Id,
                 created: DateTime.UtcNow,
-                description: $"Session based on premise: {premise.Id}"
+                description: $"Session based on premise: {premise.Id}",
+                premise: premise
             );
+            
+            // Copy agents to session
+            foreach (var agent in agents)
+            {
+                this.session.Agents.Add(agent);
+            }
+            
             logger.LogInformation("Initialized new SessionRunner with premise: {PremiseId}", premise.Id);
         }
     }
 
     public Session Session => session;
 
-    public Agent NextAgentToRespond => agents[currentAgentIndex];
+    public Agent NextAgentToRespond => session.Agents[currentAgentIndex];
 
     public async Task Next()
     {
@@ -60,8 +67,8 @@ public class SessionRunner
         List<StormMessage> conversationHistory = GetConversationHistory();
         
         string userMessage = conversationHistory.Count == 0 
-            ? premise.Content 
-            : $"Premise: {premise.Content}\n\nContinue the conversation based on the above premise and the conversation history.";
+            ? session.Premise.Content 
+            : $"Premise: {session.Premise.Content}\n\nContinue the conversation based on the above premise and the conversation history.";
             
         string response = await aiProvider.SendMessageAsync(agent, conversationHistory, userMessage);
         
@@ -88,7 +95,7 @@ public class SessionRunner
     private void MoveToNextAgent()
     {
         // Advance to the next agent in the rotation, wrapping around to the first agent after the last one
-        currentAgentIndex = (currentAgentIndex + 1) % agents.Count;
+        currentAgentIndex = (currentAgentIndex + 1) % session.Agents.Count;
     }
     
     private static int GetNextAgentIndexFromHistory(List<StormMessage> messages, List<Agent> agentList)

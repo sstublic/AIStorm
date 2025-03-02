@@ -46,7 +46,7 @@ AIStorm/
 │   ├── Core/                   # Core business logic
 │   │   ├── Models/             # Domain models
 │   │   │   ├── Agent.cs        # Agent model
-│   │   │   ├── Session.cs      # Session model
+│   │   │   ├── Session.cs      # Session model (updated to include agents and premise)
 │   │   │   ├── SessionPremise.cs # Session premise model
 │   │   │   └── StormMessage.cs # Message model
 │   │   └── Services/           # Services
@@ -57,7 +57,7 @@ AIStorm/
 │   │       ├── MarkdownStorageProvider.cs # Markdown implementation
 │   │       ├── OpenAIProvider.cs # OpenAI implementation
 │   │       ├── PromptTools.cs  # Tools for AI prompts
-│   │       ├── SessionRunner.cs # Session runner implementation
+│   │       ├── SessionRunner.cs # Session runner implementation (updated for embedded agents)
 │   │       ├── SessionRunnerFactory.cs # Session runner factory
 │   │       └── Options/        # Configuration options
 │   │           ├── MarkdownStorageOptions.cs # Storage options
@@ -73,13 +73,12 @@ AIStorm/
     │   │   ├── MarkdownStorageProviderTests.cs
     │   │   └── SessionRunnerTests.cs
     │   └── TestData/           # Test data for unit tests
-    │       └── SessionExample/ # Example session for testing
-    │           ├── Agents/     # Agent definitions
-    │           │   ├── Creative Thinker.md
-    │           │   ├── Critical Analyst.md
-    │           │   └── Practical Implementer.md
-    │           ├── SessionExample.ini.md # Session premise
-    │           └── SessionExample.log.md # Conversation log
+    │       ├── AgentTemplates/ # Template agent definitions
+    │       │   ├── Creative Thinker.md
+    │       │   ├── Critical Analyst.md
+    │       │   └── Practical Implementer.md
+    │       └── Sessions/       # Session files
+    │           └── SessionExample.session.md # Self-contained session example
     └── Core.IntegrationTests/  # Integration tests for Core project
         ├── OpenAITests.cs      # OpenAI integration tests
         ├── Program.cs          # Console app entry point for integration tests
@@ -87,16 +86,39 @@ AIStorm/
         └── appsettings.json    # Configuration for integration tests
 ```
 
-The application creates an `AIStormSessions` directory at runtime to store user sessions.
+The application creates storage directories at runtime to store sessions and agent templates.
 
-### File Structure Changes
+### File Structure
 
-Recent changes to the file structure:
+The storage structure for sessions and agents is organized as follows:
 
-- Session data is now stored in a single file with the session ID as the filename (e.g., `SessionExample.log.md`) rather than in a `conversation-log.md` file within a session directory
-- Session ID is derived from the filename without extension (excluding the `.log` suffix) rather than the directory name
-- Session files use the `.log.md` extension to distinguish them from `.ini.md` files that contain initial premises of the brainstorming session
-- Session premise files use the `.ini.md` extension and contain the initial premise or context for a brainstorming session
+```
+StorageRoot/
+├── AgentTemplates/           # Reusable agent definitions (flat files)
+│   ├── Creative Thinker.md
+│   ├── Critical Analyst.md
+│   └── ...
+├── Sessions/                 # Self-contained sessions (flat files)
+│   ├── Session1.session.md   # Complete session with embedded agents and premise
+│   ├── Session2.session.md
+│   └── ...
+```
+
+Benefits of this approach:
+- Clear separation between templates and instances
+- Simplified file structure with fewer nested directories
+- Self-contained session files with embedded agents and premise
+- Consistent naming convention
+- Use of `.session.md` extension makes the file type clear
+
+#### File Structure Evolution
+
+Previous file structure:
+- Session data was stored in a single file with the session ID as the filename (e.g., `SessionExample.log.md`)
+- Session ID was derived from the filename without extension (excluding the `.log` suffix)
+- Session files used the `.log.md` extension
+- Session premise files used the `.ini.md` extension and contained the initial premise or context
+- Agent definitions were stored in an `Agents` subdirectory within each session directory
 
 ## AI Agent System
 
@@ -181,21 +203,14 @@ Benefits of this approach:
 
 ## Data Storage
 
-### Markdown File Structure
+### Agent Template Format
 
-- Root folder: `AIStormSessions`
-- One folder per session with a user-descriptive name (e.g., "Example")
-- Each session folder contains:
-  - An `Agents` subfolder for agent definitions (e.g., `Creative Thinker.md`)
-  - A session log file with `.log.md` extension (e.g., `SessionExample.log.md`) for conversation content
-  - A session premise file with `.ini.md` extension (e.g., `SessionExample.ini.md`) for initial context
-
-### Agent Definition Files
-
-Agent definition files are stored in the `Agents` subfolder. The filename is used as the agent name (e.g., `Creative Thinker.md`). XML tags are used for metadata, and the content after the tag is used as the system prompt:
+Agent template files are stored in the `AgentTemplates` directory. The filename is used as the agent name (e.g., `Creative Thinker.md`). XML tags are used for metadata, and the content after the tag is used as the system prompt:
 
 ```markdown
-<aistorm type="OpenAI" model="gpt-4" />
+<aistorm type="OpenAI" model="gpt-4o" />
+
+## Creative Thinker
 
 You are a creative thinking expert who specializes in generating innovative ideas.
 Always think outside the box and challenge conventional wisdom.
@@ -203,24 +218,29 @@ When presented with a problem, explore multiple angles and perspectives.
 Provide ideas that are both creative and practical.
 ```
 
-### Session Premise Format
+### Session Format
 
-The session premise is stored in a markdown file with the session ID as the filename (e.g., `SessionExample.ini.md`). It contains an empty `<aistorm>` tag and the premise content:
-
-```markdown
-<aistorm />
-
-This is an example session premise for a brainstorming session about weekend projects.
-```
-
-### Conversation Log Format
-
-The conversation is stored in a markdown file with the session ID as the filename (e.g., `SessionExample.log.md`) with XML tags as separators:
+The session is stored in a markdown file with the session ID as the filename (e.g., `SessionExample.session.md`) containing the session metadata, premise, agents, and messages:
 
 ```markdown
 <aistorm type="session" created="2025-03-01T15:00:00" description="Brainstorming session for new product ideas" />
 
-# Brainstorming Session: New Product Ideas
+# Simple example brainstorming session
+
+<aistorm type="premise" />
+
+## Session Premise
+
+This is an example session premise for a brainstorming session about weekend projects.
+
+<aistorm type="agent" name="Creative Thinker" service="OpenAI" model="gpt-4o" />
+
+## Creative Thinker
+
+You are a creative thinking expert who specializes in generating innovative ideas.
+Always think outside the box and challenge conventional wisdom.
+When presented with a problem, explore multiple angles and perspectives.
+Provide ideas that are both creative and practical.
 
 <aistorm type="message" from="user" timestamp="2025-03-01T15:01:00" />
 
@@ -232,16 +252,14 @@ Let's brainstorm ideas for a new mobile app that helps people connect with local
 
 ## [Creative Thinker]:
 
-Here are some innovative ideas for a local business connection app:
-
-1. **Neighborhood Pulse**: An app that uses AR to display real-time information about businesses as you walk past them.
-
-<aistorm type="message" from="Practical Analyst" timestamp="2025-03-01T15:02:00" />
-
-## [Practical Analyst]:
-
-Building on those creative ideas, here are some practical considerations...
+Here are some innovative ideas for a local business connection app...
 ```
+
+The session file contains:
+1. Session metadata (type, creation date, description)
+2. The session premise (context for the brainstorming)
+3. Agent definitions that participate in the session
+4. Conversation messages with timestamps and sender information
 
 ### Storage Implementation
 
@@ -249,12 +267,12 @@ Building on those creative ideas, here are some practical considerations...
 
 The `IStorageProvider` interface defines the contract for storage providers:
 
-- `LoadAgent` - Loads an agent from storage by ID
-- `SaveAgent` - Saves an agent to storage
-- `LoadSession` - Loads a session from storage by ID
-- `SaveSession` - Saves a session to storage
-- `LoadSessionPremise` - Loads a session premise from storage by ID
-- `SaveSessionPremise` - Saves a session premise to storage
+- `LoadAgent` - Loads an agent template from storage by ID
+- `SaveAgent` - Saves an agent template to storage
+- `LoadSession` - Loads a session (including embedded agents and premise) from storage by ID
+- `SaveSession` - Saves a session (including embedded agents and premise) to storage
+- `LoadSessionPremise` - Loads a session premise from storage by ID (for backward compatibility)
+- `SaveSessionPremise` - Saves a session premise to storage (for backward compatibility)
 
 #### Markdown Storage Provider
 
@@ -262,8 +280,8 @@ The `MarkdownStorageProvider` implements the `IStorageProvider` interface for ma
 
 - Parses agent markdown files to extract metadata and system prompts
 - Generates markdown files for agents with proper formatting
-- Parses session markdown files to extract metadata and messages
-- Generates markdown files for sessions with proper formatting
+- Parses session markdown files to extract embedded agents, premise, and messages
+- Generates markdown files for sessions with proper formatting (including agents and premise)
 - Handles file system operations for reading and writing files
 
 #### Markdown Serialization
@@ -279,19 +297,16 @@ The storage implementation uses several classes to handle markdown serialization
 
 The storage implementation is tested with xUnit tests:
 
-- Tests for loading agents from markdown files
-- Tests for saving agents to markdown files
-- Tests for loading sessions from markdown files
-- Tests for saving sessions to markdown files
-- Tests for loading session premises from markdown files
-- Tests for saving session premises to markdown files
-- Tests for markdown serialization and deserialization
-- Round-trip tests to ensure data integrity for agents, sessions, and session premises
+- Tests for loading agent templates from markdown files
+- Tests for saving agent templates to markdown files
+- Tests for loading sessions with embedded agents and premise
+- Tests for saving sessions with embedded agents and premise
+- Tests for round-trip serialization/deserialization of sessions with embedded agents
 
 An integration test is included that demonstrates a complete session workflow:
 
-- Loading agents and premise from markdown files
-- Initializing a SessionRunner with multiple agents via SessionRunnerFactory
+- Loading agent templates to create a new self-contained session
+- Initializing a SessionRunner using the session's embedded agents
 - Simulating a conversation with agent responses
 - Handling user intervention mid-conversation
 - Displaying the full conversation with clear formatting
@@ -338,10 +353,10 @@ An integration test is included that demonstrates a complete session workflow:
 - **Namespaces**: `AIStorm.{Module}` (e.g., `AIStorm.Core`, `AIStorm.Server`)
 - **Implemented Classes**:
   - `Agent` - Represents an AI agent with name, service type, model, and system prompt
-  - `Session` - Represents a brainstorming session with metadata and a list of messages
+  - `Session` - Represents a brainstorming session with metadata, embedded agents, premise, and messages
   - `SessionPremise` - Represents the initial premise or context for a brainstorming session
   - `StormMessage` - Represents a message in a conversation with agent name, timestamp, and content
-  - `SessionRunner` - Manages conversation flow by relaying messages between agents in sequential rotation. Can initialize from a new premise or continue from an existing session
+  - `SessionRunner` - Manages conversation flow by relaying messages between agents in sequential rotation. Uses embedded agents in the session
   - `SessionRunnerFactory` - Creates SessionRunner instances for new sessions or for continuing existing sessions
   - `MarkdownStorageProvider` - Handles reading and writing markdown files
   - `MarkdownSerializer` - Handles serialization and deserialization of markdown documents

@@ -2,22 +2,19 @@
 
 ## Implementation Checklist
 
-- [ ] Update `Session` class to include agents and premise
-- [ ] Create new folder structure (`AgentTemplates` and `Sessions` directories)
-- [ ] Update `MarkdownSerializer` to handle embedded agents and premise
-- [ ] Update `MarkdownStorageProvider` to save/load embedded agents and premise
-- [ ] Create example session file with the new format
-- [ ] Update `IStorageProvider` interface if needed
-- [ ] Update `SessionRunner` to use embedded agents
-- [ ] Update `SessionRunnerFactory` to create sessions with templates
+- [x] Update `Session` class to include agents and premise
+- [x] Create new folder structure (`AgentTemplates` and `Sessions` directories)
+- [x] Update `MarkdownStorageProvider` to save/load embedded agents and premise
+- [x] Create example session file with the new format
+- [x] Update `IStorageProvider` interface (simplified `CreateFromExistingSession`)
+- [x] Update `SessionRunner` to use embedded agents
+- [x] Update `SessionRunnerFactory` to create sessions with templates
+- [x] Update unit tests for storage provider
+- [x] Update unit tests for session runner
+- [x] Ensure specs.md is up to date with all the changes
 - [ ] Update UI components to display embedded agents
 - [ ] Add UI for selecting agent templates when creating sessions
-- [ ] Update unit tests for models
-- [ ] Update unit tests for serialization
-- [ ] Update unit tests for storage provider
-- [ ] Update unit tests for session runner
 - [ ] Update integration tests
-- [ ] Ensure specs.md is up to date with all the changes
 
 ## Current Implementation
 

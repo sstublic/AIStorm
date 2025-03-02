@@ -159,7 +159,32 @@ public MarkdownStorageProvider(
             sessionId = sessionId.Substring(0, sessionId.Length - 4);
         }
         
-        var session = new Session(sessionId, created, description);
+        // Load premise
+        var premiseSegment = serializer.FindSegment(segments, "premise");
+        if (premiseSegment == null)
+        {
+            throw new FormatException("Invalid session markdown format. Missing premise tag.");
+        }
+        
+        var premise = new SessionPremise(sessionId, premiseSegment.Content);
+        
+        var session = new Session(sessionId, created, description, premise);
+        
+        // Load agents
+        var agentSegments = serializer.FindSegments(segments, "agent");
+        foreach (var agentSegment in agentSegments)
+        {
+            if (!agentSegment.Properties.TryGetValue("name", out var agentName) ||
+                !agentSegment.Properties.TryGetValue("service", out var service) ||
+                !agentSegment.Properties.TryGetValue("model", out var model))
+            {
+                logger.LogWarning("Invalid agent segment found in session {SessionId}. Skipping.", sessionId);
+                continue; // Skip invalid agents
+            }
+            
+            var agent = new Agent(agentName, service, model, agentSegment.Content);
+            session.Agents.Add(agent);
+        }
         
         // Find message segments
         var messageSegments = serializer.FindSegments(segments, "message");
@@ -223,6 +248,26 @@ public MarkdownStorageProvider(
         
         var sessionContent = $"# {session.Description}";
         segments.Add(new MarkdownSegment(sessionProperties, sessionContent));
+        
+        // Add premise segment
+        if (session.Premise != null)
+        {
+            var premiseProperties = new OrderedProperties();
+            premiseProperties.Add("type", "premise");
+            segments.Add(new MarkdownSegment(premiseProperties, session.Premise.Content));
+        }
+        
+        // Add agent segments
+        foreach (var agent in session.Agents)
+        {
+            var agentProperties = new OrderedProperties();
+            agentProperties.Add("type", "agent");
+            agentProperties.Add("name", agent.Name);
+            agentProperties.Add("service", agent.AIServiceType);
+            agentProperties.Add("model", agent.AIModel);
+            
+            segments.Add(new MarkdownSegment(agentProperties, agent.SystemPrompt));
+        }
         
         // Add message segments
         foreach (var message in session.Messages)

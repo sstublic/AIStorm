@@ -292,7 +292,7 @@ public class SessionRunnerTests
     public void Constructor_WithExistingSession_DeterminesCorrectNextAgent()
     {
         // Arrange
-        var existingSession = new Session("test-session", DateTime.UtcNow, "Test Session");
+        var existingSession = new Session("test-session", DateTime.UtcNow, "Test Session", premise);
         
         // Add messages in sequence: Human → Agent1 → Agent2
         existingSession.Messages.Add(new StormMessage("Human", DateTime.UtcNow.AddMinutes(-30), "[Human]: Hello agents"));
@@ -315,7 +315,7 @@ public class SessionRunnerTests
     public void Constructor_WithExistingSessionAndUnknownAgent_StartsWithFirstAgent()
     {
         // Arrange
-        var existingSession = new Session("test-session", DateTime.UtcNow, "Test Session");
+        var existingSession = new Session("test-session", DateTime.UtcNow, "Test Session", premise);
         
         // Add message from an unknown agent
         existingSession.Messages.Add(new StormMessage("Human", DateTime.UtcNow.AddMinutes(-30), "[Human]: Hello agents"));
@@ -333,7 +333,7 @@ public class SessionRunnerTests
     public void Constructor_WithEmptyExistingSession_StartsWithFirstAgent()
     {
         // Arrange
-        var emptySession = new Session("test-session", DateTime.UtcNow, "Empty Test Session");
+        var emptySession = new Session("test-session", DateTime.UtcNow, "Empty Test Session", premise);
         
         // Act
         var runner = new SessionRunner(agents, premise, aiProviderMock.Object, loggerMock.Object, emptySession);

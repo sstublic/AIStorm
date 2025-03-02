@@ -24,10 +24,10 @@ public class SessionRunnerFactory : ISessionRunnerFactory
         return new SessionRunner(agents, premise, aiProvider, logger);
     }
     
-    public SessionRunner CreateFromExistingSession(string sessionId, List<Agent> agents, SessionPremise premise)
+    public SessionRunner CreateFromExistingSession(string sessionId)
     {
         var logger = loggerFactory.CreateLogger<SessionRunner>();
         var existingSession = storageProvider.LoadSession(sessionId);
-        return new SessionRunner(agents, premise, aiProvider, logger, existingSession);
+        return new SessionRunner(existingSession.Agents, existingSession.Premise, aiProvider, logger, existingSession);
     }
 }

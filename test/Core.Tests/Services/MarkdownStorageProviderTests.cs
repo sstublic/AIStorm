@@ -1,8 +1,10 @@
 using AIStorm.Core.Models;
 using AIStorm.Core.Services;
 using AIStorm.Core.Services.Options;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.IO;
+using Moq;
 
 namespace Core.Tests.Services;
 
@@ -23,7 +25,8 @@ public class MarkdownStorageProviderTests
         }
         
         var options = Options.Create(new MarkdownStorageOptions { BasePath = testBasePath });
-        storageProvider = new MarkdownStorageProvider(options, new MarkdownSerializer());
+        var loggerMock = new Mock<ILogger<MarkdownStorageProvider>>();
+        storageProvider = new MarkdownStorageProvider(options, new MarkdownSerializer(), loggerMock.Object);
     }
 
     [Fact]
@@ -31,7 +34,7 @@ public class MarkdownStorageProviderTests
     {
         // Arrange
         var agentName = "Creative Thinker";
-        var agentPath = Path.Combine("Agents", $"{agentName}.md");
+        var agentPath = Path.Combine("AgentTemplates", $"{agentName}.md");
 
         // Act
         var agent = storageProvider.LoadAgent(agentPath);
@@ -49,7 +52,7 @@ public class MarkdownStorageProviderTests
     {
         // Arrange
         var agentName = "TestSavedAgent";
-        var agentPath = Path.Combine("Agents", $"{agentName}.md");
+        var agentPath = Path.Combine("AgentTemplates", $"{agentName}.md");
         var fullPath = Path.Combine(testBasePath, agentPath);
         
         // Clean up any existing test file
@@ -86,7 +89,7 @@ public class MarkdownStorageProviderTests
     {
         // Arrange
         var agentName = "TestRoundTripAgent";
-        var agentPath = Path.Combine("Agents", $"{agentName}.md");
+        var agentPath = Path.Combine("AgentTemplates", $"{agentName}.md");
         var fullPath = Path.Combine(testBasePath, agentPath);
         
         // Clean up any existing test file
