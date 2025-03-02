@@ -54,13 +54,17 @@ public class MarkdownStorageProvider : IStorageProvider
     private string ReadFile(string path)
     {
         if (!File.Exists(path))
-            throw new FileNotFoundException($"File not found", path);
+            throw new FileNotFoundException($"File not found: {Path.GetFullPath(path)}", path);
         return File.ReadAllText(path);
     }
 
     private void WriteFile(string path, string content)
     {
-        Directory.CreateDirectory(Path.GetDirectoryName(path));
+        string? directoryName = Path.GetDirectoryName(path);
+        if (!string.IsNullOrEmpty(directoryName))
+        {
+            Directory.CreateDirectory(directoryName);
+        }
         File.WriteAllText(path, content);
     }
 

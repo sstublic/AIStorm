@@ -33,8 +33,8 @@ public class SessionIntegrationTests
         {
             // Load agents from test files
             logger.LogInformation("Loading agents from test files");
-            var creativeAgent = storageProvider.LoadAgent("SessionExample/Agents/Creative Thinker.md");
-            var criticalAgent = storageProvider.LoadAgent("SessionExample/Agents/Critical Analyst.md");
+            var creativeAgent = storageProvider.LoadAgent("Creative Thinker");
+            var criticalAgent = storageProvider.LoadAgent("Critical Analyst");
             
             logger.LogInformation("Loaded agent: {AgentName} ({ServiceType}, {ModelName})", 
                 creativeAgent.Name, creativeAgent.AIServiceType, creativeAgent.AIModel);
@@ -44,6 +44,8 @@ public class SessionIntegrationTests
             // Load session with premise
             logger.LogInformation("Loading session with premise");
             var session = storageProvider.LoadSession("SessionExample");
+            
+            logger.LogInformation("Session loaded successfully with ID: {SessionId}", session.Id);
             var premise = session.Premise;
             logger.LogInformation("Loaded premise: {Content}", premise.Content);
             
