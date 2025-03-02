@@ -30,9 +30,19 @@ public class SessionRunner
         if (existingSession != null)
         {
             this.session = existingSession;
+            
+            // If the session doesn't have any agents, add the provided agents
+            if (existingSession.Agents.Count == 0)
+            {
+                // Copy agents to session if it doesn't have any
+                foreach (var agent in agents)
+                {
+                    this.session.Agents.Add(agent);
+                }
+            }
+            
             // Determine which agent should be next in the rotation
-            List<Agent> agentsToUse = existingSession.Agents.Count > 0 ? existingSession.Agents : agents;
-            this.currentAgentIndex = GetNextAgentIndexFromHistory(session.Messages, agentsToUse);
+            this.currentAgentIndex = GetNextAgentIndexFromHistory(session.Messages, session.Agents);
             logger.LogInformation("Initialized SessionRunner with existing session: {SessionId}", session.Id);
         }
         else

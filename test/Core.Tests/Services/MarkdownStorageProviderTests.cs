@@ -15,9 +15,9 @@ public class MarkdownStorageProviderTests
 
     public MarkdownStorageProviderTests()
     {
-        // Use the TestData/SessionExample directory for test data
+        // Use the TestData directory for test data
         // The files are copied to the output directory during build
-        testBasePath = Path.Combine(Directory.GetCurrentDirectory(), "TestData", "SessionExample");
+        testBasePath = Path.Combine(Directory.GetCurrentDirectory(), "TestData");
         
         if (!Directory.Exists(testBasePath))
         {
@@ -34,7 +34,7 @@ public class MarkdownStorageProviderTests
     {
         // Arrange
         var agentName = "Creative Thinker";
-        var agentPath = Path.Combine("AgentTemplates", $"{agentName}.md");
+        var agentPath = $"{agentName}.md";
 
         // Act
         var agent = storageProvider.LoadAgent(agentPath);
@@ -52,8 +52,8 @@ public class MarkdownStorageProviderTests
     {
         // Arrange
         var agentName = "TestSavedAgent";
-        var agentPath = Path.Combine("AgentTemplates", $"{agentName}.md");
-        var fullPath = Path.Combine(testBasePath, agentPath);
+        var agentPath = $"{agentName}.md";
+        var fullPath = Path.Combine(testBasePath, "AgentTemplates", agentPath);
         
         // Clean up any existing test file
         if (File.Exists(fullPath))
@@ -89,8 +89,8 @@ public class MarkdownStorageProviderTests
     {
         // Arrange
         var agentName = "TestRoundTripAgent";
-        var agentPath = Path.Combine("AgentTemplates", $"{agentName}.md");
-        var fullPath = Path.Combine(testBasePath, agentPath);
+        var agentPath = $"{agentName}.md";
+        var fullPath = Path.Combine(testBasePath, "AgentTemplates", agentPath);
         
         // Clean up any existing test file
         if (File.Exists(fullPath))

@@ -1,7 +1,9 @@
 using AIStorm.Core.Models;
 using AIStorm.Core.Services;
 using AIStorm.Core.Services.Options;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Moq;
 using System.IO;
 
 namespace Core.Tests.Services;
@@ -13,7 +15,7 @@ public class MarkdownStorageProviderPremiseTests
 
     public MarkdownStorageProviderPremiseTests()
     {
-        testBasePath = Path.Combine(Directory.GetCurrentDirectory(), "TestData", "SessionExample");
+        testBasePath = Path.Combine(Directory.GetCurrentDirectory(), "TestData");
         
         if (!Directory.Exists(testBasePath))
         {
@@ -21,22 +23,23 @@ public class MarkdownStorageProviderPremiseTests
         }
         
         var options = Options.Create(new MarkdownStorageOptions { BasePath = testBasePath });
-        storageProvider = new MarkdownStorageProvider(options, new MarkdownSerializer());
+        var loggerMock = new Mock<ILogger<MarkdownStorageProvider>>();
+        storageProvider = new MarkdownStorageProvider(options, new MarkdownSerializer(), loggerMock.Object);
     }
 
     [Fact]
     public void LoadSessionPremise_ValidFile_ReturnsSessionPremise()
     {
-        // Arrange
-        var premisePath = "SessionExample.ini.md";
+        // Arrange - we'll load from the session file instead
+        var sessionPath = "SessionExample.session.md";
 
         // Act
-        var premise = storageProvider.LoadSessionPremise(premisePath);
+        var premise = storageProvider.LoadSessionPremise(sessionPath);
 
         // Assert
         Assert.NotNull(premise);
         Assert.Equal("SessionExample", premise.Id);
-        Assert.Contains("example session premise", premise.Content);
+        Assert.Contains("brainstorming session about weekend projects", premise.Content);
     }
 
     [Fact]
@@ -44,8 +47,8 @@ public class MarkdownStorageProviderPremiseTests
     {
         // Arrange
         var sessionId = "TestPremise";
-        var premisePath = sessionId + ".ini.md";
-        var fullPath = Path.Combine(testBasePath, premisePath);
+        var sessionPath = sessionId + ".session.md";
+        var fullPath = Path.Combine(testBasePath, "Sessions", sessionPath);
         
         // Clean up any existing test file
         if (File.Exists(fullPath))
@@ -61,12 +64,13 @@ public class MarkdownStorageProviderPremiseTests
         try
         {
             // Act
-            storageProvider.SaveSessionPremise(premisePath, premise);
+            storageProvider.SaveSessionPremise(sessionPath, premise);
 
             // Assert
             Assert.True(File.Exists(fullPath));
             var content = File.ReadAllText(fullPath);
-            Assert.Contains("<aistorm />", content);
+            // Since it creates a self-contained session now
+            Assert.Contains("<aistorm type=\"premise\" />", content);
             Assert.Contains("This is a test session premise.", content);
         }
         finally
@@ -84,8 +88,8 @@ public class MarkdownStorageProviderPremiseTests
     {
         // Arrange
         var sessionId = "TestRoundTripPremise";
-        var premisePath = sessionId + ".ini.md";
-        var fullPath = Path.Combine(testBasePath, premisePath);
+        var sessionPath = sessionId + ".session.md";
+        var fullPath = Path.Combine(testBasePath, "Sessions", sessionPath);
         
         // Clean up any existing test file
         if (File.Exists(fullPath))
@@ -101,8 +105,8 @@ public class MarkdownStorageProviderPremiseTests
         try
         {
             // Act
-            storageProvider.SaveSessionPremise(premisePath, originalPremise);
-            var loadedPremise = storageProvider.LoadSessionPremise(premisePath);
+            storageProvider.SaveSessionPremise(sessionPath, originalPremise);
+            var loadedPremise = storageProvider.LoadSessionPremise(sessionPath);
 
             // Assert
             Assert.NotNull(loadedPremise);

@@ -17,7 +17,7 @@ public class MarkdownStorageProviderSessionTests
 
     public MarkdownStorageProviderSessionTests()
     {
-        testBasePath = Path.Combine(Directory.GetCurrentDirectory(), "TestData", "SessionExample");
+        testBasePath = Path.Combine(Directory.GetCurrentDirectory(), "TestData");
         
         if (!Directory.Exists(testBasePath))
         {
@@ -33,7 +33,7 @@ public class MarkdownStorageProviderSessionTests
     public void LoadSession_ValidFile_ReturnsSessionWithAgentsAndPremise()
     {
         // Arrange
-        var sessionPath = "Sessions/SessionExample.session.md";
+        var sessionPath = "SessionExample.session.md";
 
         // Act
         var session = storageProvider.LoadSession(sessionPath);
@@ -77,8 +77,8 @@ public class MarkdownStorageProviderSessionTests
     {
         // Arrange
         var sessionId = "TestSession";
-        var sessionPath = "Sessions/" + sessionId + ".session.md";
-        var fullPath = Path.Combine(testBasePath, sessionPath);
+        var sessionPath = sessionId + ".session.md";
+        var fullPath = Path.Combine(testBasePath, "Sessions", sessionPath);
         
         // Clean up any existing test file
         if (File.Exists(fullPath))
@@ -163,8 +163,8 @@ public class MarkdownStorageProviderSessionTests
     {
         // Arrange
         var sessionId = "TestRoundTripSession";
-        var sessionPath = "Sessions/" + sessionId + ".session.md";
-        var fullPath = Path.Combine(testBasePath, sessionPath);
+        var sessionPath = sessionId + ".session.md";
+        var fullPath = Path.Combine(testBasePath, "Sessions", sessionPath);
         
         // Clean up any existing test file
         if (File.Exists(fullPath))

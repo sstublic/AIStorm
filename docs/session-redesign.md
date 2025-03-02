@@ -11,6 +11,9 @@
 - [x] Update `SessionRunnerFactory` to create sessions with templates
 - [x] Update unit tests for storage provider
 - [x] Update unit tests for session runner
+- [x] Fix bugs in SessionRunner with embedded agents (index out of range)
+- [x] Clean up old file structure and unnecessary legacy files
+- [x] Add backward compatibility for loading legacy files
 - [x] Ensure specs.md is up to date with all the changes
 - [ ] Update UI components to display embedded agents
 - [ ] Add UI for selecting agent templates when creating sessions

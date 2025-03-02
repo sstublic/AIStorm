@@ -120,6 +120,13 @@ Previous file structure:
 - Session premise files used the `.ini.md` extension and contained the initial premise or context
 - Agent definitions were stored in an `Agents` subdirectory within each session directory
 
+Current file structure:
+- Agent templates are stored as flat files in the `AgentTemplates` directory
+- Self-contained session files are stored in the `Sessions` directory with `.session.md` extension
+- Each session file contains embedded agents and premise, making it completely self-contained
+- No more nested directories for individual sessions
+- The storage provider automatically creates the directory structure at runtime
+
 ## AI Agent System
 
 ### Agent Configuration
@@ -283,6 +290,9 @@ The `MarkdownStorageProvider` implements the `IStorageProvider` interface for ma
 - Parses session markdown files to extract embedded agents, premise, and messages
 - Generates markdown files for sessions with proper formatting (including agents and premise)
 - Handles file system operations for reading and writing files
+- Creates the necessary directory structure (`AgentTemplates` and `Sessions`) at initialization
+- Provides backward compatibility for loading legacy file formats
+- `LoadSessionPremise` and `SaveSessionPremise` are now implemented to work with the self-contained session format while maintaining backward compatibility
 
 #### Markdown Serialization
 
@@ -356,7 +366,7 @@ An integration test is included that demonstrates a complete session workflow:
   - `Session` - Represents a brainstorming session with metadata, embedded agents, premise, and messages
   - `SessionPremise` - Represents the initial premise or context for a brainstorming session
   - `StormMessage` - Represents a message in a conversation with agent name, timestamp, and content
-  - `SessionRunner` - Manages conversation flow by relaying messages between agents in sequential rotation. Uses embedded agents in the session
+  - `SessionRunner` - Manages conversation flow by relaying messages between agents in sequential rotation. Uses embedded agents in the session, with automatic agent copying from templates if needed
   - `SessionRunnerFactory` - Creates SessionRunner instances for new sessions or for continuing existing sessions
   - `MarkdownStorageProvider` - Handles reading and writing markdown files
   - `MarkdownSerializer` - Handles serialization and deserialization of markdown documents

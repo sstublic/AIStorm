@@ -12,36 +12,51 @@ using System.Text;
 
 public class MarkdownStorageProvider : IStorageProvider
 {
-private readonly string basePath;
-private readonly MarkdownSerializer serializer;
-private readonly ILogger<MarkdownStorageProvider> logger;
+    private readonly string basePath;
+    private readonly string agentTemplatesPath;
+    private readonly string sessionsPath;
+    private readonly MarkdownSerializer serializer;
+    private readonly ILogger<MarkdownStorageProvider> logger;
 
-public MarkdownStorageProvider(
-    IOptions<MarkdownStorageOptions> options, 
-    MarkdownSerializer serializer,
-    ILogger<MarkdownStorageProvider> logger)
-{
-    var storageOptions = options.Value;
-    
-    // Validate options
-    if (string.IsNullOrEmpty(storageOptions.BasePath))
-        throw new ArgumentException("Base path is required", nameof(options));
+    public MarkdownStorageProvider(
+        IOptions<MarkdownStorageOptions> options, 
+        MarkdownSerializer serializer,
+        ILogger<MarkdownStorageProvider> logger)
+    {
+        var storageOptions = options.Value;
         
-    this.basePath = storageOptions.BasePath;
-    this.serializer = serializer;
-    this.logger = logger;
-    
-    logger.LogInformation("MarkdownStorageProvider initialized with base path: {BasePath}", 
-        Path.GetFullPath(this.basePath));
-}
+        // Validate options
+        if (string.IsNullOrEmpty(storageOptions.BasePath))
+            throw new ArgumentException("Base path is required", nameof(options));
+            
+        this.basePath = storageOptions.BasePath;
+        this.agentTemplatesPath = Path.Combine(this.basePath, "AgentTemplates");
+        this.sessionsPath = Path.Combine(this.basePath, "Sessions");
+        this.serializer = serializer;
+        this.logger = logger;
+        
+        // Ensure directories exist
+        Directory.CreateDirectory(this.agentTemplatesPath);
+        Directory.CreateDirectory(this.sessionsPath);
+        
+        logger.LogInformation("MarkdownStorageProvider initialized with base path: {BasePath}", 
+            Path.GetFullPath(this.basePath));
+    }
 
     public Agent LoadAgent(string id)
     {
-        string fullPath = Path.Combine(basePath, id);
+        // Ensure the id has the .md extension
+        string agentPath = id;
+        if (!agentPath.EndsWith(".md"))
+        {
+            agentPath = agentPath + ".md";
+        }
+        
+        string fullPath = Path.Combine(agentTemplatesPath, agentPath);
         
         if (!File.Exists(fullPath))
         {
-            throw new FileNotFoundException($"Agent file not found: {id}", fullPath);
+            throw new FileNotFoundException($"Agent template file not found: {id}", fullPath);
         }
 
         string content = File.ReadAllText(fullPath);
@@ -73,13 +88,17 @@ public MarkdownStorageProvider(
 
     public void SaveAgent(string id, Agent agent)
     {
-        var fullPath = Path.Combine(basePath, id);
-        var directoryPath = Path.GetDirectoryName(fullPath);
-        
-        if (directoryPath != null && !Directory.Exists(directoryPath))
+        // Ensure the id has the .md extension
+        string agentPath = id;
+        if (!agentPath.EndsWith(".md"))
         {
-            Directory.CreateDirectory(directoryPath);
+            agentPath = agentPath + ".md";
         }
+        
+        var fullPath = Path.Combine(agentTemplatesPath, agentPath);
+        
+        // Create directory if needed
+        Directory.CreateDirectory(agentTemplatesPath);
 
         var properties = new OrderedProperties();
         properties.Add("type", agent.AIServiceType);
@@ -95,45 +114,42 @@ public MarkdownStorageProvider(
     {
         logger.LogInformation("LoadSession called with ID: '{SessionId}'", id);
         
-        // Ensure the id has the .log.md extension
+        // Ensure the id has the .session.md extension
         string sessionPath = id;
-        if (!sessionPath.EndsWith(".log.md"))
+        if (!sessionPath.EndsWith(".session.md"))
         {
-            // If id already has .md extension, replace it with .log.md
+            // If id already has .md extension, replace it with .session.md
             if (sessionPath.EndsWith(".md"))
             {
-                sessionPath = sessionPath.Substring(0, sessionPath.Length - 3) + ".log.md";
+                sessionPath = sessionPath.Substring(0, sessionPath.Length - 3) + ".session.md";
             }
             else
             {
-                // Otherwise, append .log.md
-                sessionPath = sessionPath + ".log.md";
+                // Otherwise, append .session.md
+                sessionPath = sessionPath + ".session.md";
             }
         }
         
-        string relativePath = Path.Combine(basePath, sessionPath);
-        string absolutePath = Path.GetFullPath(relativePath);
+        string fullPath = Path.Combine(sessionsPath, sessionPath);
         
-        logger.LogInformation("Attempting to load session from paths: Relative: '{RelativePath}', Absolute: '{AbsolutePath}'", 
-            relativePath, absolutePath);
+        logger.LogInformation("Attempting to load session from path: '{FullPath}'", fullPath);
         
-        // Check for directory existence and list nearby files for debugging
-        string directory = Path.GetDirectoryName(absolutePath);
-        if (Directory.Exists(directory))
+        if (!File.Exists(fullPath))
         {
-            logger.LogDebug("Directory exists: '{Directory}'", directory);
-            var files = Directory.GetFiles(directory);
-            logger.LogDebug("Files in directory: {Files}", string.Join(", ", files));
-        }
-        
-        if (!File.Exists(absolutePath))
-        {
+            // For backward compatibility, try to find the file in the old format
+            string oldPath = Path.Combine(basePath, id.EndsWith(".log.md") ? id : id + ".log.md");
+            if (File.Exists(oldPath))
+            {
+                logger.LogWarning("Found session in old format at '{OldPath}', migrating to new format", oldPath);
+                // TODO: Consider migrating old file format to new format
+            }
+            
             throw new FileNotFoundException(
-                $"Session file not found. Absolute path: {absolutePath}, ID: {id}", 
-                absolutePath);
+                $"Session file not found. Path: {fullPath}, ID: {id}", 
+                fullPath);
         }
 
-        var fileContent = File.ReadAllText(absolutePath);
+        var fileContent = File.ReadAllText(fullPath);
         var segments = serializer.DeserializeDocument(fileContent);
         
         // Find session metadata segment
@@ -152,11 +168,11 @@ public MarkdownStorageProvider(
         var created = Tools.ParseAsUtc(createdStr);
         
         // Use the filename without extension as the session ID
-        var sessionId = Path.GetFileNameWithoutExtension(absolutePath);
-        // Remove .log suffix if present
-        if (sessionId.EndsWith(".log"))
+        var sessionId = Path.GetFileNameWithoutExtension(fullPath);
+        // Remove .session suffix if present
+        if (sessionId.EndsWith(".session"))
         {
-            sessionId = sessionId.Substring(0, sessionId.Length - 4);
+            sessionId = sessionId.Substring(0, sessionId.Length - 8);
         }
         
         // Load premise
@@ -214,29 +230,26 @@ public MarkdownStorageProvider(
 
     public void SaveSession(string id, Session session)
     {
-        // Ensure the id has the .log.md extension
+        // Ensure the id has the .session.md extension
         string sessionPath = id;
-        if (!sessionPath.EndsWith(".log.md"))
+        if (!sessionPath.EndsWith(".session.md"))
         {
-            // If id already has .md extension, replace it with .log.md
+            // If id already has .md extension, replace it with .session.md
             if (sessionPath.EndsWith(".md"))
             {
-                sessionPath = sessionPath.Substring(0, sessionPath.Length - 3) + ".log.md";
+                sessionPath = sessionPath.Substring(0, sessionPath.Length - 3) + ".session.md";
             }
             else
             {
-                // Otherwise, append .log.md
-                sessionPath = sessionPath + ".log.md";
+                // Otherwise, append .session.md
+                sessionPath = sessionPath + ".session.md";
             }
         }
         
-        var fullPath = Path.Combine(basePath, sessionPath);
-        var directoryPath = Path.GetDirectoryName(fullPath);
+        var fullPath = Path.Combine(sessionsPath, sessionPath);
         
-        if (directoryPath != null && !Directory.Exists(directoryPath))
-        {
-            Directory.CreateDirectory(directoryPath);
-        }
+        // Create directory if needed
+        Directory.CreateDirectory(sessionsPath);
 
         var segments = new List<MarkdownSegment>();
         
@@ -287,6 +300,20 @@ public MarkdownStorageProvider(
     
     public SessionPremise LoadSessionPremise(string id)
     {
+        logger.LogWarning("LoadSessionPremise is deprecated. Use LoadSession instead and access the Premise property.");
+        
+        // Try to load from a full session file first
+        try
+        {
+            var session = LoadSession(id);
+            return session.Premise;
+        }
+        catch (FileNotFoundException)
+        {
+            // Fall back to the legacy format for backward compatibility
+        }
+        
+        // Legacy format handling (for backward compatibility)
         // Ensure the id has the .ini.md extension
         string premisePath = id;
         if (!premisePath.EndsWith(".ini.md"))
@@ -334,37 +361,17 @@ public MarkdownStorageProvider(
 
     public void SaveSessionPremise(string id, SessionPremise premise)
     {
-        // Ensure the id has the .ini.md extension
-        string premisePath = id;
-        if (!premisePath.EndsWith(".ini.md"))
-        {
-            // If id already has .md extension, replace it with .ini.md
-            if (premisePath.EndsWith(".md"))
-            {
-                premisePath = premisePath.Substring(0, premisePath.Length - 3) + ".ini.md";
-            }
-            else
-            {
-                // Otherwise, append .ini.md
-                premisePath = premisePath + ".ini.md";
-            }
-        }
+        logger.LogWarning("SaveSessionPremise is deprecated. Use SaveSession instead with a session that includes the premise.");
         
-        var fullPath = Path.Combine(basePath, premisePath);
-        var directoryPath = Path.GetDirectoryName(fullPath);
+        // Create a minimal session that only includes the premise
+        var session = new Session(
+            id: premise.Id,
+            created: DateTime.UtcNow,
+            description: $"Session based on premise: {premise.Id}",
+            premise: premise
+        );
         
-        if (directoryPath != null && !Directory.Exists(directoryPath))
-        {
-            Directory.CreateDirectory(directoryPath);
-        }
-
-        var segments = new List<MarkdownSegment>();
-        
-        // Add empty aistorm tag segment with the content
-        var properties = new OrderedProperties();
-        segments.Add(new MarkdownSegment(properties, premise.Content));
-        
-        var content = serializer.SerializeDocument(segments);
-        File.WriteAllText(fullPath, content);
+        // Save the session (which includes the premise)
+        SaveSession(id, session);
     }
 }
