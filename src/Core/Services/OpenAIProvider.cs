@@ -55,13 +55,13 @@ public class OpenAIProvider : IAIProvider
         
         var responseJson = await response.Content.ReadFromJsonAsync<JsonDocument>();
         // Parse response and extract the generated text
-        var responseText = responseJson.RootElement
+        var responseText = responseJson?.RootElement
             .GetProperty("choices")[0]
             .GetProperty("message")
             .GetProperty("content")
             .GetString();
             
-        return responseText;
+        return responseText ?? string.Empty;
     }
     
     public async Task<string[]> GetAvailableModelsAsync()
@@ -72,13 +72,16 @@ public class OpenAIProvider : IAIProvider
         var responseJson = await response.Content.ReadFromJsonAsync<JsonDocument>();
         var models = new List<string>();
         
-        var modelsArray = responseJson.RootElement.GetProperty("data");
-        foreach (var model in modelsArray.EnumerateArray())
+        if (responseJson != null)
         {
-            var id = model.GetProperty("id").GetString();
-            if (id.StartsWith("gpt-"))
+            var modelsArray = responseJson.RootElement.GetProperty("data");
+            foreach (var model in modelsArray.EnumerateArray())
             {
-                models.Add(id);
+                var id = model.GetProperty("id").GetString();
+                if (id != null && id.StartsWith("gpt-"))
+                {
+                    models.Add(id);
+                }
             }
         }
         

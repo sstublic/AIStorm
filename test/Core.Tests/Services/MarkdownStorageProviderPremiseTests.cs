@@ -1,5 +1,7 @@
 using AIStorm.Core.Models;
 using AIStorm.Core.Services;
+using AIStorm.Core.Services.Options;
+using Microsoft.Extensions.Options;
 using System.IO;
 
 namespace Core.Tests.Services;
@@ -18,7 +20,8 @@ public class MarkdownStorageProviderPremiseTests
             throw new DirectoryNotFoundException($"Test data directory not found: {testBasePath}");
         }
         
-        storageProvider = new MarkdownStorageProvider(testBasePath);
+        var options = Options.Create(new MarkdownStorageOptions { BasePath = testBasePath });
+        storageProvider = new MarkdownStorageProvider(options, new MarkdownSerializer());
     }
 
     [Fact]

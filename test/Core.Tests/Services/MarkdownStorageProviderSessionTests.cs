@@ -1,5 +1,7 @@
 using AIStorm.Core.Models;
 using AIStorm.Core.Services;
+using AIStorm.Core.Services.Options;
+using Microsoft.Extensions.Options;
 using System;
 using System.IO;
 using System.Linq;
@@ -20,7 +22,8 @@ public class MarkdownStorageProviderSessionTests
             throw new DirectoryNotFoundException($"Test data directory not found: {testBasePath}");
         }
         
-        storageProvider = new MarkdownStorageProvider(testBasePath);
+        var options = Options.Create(new MarkdownStorageOptions { BasePath = testBasePath });
+        storageProvider = new MarkdownStorageProvider(options, new MarkdownSerializer());
     }
 
     [Fact]
@@ -69,13 +72,13 @@ public class MarkdownStorageProviderSessionTests
             "Test Session"
         );
         
-        session.Messages.Add(new Message(
+        session.Messages.Add(new StormMessage(
             "user",
             Tools.ParseAsUtc("2025-03-01T15:01:00"),
             "Test message from user."
         ));
         
-        session.Messages.Add(new Message(
+        session.Messages.Add(new StormMessage(
             "agent",
             Tools.ParseAsUtc("2025-03-01T15:02:00"),
             "Test response from agent."
@@ -135,7 +138,7 @@ public class MarkdownStorageProviderSessionTests
             "Round Trip Test Session"
         );
         
-        originalSession.Messages.Add(new Message(
+        originalSession.Messages.Add(new StormMessage(
             "user",
             Tools.ParseAsUtc("2025-03-01T15:01:00"),
             "Round trip test message."
