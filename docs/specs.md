@@ -35,33 +35,59 @@ AIStorm is a Blazor Server application that allows users to set up brainstorming
 
 ```
 AIStorm/
+├── .clinerules                 # Custom rules for AI assistant
+├── .gitignore                  # Git ignore file
+├── .markdownlint.json          # Markdown linting configuration
+├── AIStorm.sln                 # Solution file
+├── README.md                   # Project readme
 ├── docs/
 │   └── specs.md                # Specifications document
 ├── src/
-│   ├── Server/                 # Blazor Server application (includes UI logic)
-│   └── Core/                   # Core business logic (includes storage logic)
-│       ├── Models/             # Domain models
-│       │   └── Agent.cs        # Agent model
-│       └── Services/           # Services
-│           ├── IStorageProvider.cs      # Storage provider interface
-│           └── MarkdownStorageProvider.cs # Markdown implementation
+│   ├── Core/                   # Core business logic
+│   │   ├── Models/             # Domain models
+│   │   │   ├── Agent.cs        # Agent model
+│   │   │   ├── Session.cs      # Session model
+│   │   │   ├── SessionPremise.cs # Session premise model
+│   │   │   └── StormMessage.cs # Message model
+│   │   └── Services/           # Services
+│   │       ├── IAIProvider.cs  # AI provider interface
+│   │       ├── ISessionRunnerFactory.cs # Session runner factory interface
+│   │       ├── IStorageProvider.cs # Storage provider interface
+│   │       ├── MarkdownSerializer.cs # Markdown serialization
+│   │       ├── MarkdownStorageProvider.cs # Markdown implementation
+│   │       ├── OpenAIProvider.cs # OpenAI implementation
+│   │       ├── PromptTools.cs  # Tools for AI prompts
+│   │       ├── SessionRunner.cs # Session runner implementation
+│   │       ├── SessionRunnerFactory.cs # Session runner factory
+│   │       └── Options/        # Configuration options
+│   │           ├── MarkdownStorageOptions.cs # Storage options
+│   │           └── OpenAIOptions.cs # OpenAI options
+│   └── Server/                 # Blazor Server application
+│       ├── Pages/              # Razor pages
+│       ├── Shared/             # Shared components
+│       └── wwwroot/            # Static files
 └── test/
     ├── Core.Tests/             # Unit tests for Core project
     │   ├── Services/           # Tests for services
-    │   │   └── MarkdownStorageProviderTests.cs # Tests for MarkdownStorageProvider
+    │   │   ├── MarkdownSerializerTests.cs
+    │   │   ├── MarkdownStorageProviderTests.cs
+    │   │   └── SessionRunnerTests.cs
     │   └── TestData/           # Test data for unit tests
     │       └── SessionExample/ # Example session for testing
     │           ├── Agents/     # Agent definitions
     │           │   ├── Creative Thinker.md
     │           │   ├── Critical Analyst.md
     │           │   └── Practical Implementer.md
+    │           ├── SessionExample.ini.md # Session premise
     │           └── SessionExample.log.md # Conversation log
     └── Core.IntegrationTests/  # Integration tests for Core project
+        ├── OpenAITests.cs      # OpenAI integration tests
         ├── Program.cs          # Console app entry point for integration tests
+        ├── SessionIntegrationTests.cs # Session integration tests
         └── appsettings.json    # Configuration for integration tests
 ```
 
-The application will create an `AIStormSessions` directory at runtime to store user sessions.
+The application creates an `AIStormSessions` directory at runtime to store user sessions.
 
 ### File Structure Changes
 
@@ -158,10 +184,11 @@ Benefits of this approach:
 ### Markdown File Structure
 
 - Root folder: `AIStormSessions`
-- One subfolder per session with a user-descriptive name (e.g., "Example")
+- One folder per session with a user-descriptive name (e.g., "Example")
 - Each session folder contains:
-  - An `Agents` subfolder for agent definitions
-  - A markdown file with the session ID as the filename (e.g., `SessionExample.log.md`) for the conversation content
+  - An `Agents` subfolder for agent definitions (e.g., `Creative Thinker.md`)
+  - A session log file with `.log.md` extension (e.g., `SessionExample.log.md`) for conversation content
+  - A session premise file with `.ini.md` extension (e.g., `SessionExample.ini.md`) for initial context
 
 ### Agent Definition Files
 
