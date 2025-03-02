@@ -82,6 +82,8 @@ Recent changes to the file structure:
 - Support for multiple AI service APIs
 - Configurable API settings (endpoints, keys, etc.)
 - Abstraction layer to handle different API implementations
+- Interface-based design with `IAIService` for common operations across providers
+- Implemented OpenAI service as the first provider
 
 #### Multi-Agent Conversation Format
 
@@ -252,12 +254,13 @@ The storage implementation is tested with xUnit tests:
   - `MarkdownSegment` - Represents a segment of a markdown document with properties and content
   - `OrderedProperties` - Maintains deterministic property ordering in markdown tags
   - `Tools` - Provides utility functions for handling dates and times
+  - `OpenAIService` - Implementation of IAIService for OpenAI API
+  - `Message` (AI) - Represents a message in an AI service conversation
 - **Implemented Interfaces**:
   - `IStorageProvider` - Interface for storage operations
+  - `IAIService` - Interface for AI service API clients
 - **Planned Classes**:
   - `BrainstormingSession` - Manages a brainstorming session with multiple agents
-- **Planned Interfaces**:
-  - `IAIServiceClient` - Interface for AI service API clients
 
 ### Documentation
 
