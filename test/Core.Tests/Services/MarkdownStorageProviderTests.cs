@@ -40,7 +40,7 @@ public class MarkdownStorageProviderTests
         Assert.NotNull(agent);
         Assert.Equal(agentName, agent.Name);
         Assert.Equal("OpenAI", agent.AIServiceType);
-        Assert.Equal("gpt-4", agent.AIModel);
+        Assert.Equal("gpt-4o", agent.AIModel);
         Assert.Contains("You are a creative thinking expert", agent.SystemPrompt);
     }
 
@@ -58,7 +58,7 @@ public class MarkdownStorageProviderTests
             File.Delete(fullPath);
         }
 
-        var agent = new Agent(agentName, "OpenAI", "gpt-4", "This is a saved test agent.");
+        var agent = new Agent(agentName, "OpenAI", "gpt-4o", "This is a saved test agent.");
 
         try
         {
@@ -68,7 +68,7 @@ public class MarkdownStorageProviderTests
             // Assert
             Assert.True(File.Exists(fullPath));
             var content = File.ReadAllText(fullPath);
-            Assert.Contains("<aistorm type=\"OpenAI\" model=\"gpt-4\" />", content);
+            Assert.Contains("<aistorm type=\"OpenAI\" model=\"gpt-4o\" />", content);
             Assert.Contains("This is a saved test agent.", content);
         }
         finally
@@ -96,7 +96,7 @@ public class MarkdownStorageProviderTests
         }
         
         // Use literal strings for metadata values
-        var originalAgent = new Agent(agentName, "OpenAI", "gpt-4", "This is a round trip test agent.");
+        var originalAgent = new Agent(agentName, "OpenAI", "gpt-4o", "This is a round trip test agent.");
 
         try
         {

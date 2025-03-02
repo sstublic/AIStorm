@@ -96,8 +96,11 @@ public class OpenAIProvider : IAIProvider
             logger.LogInformation("Received response from OpenAI, length: {Length} characters", 
                 responseText?.Length ?? 0);
                 
+            // Clean up any existing prefixes from the response
+            var cleanedResponse = PromptTools.CleanupResponse(responseText ?? string.Empty);
+                
             // Prepend the agent name to the response
-            string formattedResponse = $"[{agent.Name}]: {responseText ?? string.Empty}";
+            string formattedResponse = $"[{agent.Name}]: {cleanedResponse}";
             
             return formattedResponse;
         }
@@ -175,10 +178,7 @@ public class OpenAIProvider : IAIProvider
     
     private List<OpenAIMessage> FormatConversationForAgent(Agent agent, List<StormMessage> conversationHistory, string userMessage)
     {
-        // Extend the system prompt to include the agent's name and formatting instructions
-        string enhancedSystemPrompt = $"You are {agent.Name}. {agent.SystemPrompt}\n\n" +
-            $"You will be provided with the history of the conversation so far with each participant's message prefixed by the name of the speaker in the form `[<SpeakerName>]: `\n\n" +
-            "When responding, DO NOT add the prefix to your response!\n\n";
+        string enhancedSystemPrompt = PromptTools.CreateExtendedSystemPrompt(agent);
             
         var messages = new List<OpenAIMessage>
         {

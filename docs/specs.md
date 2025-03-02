@@ -112,13 +112,20 @@ Implementation details:
   ```
   You are {AgentName}. {Original System Prompt}
   
-  Your responses will be automatically prefixed with [{AgentName}]: - focus on providing the content without adding this prefix yourself. All messages in the conversation will follow the format [SpeakerName]: message content.
+  You will be provided with the history of the conversation so far with each participant's message prefixed by the name of the speaker in the form `[<SpeakerName>]: `
+  
+  When responding, DO NOT add the prefix to your response!
   ```
 
 - For mapping to API roles, we use this strategy:
   1. The current agent's previous responses are marked as "assistant" role
   2. All other messages (from human user and other agents) are marked as "user" role
   3. Each message already includes a sender prefix (`[SenderName]: `) in its content
+
+- To handle cases where AI providers may incorrectly add agent prefixes to their responses despite the instructions:
+  1. We use the `PromptTools.CleanupResponse` method to remove any `[AgentName]:` prefixes from responses
+  2. The cleanup uses regex to detect and remove any leading agent prefixes in the format `[Something]:` 
+  3. This ensures that responses don't have duplicate prefixes like `[Agent]: [Agent]: Response`
 
 Example API request format when sending a message to "Agent B":
 
@@ -127,7 +134,7 @@ Example API request format when sending a message to "Agent B":
   "messages": [
     { 
       "role": "system", 
-      "content": "You are Agent B, a critical analyst in a multi-agent brainstorming session. Your role is to analyze ideas critically and identify potential issues or improvements.\n\nYour responses will be automatically prefixed with [Agent B]: - focus on providing the content without adding this prefix yourself. All messages in the conversation will follow the format [SpeakerName]: message content."
+      "content": "You are Agent B, a critical analyst in a multi-agent brainstorming session. Your role is to analyze ideas critically and identify potential issues or improvements.\n\nYou will be provided with the history of the conversation so far with each participant's message prefixed by the name of the speaker in the form `[<SpeakerName>]: `\n\nWhen responding, DO NOT add the prefix to your response!"
     },
     { "role": "user", "content": "[Human]: What are some ideas for a weekend project?" },
     { "role": "assistant", "content": "[Agent B]: From an analytical perspective, we should consider time constraints and resource availability..." },
@@ -144,6 +151,7 @@ Benefits of this approach:
 - Conversation history maintains a clear format regardless of message source
 - Agents receive explicit instructions about their identity and expected format
 - The prefixed format in StormMessage objects simplifies display in the UI
+- Cleanup of responses prevents duplicate agent prefixes
 
 ## Data Storage
 
@@ -316,6 +324,7 @@ An integration test is included that demonstrates a complete session workflow:
   - `OpenAIOptions` - Configuration options for OpenAI service
   - `MarkdownStorageOptions` - Configuration options for markdown storage
   - `ServiceCollectionExtensions` - Extension methods for dependency injection
+  - `PromptTools` - Utility class for handling AI prompts and responses, includes methods for cleaning up responses and creating extended system prompts
 - **Implemented Interfaces**:
   - `IStorageProvider` - Interface for storage operations
   - `IAIProvider` - Interface for AI provider API clients

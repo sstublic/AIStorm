@@ -1,4 +1,4 @@
-<aistorm type="OpenAI" model="gpt-4" />
+<aistorm type="OpenAI" model="gpt-4o" />
 
 # Critical Analyst
 
