@@ -256,6 +256,9 @@ The storage implementation is tested with xUnit tests:
   - `Tools` - Provides utility functions for handling dates and times
   - `OpenAIProvider` - Implementation of IAIProvider for OpenAI API
   - `Message` (AI) - Represents a message in an AI conversation with agent name and content
+  - `OpenAIOptions` - Configuration options for OpenAI service
+  - `MarkdownStorageOptions` - Configuration options for markdown storage
+  - `ServiceCollectionExtensions` - Extension methods for dependency injection
 - **Implemented Interfaces**:
   - `IStorageProvider` - Interface for storage operations
   - `IAIProvider` - Interface for AI provider API clients

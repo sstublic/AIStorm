@@ -1,6 +1,8 @@
 namespace AIStorm.Core.Services;
 
 using AIStorm.Core.Models;
+using AIStorm.Core.Services.Options;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,10 +14,16 @@ public class MarkdownStorageProvider : IStorageProvider
     private readonly string basePath;
     private readonly MarkdownSerializer serializer;
 
-    public MarkdownStorageProvider(string basePath)
+    public MarkdownStorageProvider(IOptions<MarkdownStorageOptions> options, MarkdownSerializer serializer)
     {
-        this.basePath = basePath;
-        this.serializer = new MarkdownSerializer();
+        var storageOptions = options.Value;
+        
+        // Validate options
+        if (string.IsNullOrEmpty(storageOptions.BasePath))
+            throw new ArgumentException("Base path is required", nameof(options));
+            
+        this.basePath = storageOptions.BasePath;
+        this.serializer = serializer;
     }
 
     public Agent LoadAgent(string id)

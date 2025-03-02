@@ -2,7 +2,9 @@ namespace AIStorm.Core.Services;
 
 using AIStorm.Core.Models;
 using AIStorm.Core.Models.AI;
+using AIStorm.Core.Services.Options;
 using Message = AIStorm.Core.Models.AI.Message;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -14,19 +16,23 @@ using System.Threading.Tasks;
 public class OpenAIProvider : IAIProvider
 {
     private readonly HttpClient httpClient;
-    private readonly string apiKey;
     
-    public OpenAIProvider(string apiKey, string baseUrl = "https://api.openai.com/v1/")
+    public OpenAIProvider(IOptions<OpenAIOptions> options)
     {
-        this.apiKey = apiKey;
+        var openAIOptions = options.Value;
+        
+        // Validate options
+        if (string.IsNullOrEmpty(openAIOptions.ApiKey))
+            throw new ArgumentException("API key is required", nameof(options));
+            
         this.httpClient = new HttpClient
         {
-            BaseAddress = new Uri(baseUrl)
+            BaseAddress = new Uri(openAIOptions.BaseUrl)
         };
-        this.httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
+        this.httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {openAIOptions.ApiKey}");
     }
     
-    public async Task<string> SendMessageAsync(Agent agent, List<AIStorm.Core.Models.AI.Message> conversationHistory, string userMessage)
+    public async Task<string> SendMessageAsync(Agent agent, List<Message> conversationHistory, string userMessage)
     {
         // Format conversation history according to OpenAI's API expectations
         var messages = FormatConversationForAgent(agent, conversationHistory, userMessage);
