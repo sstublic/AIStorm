@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using AIStorm.Core.Services;
 
 namespace AIStorm.Core.IntegrationTests;
@@ -26,6 +27,12 @@ public class Program
                 config.AddJsonFile("appsettings.json", optional: true)
                       .AddUserSecrets<Program>()
                       .AddEnvironmentVariables();
+            })
+            .ConfigureLogging((context, logging) =>
+            {
+                logging.ClearProviders();
+                logging.AddConfiguration(context.Configuration.GetSection("Logging"));
+                logging.AddConsole();
             })
             .ConfigureServices((context, services) =>
             {

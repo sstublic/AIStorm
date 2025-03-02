@@ -87,6 +87,7 @@ Recent changes to the file structure:
 - Abstraction layer to handle different API implementations
 - Interface-based design with `IAIProvider` for common operations across providers
 - Implemented OpenAI service as the first provider
+- Comprehensive logging of API requests and responses, with Debug level including full request/response content
 - Configuration options for OpenAI integration:
   - API key is required and can be provided via:
     - User secrets (in development): `dotnet user-secrets set "OpenAIOptions:ApiKey" "your-api-key"`
@@ -237,6 +238,21 @@ The storage implementation is tested with xUnit tests:
 - Tests for saving session premises to markdown files
 - Tests for markdown serialization and deserialization
 - Round-trip tests to ensure data integrity for agents, sessions, and session premises
+
+## Logging
+
+- The Core project uses Microsoft.Extensions.Logging for logging support
+- Logging is integrated with dependency injection via `services.AddLogging()`
+- Different log levels are used appropriately:
+  - Debug: Detailed information including full API request/response payloads
+  - Information: General flow information like initialization and operation completion
+  - Warning: Issues that don't prevent operation but may indicate problems
+  - Error: Errors and exceptions that affect functionality
+- The OpenAIProvider logs:
+  - API requests with full content (at Debug level)
+  - API responses with full content (at Debug level)
+  - Error details in case of failures
+  - Basic operation information (at Information level)
 
 ## User Experience
 
