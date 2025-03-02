@@ -2,12 +2,12 @@ namespace AIStorm.Core.Models.AI;
 
 public class Message
 {
-    public string Role { get; set; }
+    public string AgentName { get; set; }
     public string Content { get; set; }
     
-    public Message(string role, string content)
+    public Message(string agentName, string content)
     {
-        Role = role;
+        AgentName = agentName;
         Content = content;
     }
 }

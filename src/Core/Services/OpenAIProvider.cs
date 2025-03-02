@@ -11,12 +11,12 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-public class OpenAIService : IAIService
+public class OpenAIProvider : IAIProvider
 {
     private readonly HttpClient httpClient;
     private readonly string apiKey;
     
-    public OpenAIService(string apiKey, string baseUrl = "https://api.openai.com/v1/")
+    public OpenAIProvider(string apiKey, string baseUrl = "https://api.openai.com/v1/")
     {
         this.apiKey = apiKey;
         this.httpClient = new HttpClient
@@ -26,7 +26,7 @@ public class OpenAIService : IAIService
         this.httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
     }
     
-    public async Task<string> SendMessageAsync(Agent agent, string[] conversationHistory, string userMessage)
+    public async Task<string> SendMessageAsync(Agent agent, List<AIStorm.Core.Models.AI.Message> conversationHistory, string userMessage)
     {
         // Format conversation history according to OpenAI's API expectations
         var messages = FormatConversationForAgent(agent, conversationHistory, userMessage);
@@ -79,30 +79,37 @@ public class OpenAIService : IAIService
         return models.ToArray();
     }
     
-    private List<AIStorm.Core.Models.AI.Message> FormatConversationForAgent(Agent agent, string[] conversationHistory, string userMessage)
+    private List<OpenAIMessage> FormatConversationForAgent(Agent agent, List<AIStorm.Core.Models.AI.Message> conversationHistory, string userMessage)
     {
-        var messages = new List<Message>
+        var messages = new List<OpenAIMessage>
         {
-            new Message("system", agent.SystemPrompt)
+            new OpenAIMessage("system", agent.SystemPrompt)
         };
         
         // Add conversation history
         foreach (var message in conversationHistory)
         {
-            // Parse the message to determine the role
-            if (message.StartsWith("[" + agent.Name + "]:"))
-            {
-                messages.Add(new Message("assistant", message));
-            }
-            else
-            {
-                messages.Add(new Message("user", message));
-            }
+            // Determine role based on the agent name
+            string role = message.AgentName == agent.Name ? "assistant" : "user";
+            messages.Add(new OpenAIMessage(role, $"[{message.AgentName}]: {message.Content}"));
         }
         
         // Add the latest user message
-        messages.Add(new Message("user", userMessage));
+        messages.Add(new OpenAIMessage("user", userMessage));
         
         return messages;
+    }
+    
+    // Private class for OpenAI messages
+    private class OpenAIMessage
+    {
+        public string Role { get; set; }
+        public string Content { get; set; }
+        
+        public OpenAIMessage(string role, string content)
+        {
+            Role = role;
+            Content = content;
+        }
     }
 }
