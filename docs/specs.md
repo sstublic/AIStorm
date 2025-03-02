@@ -87,6 +87,12 @@ Recent changes to the file structure:
 - Abstraction layer to handle different API implementations
 - Interface-based design with `IAIProvider` for common operations across providers
 - Implemented OpenAI service as the first provider
+- Configuration options for OpenAI integration:
+  - API key is required and can be provided via:
+    - User secrets (in development): `dotnet user-secrets set "OpenAIOptions:ApiKey" "your-api-key"`
+    - Environment variable: `OPENAIAPIOPTIONS_APIKEY=your-api-key`
+    - appsettings.json (not recommended for production)
+  - BaseUrl defaults to "https://api.openai.com/v1/" but can be configured for custom endpoints
 
 #### Multi-Agent Conversation Format
 
@@ -258,7 +264,6 @@ The storage implementation is tested with xUnit tests:
   - `OrderedProperties` - Maintains deterministic property ordering in markdown tags
   - `Tools` - Provides utility functions for handling dates and times
   - `OpenAIProvider` - Implementation of IAIProvider for OpenAI API
-  - `Message` (AI) - Represents a message in an AI conversation with agent name and content
   - `OpenAIOptions` - Configuration options for OpenAI service
   - `MarkdownStorageOptions` - Configuration options for markdown storage
   - `ServiceCollectionExtensions` - Extension methods for dependency injection

@@ -1,5 +1,4 @@
 using AIStorm.Core.Models;
-using AIStorm.Core.Models.AI;
 using AIStorm.Core.Services;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -83,7 +82,7 @@ public class OpenAITests
             );
             
             // Create an empty conversation history
-            var conversationHistory = new List<AIStorm.Core.Models.AI.Message>();
+            var conversationHistory = new List<StormMessage>();
             
             // Send a test message
             string userMessage = "What is the capital of France?";
