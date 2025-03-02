@@ -1,0 +1,78 @@
+@using AIStorm.Core.Models
+@inject IJSRuntime JSRuntime
+
+<div class="card conversation-container">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Conversation</h5>
+        <div>
+            <span class="text-muted small">@Messages.Count messages</span>
+        </div>
+    </div>
+    <div class="card-body conversation-messages" @ref="messagesContainer">
+        @foreach (var message in Messages)
+        {
+            <ConversationMessage 
+                Message="@message" 
+                AgentColor="@GetColorForAgent(message.AgentName)" 
+                MessageClass="@(message.AgentName.ToLower() == "user" ? "user-message" : "agent-message")" 
+            />
+        }
+        <div @ref="scrollTarget"></div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public List<StormMessage> Messages { get; set; } = new List<StormMessage>();
+
+    [Parameter]
+    public Dictionary<string, string> AgentColors { get; set; } = new Dictionary<string, string>();
+
+    private ElementReference messagesContainer;
+    private ElementReference scrollTarget;
+    private int previousMessageCount = 0;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender || Messages.Count != previousMessageCount)
+        {
+            previousMessageCount = Messages.Count;
+            await ScrollToBottomAsync();
+        }
+    }
+
+    private async Task ScrollToBottomAsync()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("scrollIntoView", scrollTarget);
+        }
+        catch (Exception)
+        {
+            // Handle errors, e.g., logging
+        }
+    }
+
+    private string GetColorForAgent(string agentName)
+    {
+        return AgentColors.TryGetValue(agentName, out var color) ? color : "#6c757d";
+    }
+}
+
+<style>
+    .conversation-container {
+        height: calc(100vh - 150px);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .conversation-messages {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding: 15px;
+    }
+
+    .user-message {
+        background-color: #e9f5ff;
+    }
+</style>

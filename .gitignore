@@ -396,3 +396,6 @@ Temporary Items
 
 ## Sasa conventions
 *.local.json
+
+## Local development data
+local-data/

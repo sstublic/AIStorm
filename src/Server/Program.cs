@@ -1,13 +1,20 @@
 using AIStorm.Server.Data;
+using AIStorm.Core.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add appsettings.local.json
+builder.Configuration.AddJsonFile("appsettings.local.json", optional: true, reloadOnChange: false);
+
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<WeatherForecastService>();
+
+// Add AIStorm Core services
+builder.Services.AddAIStormCore(builder.Configuration);
 
 var app = builder.Build();
 

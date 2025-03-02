@@ -2,6 +2,7 @@ namespace AIStorm.Core.Services;
 
 using AIStorm.Core.Models;
 using AIStorm.Core.Services.Options;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
@@ -11,20 +12,28 @@ using System.Text;
 
 public class MarkdownStorageProvider : IStorageProvider
 {
-    private readonly string basePath;
-    private readonly MarkdownSerializer serializer;
+private readonly string basePath;
+private readonly MarkdownSerializer serializer;
+private readonly ILogger<MarkdownStorageProvider> logger;
 
-    public MarkdownStorageProvider(IOptions<MarkdownStorageOptions> options, MarkdownSerializer serializer)
-    {
-        var storageOptions = options.Value;
+public MarkdownStorageProvider(
+    IOptions<MarkdownStorageOptions> options, 
+    MarkdownSerializer serializer,
+    ILogger<MarkdownStorageProvider> logger)
+{
+    var storageOptions = options.Value;
+    
+    // Validate options
+    if (string.IsNullOrEmpty(storageOptions.BasePath))
+        throw new ArgumentException("Base path is required", nameof(options));
         
-        // Validate options
-        if (string.IsNullOrEmpty(storageOptions.BasePath))
-            throw new ArgumentException("Base path is required", nameof(options));
-            
-        this.basePath = storageOptions.BasePath;
-        this.serializer = serializer;
-    }
+    this.basePath = storageOptions.BasePath;
+    this.serializer = serializer;
+    this.logger = logger;
+    
+    logger.LogInformation("MarkdownStorageProvider initialized with base path: {BasePath}", 
+        Path.GetFullPath(this.basePath));
+}
 
     public Agent LoadAgent(string id)
     {
@@ -84,6 +93,8 @@ public class MarkdownStorageProvider : IStorageProvider
 
     public Session LoadSession(string id)
     {
+        logger.LogInformation("LoadSession called with ID: '{SessionId}'", id);
+        
         // Ensure the id has the .log.md extension
         string sessionPath = id;
         if (!sessionPath.EndsWith(".log.md"))
@@ -100,14 +111,29 @@ public class MarkdownStorageProvider : IStorageProvider
             }
         }
         
-        string fullPath = Path.Combine(basePath, sessionPath);
+        string relativePath = Path.Combine(basePath, sessionPath);
+        string absolutePath = Path.GetFullPath(relativePath);
         
-        if (!File.Exists(fullPath))
+        logger.LogInformation("Attempting to load session from paths: Relative: '{RelativePath}', Absolute: '{AbsolutePath}'", 
+            relativePath, absolutePath);
+        
+        // Check for directory existence and list nearby files for debugging
+        string directory = Path.GetDirectoryName(absolutePath);
+        if (Directory.Exists(directory))
         {
-            throw new FileNotFoundException($"Session file not found: {sessionPath}", fullPath);
+            logger.LogDebug("Directory exists: '{Directory}'", directory);
+            var files = Directory.GetFiles(directory);
+            logger.LogDebug("Files in directory: {Files}", string.Join(", ", files));
+        }
+        
+        if (!File.Exists(absolutePath))
+        {
+            throw new FileNotFoundException(
+                $"Session file not found. Absolute path: {absolutePath}, ID: {id}", 
+                absolutePath);
         }
 
-        string fileContent = File.ReadAllText(fullPath);
+        var fileContent = File.ReadAllText(absolutePath);
         var segments = serializer.DeserializeDocument(fileContent);
         
         // Find session metadata segment
@@ -126,7 +152,7 @@ public class MarkdownStorageProvider : IStorageProvider
         var created = Tools.ParseAsUtc(createdStr);
         
         // Use the filename without extension as the session ID
-        var sessionId = Path.GetFileNameWithoutExtension(fullPath);
+        var sessionId = Path.GetFileNameWithoutExtension(absolutePath);
         // Remove .log suffix if present
         if (sessionId.EndsWith(".log"))
         {

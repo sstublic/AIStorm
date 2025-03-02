@@ -1,0 +1,44 @@
+@using AIStorm.Core.Models
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Participants</h5>
+    </div>
+    <div class="list-group list-group-flush">
+        @foreach (var agent in Agents)
+        {
+            <div class="list-group-item d-flex align-items-center">
+                <div class="agent-color-indicator" style="background-color: @GetColorForAgent(agent.Name)"></div>
+                <div>
+                    <strong>@agent.Name</strong>
+                    @if (!string.IsNullOrEmpty(agent.AIModel))
+                    {
+                        <div class="small text-muted">@agent.AIServiceType / @agent.AIModel</div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public List<Agent> Agents { get; set; } = new List<Agent>();
+
+    [Parameter]
+    public Dictionary<string, string> AgentColors { get; set; } = new Dictionary<string, string>();
+
+    private string GetColorForAgent(string agentName)
+    {
+        return AgentColors.TryGetValue(agentName, out var color) ? color : "#6c757d";
+    }
+}
+
+<style>
+    .agent-color-indicator {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        margin-right: 10px;
+    }
+</style>

@@ -1,0 +1,95 @@
+@page "/conversation/{*SessionId}"
+@using AIStorm.Core.Models
+@using AIStorm.Core.Services
+@using AIStorm.Server.Shared
+@using Microsoft.Extensions.Logging
+@inject IStorageProvider StorageProvider
+@inject ILogger<Conversation> Logger
+
+<PageTitle>Conversation - @(session?.Description ?? "Loading...")</PageTitle>
+
+<div class="container-fluid mt-3">
+    <div class="row">
+        <div class="col-md-3">
+            <AgentList Agents="@agents" AgentColors="@agentColors" />
+        </div>
+        <div class="col-md-9">
+            <ConversationHistory Messages="@(session?.Messages ?? new List<StormMessage>())" AgentColors="@agentColors" />
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public required string SessionId { get; set; }
+
+    private Session? session;
+    private List<Agent> agents = new();
+    private Dictionary<string, string> agentColors = new();
+
+    private static readonly string[] colorPalette = new[]
+    {
+        "#0d6efd",  // Bootstrap primary
+        "#dc3545",  // Bootstrap danger
+        "#198754",  // Bootstrap success
+        "#ffc107",  // Bootstrap warning
+        "#6610f2",  // Bootstrap indigo
+        "#fd7e14",  // Bootstrap orange
+        "#20c997",  // Bootstrap teal
+        "#d63384",  // Bootstrap pink
+    };
+
+    protected override Task OnInitializedAsync()
+    {
+        try
+        {
+            Logger.LogInformation("Loading conversation with session ID: '{SessionId}'", SessionId);
+            
+            // Load session data
+            // Note: In a production app, we might want to consider using Task.Run to wrap
+            // these synchronous calls to avoid blocking the UI thread
+            session = StorageProvider.LoadSession(SessionId);
+            
+            Logger.LogInformation("Session loaded successfully. Description: '{Description}', Messages: {Count}", 
+                session.Description, session.Messages.Count);
+                
+            // Get unique agent names from messages
+            var uniqueAgentNames = session.Messages
+                .Select(m => m.AgentName)
+                .Distinct()
+                .ToList();
+            
+            // Assign colors to agents
+            for (int i = 0; i < uniqueAgentNames.Count; i++)
+            {
+                agentColors[uniqueAgentNames[i]] = colorPalette[i % colorPalette.Length];
+            }
+            
+            // Load agent details
+            agents = new List<Agent>();
+            foreach (var agentName in uniqueAgentNames)
+            {
+                try
+                {
+                    // Try to load agent details - this might fail if the agent doesn't exist
+                    // This could happen for the "Human" agent or if agent files were deleted
+                    var agent = StorageProvider.LoadAgent(agentName);
+                    agents.Add(agent);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogDebug(ex, "Could not load agent '{AgentName}', using placeholder", agentName);
+                    // Add a placeholder agent if we can't load it
+                    agents.Add(new Agent(agentName, "", "", ""));
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            // Handle errors
+            Logger.LogError(ex, "Error loading session: {ErrorMessage}", ex.Message);
+        }
+        
+        return Task.CompletedTask;
+    }
+}
