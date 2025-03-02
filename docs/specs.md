@@ -253,6 +253,15 @@ The storage implementation is tested with xUnit tests:
 - Tests for markdown serialization and deserialization
 - Round-trip tests to ensure data integrity for agents, sessions, and session premises
 
+An integration test is included that demonstrates a complete session workflow:
+
+- Loading agents and premise from markdown files
+- Initializing a SessionRunner with multiple agents via SessionRunnerFactory
+- Simulating a conversation with agent responses
+- Handling user intervention mid-conversation
+- Displaying the full conversation with clear formatting
+- Detailed logging for debugging purposes
+
 ## Logging
 
 - The Core project uses Microsoft.Extensions.Logging for logging support
@@ -301,6 +310,7 @@ The storage implementation is tested with xUnit tests:
 - **Implemented Interfaces**:
   - `IStorageProvider` - Interface for storage operations
   - `IAIProvider` - Interface for AI provider API clients
+  - `ISessionRunnerFactory` - Factory interface for creating SessionRunner instances
 - **Planned Classes**:
   - `BrainstormingSession` - Manages a brainstorming session with multiple agents
 
