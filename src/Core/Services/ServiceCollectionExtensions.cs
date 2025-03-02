@@ -21,6 +21,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<MarkdownSerializer>();
         services.AddSingleton<IStorageProvider, MarkdownStorageProvider>();
         services.AddSingleton<IAIProvider, OpenAIProvider>();
+        services.AddTransient<SessionRunner>();
         
         // Add logging (already provided by default through DI in most .NET apps)
         services.AddLogging();
