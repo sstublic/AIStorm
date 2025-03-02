@@ -68,7 +68,9 @@ public class SessionRunner
 
     public void AddUserMessage(string content)
     {
-        var message = new StormMessage("Human", DateTime.UtcNow, content);
+        // Add a Human message with the [Human]: prefix already included in the content
+        var formattedContent = $"[Human]: {content}";
+        var message = new StormMessage("Human", DateTime.UtcNow, formattedContent);
         session.Messages.Add(message);
     }
 

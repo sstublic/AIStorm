@@ -96,7 +96,10 @@ public class OpenAIProvider : IAIProvider
             logger.LogInformation("Received response from OpenAI, length: {Length} characters", 
                 responseText?.Length ?? 0);
                 
-            return responseText ?? string.Empty;
+            // Prepend the agent name to the response
+            string formattedResponse = $"[{agent.Name}]: {responseText ?? string.Empty}";
+            
+            return formattedResponse;
         }
         catch (HttpRequestException ex)
         {
@@ -172,9 +175,15 @@ public class OpenAIProvider : IAIProvider
     
     private List<OpenAIMessage> FormatConversationForAgent(Agent agent, List<StormMessage> conversationHistory, string userMessage)
     {
+        // Extend the system prompt to include the agent's name and formatting instructions
+        string enhancedSystemPrompt = $"You are {agent.Name}. {agent.SystemPrompt}\n\n" +
+            $"Your responses will be automatically prefixed with [{agent.Name}]: - " +
+            "focus on providing the content without adding this prefix yourself. " +
+            "All messages in the conversation will follow the format [SpeakerName]: message content.";
+            
         var messages = new List<OpenAIMessage>
         {
-            new OpenAIMessage("system", agent.SystemPrompt)
+            new OpenAIMessage("system", enhancedSystemPrompt)
         };
         
         // Add conversation history
@@ -182,7 +191,8 @@ public class OpenAIProvider : IAIProvider
         {
             // Determine role based on the agent name
             string role = message.AgentName == agent.Name ? "assistant" : "user";
-            messages.Add(new OpenAIMessage(role, $"[{message.AgentName}]: {message.Content}"));
+            // The message content already includes the agent name prefix, so we don't need to add it again
+            messages.Add(new OpenAIMessage(role, message.Content));
         }
         
         // Add the latest user message

@@ -207,6 +207,7 @@ public class SessionRunnerTests
         // Arrange
         var runner = new SessionRunner(agents, premise, aiProviderMock.Object, loggerMock.Object);
         string userContent = "This is a user message";
+        string expectedFormattedContent = $"[Human]: {userContent}";
         
         // Act
         runner.AddUserMessage(userContent);
@@ -215,7 +216,7 @@ public class SessionRunnerTests
         var messages = runner.GetConversationHistory();
         Assert.Single(messages);
         Assert.Equal("Human", messages[0].AgentName);
-        Assert.Equal(userContent, messages[0].Content);
+        Assert.Equal(expectedFormattedContent, messages[0].Content);
         
         // Verify the message was added to the session
         Assert.Single(runner.Session.Messages);

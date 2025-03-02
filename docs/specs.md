@@ -99,12 +99,26 @@ Recent changes to the file structure:
 
 When implementing conversations with multiple AI agents, we need a strategy for representing the conversation context when sending requests to AI APIs. Most AI APIs (like OpenAI) only support basic "user" and "assistant" roles, which doesn't directly map to our multi-agent scenario.
 
-The recommended approach for AIStorm is to use a custom format in the system prompt:
+Our approach for AIStorm uses a standardized message format with agent name prefixes:
 
-1. Use the system prompt to explain the multi-agent conversation format
-2. Mark the current agent's previous responses as "assistant" role
-3. Mark all other messages (from human user and other agents) as "user" role with clear name prefixes
-4. Include explicit instructions for when the agent should respond
+1. All messages in the conversation history include a prefix with the sender's name in brackets: `[SenderName]: `
+2. The OpenAIProvider automatically prepends the agent name to all responses: `[AgentName]: response content`
+3. The SessionRunner formats user messages with a Human prefix: `[Human]: user content`
+4. System prompts are enhanced with instructions about the agent's identity and message format
+
+Implementation details:
+
+- The system prompt now includes the agent's name and instructions about the conversation format:
+  ```
+  You are {AgentName}. {Original System Prompt}
+  
+  Your responses will be automatically prefixed with [{AgentName}]: - focus on providing the content without adding this prefix yourself. All messages in the conversation will follow the format [SpeakerName]: message content.
+  ```
+
+- For mapping to API roles, we use this strategy:
+  1. The current agent's previous responses are marked as "assistant" role
+  2. All other messages (from human user and other agents) are marked as "user" role
+  3. Each message already includes a sender prefix (`[SenderName]: `) in its content
 
 Example API request format when sending a message to "Agent B":
 
@@ -113,23 +127,23 @@ Example API request format when sending a message to "Agent B":
   "messages": [
     { 
       "role": "system", 
-      "content": "You are Agent B, a critical analyst in a multi-agent brainstorming session. Messages will be prefixed with the sender's name in [brackets]. Only respond when asked to provide Agent B's perspective. Your role is to analyze ideas critically and identify potential issues or improvements."
+      "content": "You are Agent B, a critical analyst in a multi-agent brainstorming session. Your role is to analyze ideas critically and identify potential issues or improvements.\n\nYour responses will be automatically prefixed with [Agent B]: - focus on providing the content without adding this prefix yourself. All messages in the conversation will follow the format [SpeakerName]: message content."
     },
     { "role": "user", "content": "[Human]: What are some ideas for a weekend project?" },
     { "role": "assistant", "content": "[Agent B]: From an analytical perspective, we should consider time constraints and resource availability..." },
     { "role": "user", "content": "[Agent A]: Here are some creative ideas: 1. Build a herb garden..." },
     { "role": "user", "content": "[Agent C]: From a practical perspective, consider these factors..." },
-    { "role": "user", "content": "[Human]: Agent B, what do you think about these ideas?" }
+    { "role": "user", "content": "Premise: This is a brainstorming session about weekend projects.\n\nContinue the conversation based on the above premise and the conversation history." }
   ]
 }
 ```
 
-Implementation considerations:
+Benefits of this approach:
 
-- The `IAIProvider` interface should include methods for sending conversation context to an AI service
-- When preparing a request for a specific agent, the conversation history needs to be transformed into the appropriate format
-- The system prompt should combine the agent's base prompt (from its definition file) with instructions about the conversation format
-- Messages should be clearly labeled with the sender's identity to maintain conversation clarity
+- Message formatting is handled consistently at the provider level
+- Conversation history maintains a clear format regardless of message source
+- Agents receive explicit instructions about their identity and expected format
+- The prefixed format in StormMessage objects simplifies display in the UI
 
 ## Data Storage
 
