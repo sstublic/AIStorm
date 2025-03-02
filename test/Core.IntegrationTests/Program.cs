@@ -5,6 +5,8 @@ using Microsoft.Extensions.Logging;
 using AIStorm.Core.Services;
 using AIStorm.Core.Services.Options;
 using Microsoft.Extensions.Options;
+using NLog;
+using NLog.Extensions.Logging;
 using System.IO;
 
 namespace AIStorm.Core.IntegrationTests;
@@ -13,19 +15,28 @@ public class Program
 {
     public static async Task Main(string[] args)
     {
-        // Set up the host with configuration
-        using var host = CreateHostBuilder(args).Build();
+        try
+        {
+            // Set up the host with configuration
+            using var host = CreateHostBuilder(args).Build();
         
         // Run the OpenAI tests
-        Console.WriteLine("=== Running OpenAI Tests ===\n");
+        var logger = host.Services.GetRequiredService<ILogger<Program>>();
+        logger.LogInformation("=== Running OpenAI Tests ===");
         var openAITests = host.Services.GetRequiredService<OpenAITests>();
         await openAITests.RunAllTests();
         
-        Console.WriteLine("\n=== Running Session Integration Tests ===\n");
+        logger.LogInformation("=== Running Session Integration Tests ===");
         var sessionTests = host.Services.GetRequiredService<SessionIntegrationTests>();
         await sessionTests.RunTest();
         
-        Console.WriteLine("\nAll tests completed!");
+        logger.LogInformation("All tests completed!");
+        }
+        finally
+        {
+            // Ensure to flush and stop NLog
+            LogManager.Shutdown();
+        }
     }
 
     private static IHostBuilder CreateHostBuilder(string[] args) =>
@@ -39,8 +50,7 @@ public class Program
             .ConfigureLogging((context, logging) =>
             {
                 logging.ClearProviders();
-                logging.AddConfiguration(context.Configuration.GetSection("Logging"));
-                logging.AddConsole();
+                logging.AddNLog();
             })
             .ConfigureServices((context, services) =>
             {
@@ -52,20 +62,21 @@ public class Program
                 string testDataPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "TestData");
                 
                 // Add diagnostic logging to help troubleshoot path issues
-                Console.WriteLine($"Integration Test Data Path: {testDataPath}");
+                var startupLogger = LogManager.GetLogger("Startup");
+                startupLogger.Info($"Integration Test Data Path: {testDataPath}");
                 if (Directory.Exists(testDataPath))
                 {
-                    Console.WriteLine("TestData directory exists");
+                    startupLogger.Info("TestData directory exists");
                     var files = Directory.GetFiles(testDataPath, "*.*", SearchOption.AllDirectories);
-                    Console.WriteLine($"Files found: {files.Length}");
+                    startupLogger.Info($"Files found: {files.Length}");
                     foreach (var file in files.Take(5)) // Show first 5 files to avoid too much output
                     {
-                        Console.WriteLine($"  - {file}");
+                        startupLogger.Info($"  - {file}");
                     }
                 }
                 else
                 {
-                    Console.WriteLine("TestData directory does not exist!");
+                    startupLogger.Error("TestData directory does not exist!");
                 }
                 
                 services.Configure<MarkdownStorageOptions>(options => 

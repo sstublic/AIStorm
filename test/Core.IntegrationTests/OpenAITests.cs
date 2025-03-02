@@ -1,5 +1,6 @@
 using AIStorm.Core.Models;
 using AIStorm.Core.Services;
+using Microsoft.Extensions.Logging;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -9,10 +10,12 @@ public class OpenAITests
 {
     private readonly IAIProvider aiProvider;
     private readonly JsonSerializerOptions jsonOptions;
+    private readonly ILogger<OpenAITests> logger;
 
-    public OpenAITests(IAIProvider aiProvider)
+    public OpenAITests(IAIProvider aiProvider, ILogger<OpenAITests> logger)
     {
         this.aiProvider = aiProvider;
+        this.logger = logger;
         this.jsonOptions = new JsonSerializerOptions
         {
             WriteIndented = true,
@@ -22,7 +25,7 @@ public class OpenAITests
 
     public async Task RunAllTests()
     {
-        Console.WriteLine("Starting OpenAI integration tests...\n");
+        logger.LogInformation("Starting OpenAI integration tests");
         
         try
         {
@@ -34,42 +37,41 @@ public class OpenAITests
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error during tests: {ex.Message}");
-            Console.WriteLine(ex.StackTrace);
+            logger.LogError(ex, "Error during tests: {Message}", ex.Message);
         }
     }
 
     private async Task TestListModels()
     {
-        Console.WriteLine("Test: Listing available OpenAI models");
+        logger.LogInformation("Test: Listing available OpenAI models");
         
         try
         {
             var models = await aiProvider.GetAvailableModelsAsync();
             
-            Console.WriteLine($"Successfully retrieved {models.Length} models:");
+            logger.LogInformation("Successfully retrieved {Count} models", models.Length);
             foreach (var model in models.Take(5)) // Show just the first 5 models
             {
-                Console.WriteLine($"  - {model}");
+                logger.LogInformation("  - {Model}", model);
             }
             
             if (models.Length > 5)
             {
-                Console.WriteLine($"  - ... and {models.Length - 5} more");
+                logger.LogInformation("  - ... and {Count} more", models.Length - 5);
             }
             
-            Console.WriteLine("✅ Model listing test passed\n");
+            logger.LogInformation("✅ Model listing test passed");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"❌ Model listing test failed: {ex.Message}");
+            logger.LogError(ex, "❌ Model listing test failed: {Message}", ex.Message);
             throw;
         }
     }
 
     private async Task TestSendMessage()
     {
-        Console.WriteLine("Test: Sending a message to OpenAI");
+        logger.LogInformation("Test: Sending a message to OpenAI");
         
         try
         {
@@ -86,16 +88,15 @@ public class OpenAITests
             
             // Send a test message
             string userMessage = "What is the capital of France?";
-            Console.WriteLine($"Sending message: \"{userMessage}\"");
+            logger.LogInformation("Sending message: \"{Message}\"", userMessage);
             
             var response = await aiProvider.SendMessageAsync(agent, conversationHistory, userMessage);
             
-            Console.WriteLine("Response received:");
-            Console.WriteLine($"  \"{response}\"\n");
+            logger.LogInformation("Response received: \"{Response}\"", response);
             
             if (!string.IsNullOrEmpty(response))
             {
-                Console.WriteLine("✅ Message sending test passed\n");
+                logger.LogInformation("✅ Message sending test passed");
             }
             else
             {
@@ -104,7 +105,7 @@ public class OpenAITests
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"❌ Message sending test failed: {ex.Message}");
+            logger.LogError(ex, "❌ Message sending test failed: {Message}", ex.Message);
             throw;
         }
     }

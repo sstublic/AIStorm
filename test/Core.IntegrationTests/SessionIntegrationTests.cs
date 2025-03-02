@@ -26,86 +26,84 @@ public class SessionIntegrationTests
 
     public async Task RunTest()
     {
-        Console.WriteLine("Starting AIStorm Session Integration Test...\n");
-        Console.WriteLine("This test demonstrates a session with multiple agents exchanging messages\n");
+        logger.LogInformation("Starting AIStorm Session Integration Test");
+        logger.LogInformation("This test demonstrates a session with multiple agents exchanging messages");
         
         try
         {
             // Load agents from test files
-            Console.WriteLine("Loading agents from test files...");
+            logger.LogInformation("Loading agents from test files");
             var creativeAgent = storageProvider.LoadAgent("SessionExample/Agents/Creative Thinker.md");
             var criticalAgent = storageProvider.LoadAgent("SessionExample/Agents/Critical Analyst.md");
             
-            Console.WriteLine($"Loaded agent: {creativeAgent.Name} ({creativeAgent.AIServiceType}, {creativeAgent.AIModel})");
-            Console.WriteLine($"Loaded agent: {criticalAgent.Name} ({criticalAgent.AIServiceType}, {criticalAgent.AIModel})\n");
+            logger.LogInformation("Loaded agent: {AgentName} ({ServiceType}, {ModelName})", 
+                creativeAgent.Name, creativeAgent.AIServiceType, creativeAgent.AIModel);
+            logger.LogInformation("Loaded agent: {AgentName} ({ServiceType}, {ModelName})", 
+                criticalAgent.Name, criticalAgent.AIServiceType, criticalAgent.AIModel);
             
             // Load session premise
-            Console.WriteLine("Loading session premise...");
+            logger.LogInformation("Loading session premise");
             var premise = storageProvider.LoadSessionPremise("SessionExample/SessionExample.ini.md");
-            Console.WriteLine($"Loaded premise: {premise.Content}\n");
+            logger.LogInformation("Loaded premise: {Content}", premise.Content);
             
             // Initialize session runner with agents and premise
             var agents = new List<Agent> { creativeAgent, criticalAgent };
             var sessionRunner = sessionRunnerFactory.Create(agents, premise);
             
-            Console.WriteLine("----------------------------------------");
-            Console.WriteLine("Starting conversation\n");
+            logger.LogInformation("----------------------------------------");
+            logger.LogInformation("Starting conversation");
             
             // Add initial user message
             string initialQuestion = "What are some interesting weekend projects I could work on?";
-            Console.WriteLine($"[Human] ({DateTime.Now:yyyy-MM-dd HH:mm:ss}):");
-            Console.WriteLine(initialQuestion);
-            Console.WriteLine();
+            logger.LogInformation("[Human] ({Timestamp}): {Message}", 
+                DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), initialQuestion);
             sessionRunner.AddUserMessage(initialQuestion);
             
             // First agent response
-            Console.WriteLine("Waiting for Creative Thinker response...");
+            logger.LogInformation("Waiting for Creative Thinker response");
             await sessionRunner.Next();
             DisplayLastMessage(sessionRunner);
             
             // Second agent response
-            Console.WriteLine("Waiting for Critical Analyst response...");
+            logger.LogInformation("Waiting for Critical Analyst response");
             await sessionRunner.Next();
             DisplayLastMessage(sessionRunner);
             
             // User intervention
             string userIntervention = "I'm particularly interested in technology projects that can be completed in a single weekend.";
-            Console.WriteLine("\n----------------------------------------");
-            Console.WriteLine("User intervenes in the conversation\n");
-            Console.WriteLine($"[Human] ({DateTime.Now:yyyy-MM-dd HH:mm:ss}):");
-            Console.WriteLine(userIntervention);
-            Console.WriteLine();
+            logger.LogInformation("----------------------------------------");
+            logger.LogInformation("User intervenes in the conversation");
+            logger.LogInformation("[Human] ({Timestamp}): {Message}", 
+                DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), userIntervention);
             sessionRunner.AddUserMessage(userIntervention);
             
             // Third agent response
-            Console.WriteLine("Waiting for Creative Thinker response...");
+            logger.LogInformation("Waiting for Creative Thinker response");
             await sessionRunner.Next();
             DisplayLastMessage(sessionRunner);
             
             // Fourth agent response
-            Console.WriteLine("Waiting for Critical Analyst response...");
+            logger.LogInformation("Waiting for Critical Analyst response");
             await sessionRunner.Next();
             DisplayLastMessage(sessionRunner);
             
             // Display full conversation summary
-            Console.WriteLine("\n----------------------------------------");
-            Console.WriteLine("Conversation Summary");
-            Console.WriteLine("----------------------------------------\n");
+            logger.LogInformation("----------------------------------------");
+            logger.LogInformation("Conversation Summary");
+            logger.LogInformation("----------------------------------------");
             
             var allMessages = sessionRunner.GetConversationHistory();
             foreach (var message in allMessages)
             {
-                Console.WriteLine(message.Content);
-                Console.WriteLine();
+                logger.LogInformation("{Content}", message.Content);
             }
             
-            Console.WriteLine("----------------------------------------");
-            Console.WriteLine("Integration test completed successfully!");
+            logger.LogInformation("----------------------------------------");
+            logger.LogInformation("Integration test completed successfully!");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error during test: {ex.Message}");
-            Console.WriteLine(ex.StackTrace);
+            logger.LogError(ex, "Error during test: {Message}", ex.Message);
         }
     }
     
@@ -114,8 +112,9 @@ public class SessionIntegrationTests
         var messages = sessionRunner.GetConversationHistory();
         var lastMessage = messages[messages.Count - 1];
         
-        Console.WriteLine($"\n[{lastMessage.AgentName}] ({lastMessage.Timestamp:yyyy-MM-dd HH:mm:ss}):");
-        Console.WriteLine(lastMessage.Content);
-        Console.WriteLine();
+        logger.LogInformation("[{AgentName}] ({Timestamp}): {Content}", 
+            lastMessage.AgentName, 
+            lastMessage.Timestamp.ToString("yyyy-MM-dd HH:mm:ss"), 
+            lastMessage.Content);
     }
 }
