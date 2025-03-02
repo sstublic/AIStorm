@@ -25,7 +25,6 @@ public class MarkdownStorageProvider : IStorageProvider
     {
         var storageOptions = options.Value;
         
-        // Validate options
         if (string.IsNullOrEmpty(storageOptions.BasePath))
             throw new ArgumentException("Base path is required", nameof(options));
             
@@ -35,194 +34,200 @@ public class MarkdownStorageProvider : IStorageProvider
         this.serializer = serializer;
         this.logger = logger;
         
-        // Ensure directories exist
         Directory.CreateDirectory(this.agentTemplatesPath);
         Directory.CreateDirectory(this.sessionsPath);
         
         logger.LogInformation("MarkdownStorageProvider initialized with base path: {BasePath}", 
             Path.GetFullPath(this.basePath));
     }
+    
+    private string GetAgentPath(string id) 
+    {
+        return Path.Combine(agentTemplatesPath, id + ".md");
+    }
+
+    private string GetSessionPath(string id) 
+    {
+        return Path.Combine(sessionsPath, id + ".session.md");
+    }
+
+    private string ReadFile(string path)
+    {
+        if (!File.Exists(path))
+            throw new FileNotFoundException($"File not found", path);
+        return File.ReadAllText(path);
+    }
+
+    private void WriteFile(string path, string content)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(path));
+        File.WriteAllText(path, content);
+    }
+
+    private MarkdownSegment GetRequiredSegment(List<MarkdownSegment> segments, string type, string entityName)
+    {
+        var segment = serializer.FindSegment(segments, type);
+        if (segment == null)
+            throw new FormatException($"Invalid {entityName} format. Missing {type} tag.");
+        return segment;
+    }
+
+    private string GetRequiredProperty(MarkdownSegment segment, string property)
+    {
+        if (!segment.Properties.TryGetValue(property, out var value))
+            throw new FormatException($"Missing required property: {property}");
+        return value;
+    }
+
+    private Agent CreateAgentFromSegment(MarkdownSegment segment, string name)
+    {
+        var aiServiceType = GetRequiredProperty(segment, "type");
+        var aiModel = GetRequiredProperty(segment, "model");
+        
+        return new Agent(name, aiServiceType, aiModel, segment.Content);
+    }
+
+    private Agent CreateAgentFromTemplate(MarkdownSegment segment)
+    {
+        var name = GetRequiredProperty(segment, "name");
+        var service = GetRequiredProperty(segment, "service");
+        var model = GetRequiredProperty(segment, "model");
+        
+        return new Agent(name, service, model, segment.Content);
+    }
+
+    private List<MarkdownSegment> CreateAgentSegments(IEnumerable<Agent> agents)
+    {
+        var segments = new List<MarkdownSegment>();
+        
+        foreach (var agent in agents)
+        {
+            var properties = new OrderedProperties(
+                ("type", "agent"),
+                ("name", agent.Name),
+                ("service", agent.AIServiceType),
+                ("model", agent.AIModel)
+            );
+            
+            segments.Add(new MarkdownSegment(properties, agent.SystemPrompt));
+        }
+        
+        return segments;
+    }
+
+    private List<MarkdownSegment> CreateMessageSegments(IEnumerable<StormMessage> messages)
+    {
+        var segments = new List<MarkdownSegment>();
+        
+        foreach (var message in messages)
+        {
+            var properties = new OrderedProperties(
+                ("type", "message"),
+                ("from", message.AgentName),
+                ("timestamp", Tools.UtcToString(message.Timestamp))
+            );
+            
+            var messageContent = $"## [{message.AgentName}]:\n\n{message.Content}";
+            segments.Add(new MarkdownSegment(properties, messageContent));
+        }
+        
+        return segments;
+    }
+
+    private StormMessage CreateMessageFromSegment(MarkdownSegment segment)
+    {
+        var agentName = GetRequiredProperty(segment, "from");
+        var timestampStr = GetRequiredProperty(segment, "timestamp");
+        var timestamp = Tools.ParseAsUtc(timestampStr);
+        
+        var messageContent = segment.Content;
+        var lines = messageContent.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+        if (lines.Length > 0 && lines[0].StartsWith("## ["))
+        {
+            messageContent = string.Join(Environment.NewLine, lines.Skip(1)).Trim();
+        }
+        
+        return new StormMessage(agentName, timestamp, messageContent);
+    }
 
     public Agent LoadAgent(string id)
     {
-        // Ensure the id has the .md extension
-        string agentPath = id;
-        if (!agentPath.EndsWith(".md"))
-        {
-            agentPath = agentPath + ".md";
-        }
+        var fullPath = GetAgentPath(id);
+        var content = ReadFile(fullPath);
         
-        string fullPath = Path.Combine(agentTemplatesPath, agentPath);
-        
-        if (!File.Exists(fullPath))
-        {
-            throw new FileNotFoundException($"Agent template file not found: {id}", fullPath);
-        }
-
-        string content = File.ReadAllText(fullPath);
         var segments = serializer.DeserializeDocument(content);
-        
         if (segments.Count == 0)
-        {
             throw new FormatException("Invalid agent markdown format. Missing aistorm tag.");
-        }
         
-        var agentSegment = segments[0];
-        
-        // For agent files, the type property is the AI service type
-        var aiServiceType = agentSegment.Properties.ContainsKey("type") ? 
-            agentSegment.Properties["type"] : 
-            throw new FormatException("Invalid agent markdown format. Missing type property.");
-            
-        var aiModel = agentSegment.Properties.ContainsKey("model") ? 
-            agentSegment.Properties["model"] : 
-            throw new FormatException("Invalid agent markdown format. Missing model property.");
-        
-        return new Agent(
-            Path.GetFileNameWithoutExtension(fullPath),
-            aiServiceType,
-            aiModel,
-            agentSegment.Content
-        );
+        return CreateAgentFromSegment(segments[0], id);
     }
 
     public void SaveAgent(string id, Agent agent)
     {
-        // Ensure the id has the .md extension
-        string agentPath = id;
-        if (!agentPath.EndsWith(".md"))
-        {
-            agentPath = agentPath + ".md";
-        }
+        var fullPath = GetAgentPath(id);
         
-        var fullPath = Path.Combine(agentTemplatesPath, agentPath);
-        
-        // Create directory if needed
-        Directory.CreateDirectory(agentTemplatesPath);
-
-        var properties = new OrderedProperties();
-        properties.Add("type", agent.AIServiceType);
-        properties.Add("model", agent.AIModel);
+        var properties = new OrderedProperties(
+            ("type", agent.AIServiceType),
+            ("model", agent.AIModel)
+        );
         
         var segment = new MarkdownSegment(properties, agent.SystemPrompt);
         var content = serializer.SerializeDocument(new List<MarkdownSegment> { segment });
         
-        File.WriteAllText(fullPath, content);
+        WriteFile(fullPath, content);
     }
 
     public Session LoadSession(string id)
     {
         logger.LogInformation("LoadSession called with ID: '{SessionId}'", id);
         
-        // Ensure the id has the .session.md extension
-        string sessionPath = id;
-        if (!sessionPath.EndsWith(".session.md"))
-        {
-            // If id already has .md extension, replace it with .session.md
-            if (sessionPath.EndsWith(".md"))
-            {
-                sessionPath = sessionPath.Substring(0, sessionPath.Length - 3) + ".session.md";
-            }
-            else
-            {
-                // Otherwise, append .session.md
-                sessionPath = sessionPath + ".session.md";
-            }
-        }
-        
-        string fullPath = Path.Combine(sessionsPath, sessionPath);
-        
+        var fullPath = GetSessionPath(id);
         logger.LogInformation("Attempting to load session from path: '{FullPath}'", fullPath);
         
         if (!File.Exists(fullPath))
         {
-            // For backward compatibility, try to find the file in the old format
-            string oldPath = Path.Combine(basePath, id.EndsWith(".log.md") ? id : id + ".log.md");
-            if (File.Exists(oldPath))
-            {
-                logger.LogWarning("Found session in old format at '{OldPath}', migrating to new format", oldPath);
-                // TODO: Consider migrating old file format to new format
-            }
-            
             throw new FileNotFoundException(
                 $"Session file not found. Path: {fullPath}, ID: {id}", 
                 fullPath);
         }
 
-        var fileContent = File.ReadAllText(fullPath);
+        var fileContent = ReadFile(fullPath);
         var segments = serializer.DeserializeDocument(fileContent);
         
-        // Find session metadata segment
-        var sessionSegment = serializer.FindSegment(segments, "session");
-        if (sessionSegment == null)
-        {
-            throw new FormatException("Invalid session markdown format. Missing session tag.");
-        }
+        var sessionSegment = GetRequiredSegment(segments, "session", "session");
         
-        if (!sessionSegment.Properties.TryGetValue("created", out var createdStr) ||
-            !sessionSegment.Properties.TryGetValue("description", out var description))
-        {
-            throw new FormatException("Invalid session markdown format. Missing required properties.");
-        }
+        var created = Tools.ParseAsUtc(GetRequiredProperty(sessionSegment, "created"));
+        var description = GetRequiredProperty(sessionSegment, "description");
         
-        var created = Tools.ParseAsUtc(createdStr);
+        var premiseSegment = GetRequiredSegment(segments, "premise", "session");
+        var premise = new SessionPremise(id, premiseSegment.Content);
         
-        // Use the filename without extension as the session ID
-        var sessionId = Path.GetFileNameWithoutExtension(fullPath);
-        // Remove .session suffix if present
-        if (sessionId.EndsWith(".session"))
-        {
-            sessionId = sessionId.Substring(0, sessionId.Length - 8);
-        }
+        var session = new Session(id, created, description, premise);
         
-        // Load premise
-        var premiseSegment = serializer.FindSegment(segments, "premise");
-        if (premiseSegment == null)
-        {
-            throw new FormatException("Invalid session markdown format. Missing premise tag.");
-        }
-        
-        var premise = new SessionPremise(sessionId, premiseSegment.Content);
-        
-        var session = new Session(sessionId, created, description, premise);
-        
-        // Load agents
         var agentSegments = serializer.FindSegments(segments, "agent");
         foreach (var agentSegment in agentSegments)
         {
-            if (!agentSegment.Properties.TryGetValue("name", out var agentName) ||
-                !agentSegment.Properties.TryGetValue("service", out var service) ||
-                !agentSegment.Properties.TryGetValue("model", out var model))
-            {
-                logger.LogWarning("Invalid agent segment found in session {SessionId}. Skipping.", sessionId);
-                continue; // Skip invalid agents
+            try {
+                var agent = CreateAgentFromTemplate(agentSegment);
+                session.Agents.Add(agent);
             }
-            
-            var agent = new Agent(agentName, service, model, agentSegment.Content);
-            session.Agents.Add(agent);
+            catch (FormatException ex) {
+                logger.LogWarning("Invalid agent segment found in session {SessionId}: {Error}", id, ex.Message);
+                continue;
+            }
         }
         
-        // Find message segments
         var messageSegments = serializer.FindSegments(segments, "message");
         foreach (var messageSegment in messageSegments)
         {
-            if (!messageSegment.Properties.TryGetValue("from", out var agentName) ||
-                !messageSegment.Properties.TryGetValue("timestamp", out var timestampStr))
-            {
-                continue; // Skip invalid messages
+            try {
+                var message = CreateMessageFromSegment(messageSegment);
+                session.Messages.Add(message);
             }
-            
-            var timestamp = Tools.ParseAsUtc(timestampStr);
-            var messageContent = messageSegment.Content;
-            
-            // Extract actual message content by removing the heading line if present
-            var lines = messageContent.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-            if (lines.Length > 0 && lines[0].StartsWith("## ["))
-            {
-                messageContent = string.Join(Environment.NewLine, lines.Skip(1)).Trim();
+            catch (FormatException ex) {
+                logger.LogWarning("Invalid message segment found in session {SessionId}: {Error}", id, ex.Message);
+                continue;
             }
-            
-            session.Messages.Add(new StormMessage(agentName, timestamp, messageContent));
         }
         
         return session;
@@ -230,79 +235,38 @@ public class MarkdownStorageProvider : IStorageProvider
 
     public void SaveSession(string id, Session session)
     {
-        // Ensure the id has the .session.md extension
-        string sessionPath = id;
-        if (!sessionPath.EndsWith(".session.md"))
-        {
-            // If id already has .md extension, replace it with .session.md
-            if (sessionPath.EndsWith(".md"))
-            {
-                sessionPath = sessionPath.Substring(0, sessionPath.Length - 3) + ".session.md";
-            }
-            else
-            {
-                // Otherwise, append .session.md
-                sessionPath = sessionPath + ".session.md";
-            }
-        }
+        var fullPath = GetSessionPath(id);
         
-        var fullPath = Path.Combine(sessionsPath, sessionPath);
-        
-        // Create directory if needed
-        Directory.CreateDirectory(sessionsPath);
-
         var segments = new List<MarkdownSegment>();
         
-        // Add session metadata segment
-        var sessionProperties = new OrderedProperties();
-        sessionProperties.Add("type", "session");
-        sessionProperties.Add("created", Tools.UtcToString(session.Created));
-        sessionProperties.Add("description", session.Description);
+        var sessionProperties = new OrderedProperties(
+            ("type", "session"),
+            ("created", Tools.UtcToString(session.Created)),
+            ("description", session.Description)
+        );
         
         var sessionContent = $"# {session.Description}";
         segments.Add(new MarkdownSegment(sessionProperties, sessionContent));
         
-        // Add premise segment
         if (session.Premise != null)
         {
-            var premiseProperties = new OrderedProperties();
-            premiseProperties.Add("type", "premise");
+            var premiseProperties = new OrderedProperties(
+                ("type", "premise")
+            );
             segments.Add(new MarkdownSegment(premiseProperties, session.Premise.Content));
         }
         
-        // Add agent segments
-        foreach (var agent in session.Agents)
-        {
-            var agentProperties = new OrderedProperties();
-            agentProperties.Add("type", "agent");
-            agentProperties.Add("name", agent.Name);
-            agentProperties.Add("service", agent.AIServiceType);
-            agentProperties.Add("model", agent.AIModel);
-            
-            segments.Add(new MarkdownSegment(agentProperties, agent.SystemPrompt));
-        }
-        
-        // Add message segments
-        foreach (var message in session.Messages)
-        {
-            var messageProperties = new OrderedProperties();
-            messageProperties.Add("type", "message");
-            messageProperties.Add("from", message.AgentName);
-            messageProperties.Add("timestamp", Tools.UtcToString(message.Timestamp));
-            
-            var messageContent = $"## [{message.AgentName}]:\n\n{message.Content}";
-            segments.Add(new MarkdownSegment(messageProperties, messageContent));
-        }
+        segments.AddRange(CreateAgentSegments(session.Agents));
+        segments.AddRange(CreateMessageSegments(session.Messages));
         
         var content = serializer.SerializeDocument(segments);
-        File.WriteAllText(fullPath, content);
+        WriteFile(fullPath, content);
     }
     
     public SessionPremise LoadSessionPremise(string id)
     {
         logger.LogWarning("LoadSessionPremise is deprecated. Use LoadSession instead and access the Premise property.");
         
-        // Try to load from a full session file first
         try
         {
             var session = LoadSession(id);
@@ -310,60 +274,25 @@ public class MarkdownStorageProvider : IStorageProvider
         }
         catch (FileNotFoundException)
         {
-            // Fall back to the legacy format for backward compatibility
-        }
-        
-        // Legacy format handling (for backward compatibility)
-        // Ensure the id has the .ini.md extension
-        string premisePath = id;
-        if (!premisePath.EndsWith(".ini.md"))
-        {
-            // If id already has .md extension, replace it with .ini.md
-            if (premisePath.EndsWith(".md"))
-            {
-                premisePath = premisePath.Substring(0, premisePath.Length - 3) + ".ini.md";
-            }
-            else
-            {
-                // Otherwise, append .ini.md
-                premisePath = premisePath + ".ini.md";
-            }
-        }
-        
-        string fullPath = Path.Combine(basePath, premisePath);
-        
-        if (!File.Exists(fullPath))
-        {
-            throw new FileNotFoundException($"Session premise file not found: {premisePath}", fullPath);
-        }
+            var fullPath = Path.Combine(basePath, id + ".ini.md");
+            
+            if (!File.Exists(fullPath))
+                throw new FileNotFoundException($"Session premise file not found: {id}", fullPath);
 
-        string fileContent = File.ReadAllText(fullPath);
-        var segments = serializer.DeserializeDocument(fileContent);
-        
-        // Find the first segment (should be the only one)
-        if (segments.Count == 0)
-        {
-            throw new FormatException("Invalid session premise markdown format. Missing aistorm tag.");
+            var fileContent = ReadFile(fullPath);
+            var segments = serializer.DeserializeDocument(fileContent);
+            
+            if (segments.Count == 0)
+                throw new FormatException("Invalid session premise markdown format. Missing aistorm tag.");
+            
+            return new SessionPremise(id, segments[0].Content);
         }
-        
-        var premiseSegment = segments[0];
-        
-        // Use the filename without extension as the session ID
-        var sessionId = Path.GetFileNameWithoutExtension(fullPath);
-        // Remove .ini suffix if present
-        if (sessionId.EndsWith(".ini"))
-        {
-            sessionId = sessionId.Substring(0, sessionId.Length - 4);
-        }
-        
-        return new SessionPremise(sessionId, premiseSegment.Content);
     }
 
     public void SaveSessionPremise(string id, SessionPremise premise)
     {
         logger.LogWarning("SaveSessionPremise is deprecated. Use SaveSession instead with a session that includes the premise.");
         
-        // Create a minimal session that only includes the premise
         var session = new Session(
             id: premise.Id,
             created: DateTime.UtcNow,
@@ -371,7 +300,6 @@ public class MarkdownStorageProvider : IStorageProvider
             premise: premise
         );
         
-        // Save the session (which includes the premise)
         SaveSession(id, session);
     }
 }

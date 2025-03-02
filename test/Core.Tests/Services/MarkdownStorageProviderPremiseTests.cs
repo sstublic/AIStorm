@@ -31,10 +31,10 @@ public class MarkdownStorageProviderPremiseTests
     public void LoadSessionPremise_ValidFile_ReturnsSessionPremise()
     {
         // Arrange - we'll load from the session file instead
-        var sessionPath = "SessionExample.session.md";
+        var sessionId = "SessionExample";
 
         // Act
-        var premise = storageProvider.LoadSessionPremise(sessionPath);
+        var premise = storageProvider.LoadSessionPremise(sessionId);
 
         // Assert
         Assert.NotNull(premise);
@@ -47,8 +47,7 @@ public class MarkdownStorageProviderPremiseTests
     {
         // Arrange
         var sessionId = "TestPremise";
-        var sessionPath = sessionId + ".session.md";
-        var fullPath = Path.Combine(testBasePath, "Sessions", sessionPath);
+        var fullPath = Path.Combine(testBasePath, "Sessions", sessionId + ".session.md");
         
         // Clean up any existing test file
         if (File.Exists(fullPath))
@@ -64,7 +63,7 @@ public class MarkdownStorageProviderPremiseTests
         try
         {
             // Act
-            storageProvider.SaveSessionPremise(sessionPath, premise);
+            storageProvider.SaveSessionPremise(sessionId, premise);
 
             // Assert
             Assert.True(File.Exists(fullPath));
@@ -88,8 +87,7 @@ public class MarkdownStorageProviderPremiseTests
     {
         // Arrange
         var sessionId = "TestRoundTripPremise";
-        var sessionPath = sessionId + ".session.md";
-        var fullPath = Path.Combine(testBasePath, "Sessions", sessionPath);
+        var fullPath = Path.Combine(testBasePath, "Sessions", sessionId + ".session.md");
         
         // Clean up any existing test file
         if (File.Exists(fullPath))
@@ -105,8 +103,8 @@ public class MarkdownStorageProviderPremiseTests
         try
         {
             // Act
-            storageProvider.SaveSessionPremise(sessionPath, originalPremise);
-            var loadedPremise = storageProvider.LoadSessionPremise(sessionPath);
+            storageProvider.SaveSessionPremise(sessionId, originalPremise);
+            var loadedPremise = storageProvider.LoadSessionPremise(sessionId);
 
             // Assert
             Assert.NotNull(loadedPremise);

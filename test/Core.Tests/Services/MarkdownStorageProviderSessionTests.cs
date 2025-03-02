@@ -33,10 +33,10 @@ public class MarkdownStorageProviderSessionTests
     public void LoadSession_ValidFile_ReturnsSessionWithAgentsAndPremise()
     {
         // Arrange
-        var sessionPath = "SessionExample.session.md";
+        var sessionId = "SessionExample";
 
         // Act
-        var session = storageProvider.LoadSession(sessionPath);
+        var session = storageProvider.LoadSession(sessionId);
 
         // Assert
         Assert.NotNull(session);
@@ -77,8 +77,7 @@ public class MarkdownStorageProviderSessionTests
     {
         // Arrange
         var sessionId = "TestSession";
-        var sessionPath = sessionId + ".session.md";
-        var fullPath = Path.Combine(testBasePath, "Sessions", sessionPath);
+        var fullPath = Path.Combine(testBasePath, "Sessions", sessionId + ".session.md");
         
         // Clean up any existing test file
         if (File.Exists(fullPath))
@@ -117,7 +116,7 @@ public class MarkdownStorageProviderSessionTests
         try
         {
             // Act
-            storageProvider.SaveSession(sessionPath, session);
+            storageProvider.SaveSession(sessionId, session);
 
             // Assert
             Assert.True(File.Exists(fullPath));
@@ -163,8 +162,7 @@ public class MarkdownStorageProviderSessionTests
     {
         // Arrange
         var sessionId = "TestRoundTripSession";
-        var sessionPath = sessionId + ".session.md";
-        var fullPath = Path.Combine(testBasePath, "Sessions", sessionPath);
+        var fullPath = Path.Combine(testBasePath, "Sessions", sessionId + ".session.md");
         
         // Clean up any existing test file
         if (File.Exists(fullPath))
@@ -198,8 +196,8 @@ public class MarkdownStorageProviderSessionTests
         try
         {
             // Act
-            storageProvider.SaveSession(sessionPath, originalSession);
-            var loadedSession = storageProvider.LoadSession(sessionPath);
+            storageProvider.SaveSession(sessionId, originalSession);
+            var loadedSession = storageProvider.LoadSession(sessionId);
 
             // Assert
             Assert.NotNull(loadedSession);

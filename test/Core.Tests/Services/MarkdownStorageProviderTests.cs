@@ -34,10 +34,9 @@ public class MarkdownStorageProviderTests
     {
         // Arrange
         var agentName = "Creative Thinker";
-        var agentPath = $"{agentName}.md";
 
         // Act
-        var agent = storageProvider.LoadAgent(agentPath);
+        var agent = storageProvider.LoadAgent(agentName);
 
         // Assert
         Assert.NotNull(agent);
@@ -52,8 +51,7 @@ public class MarkdownStorageProviderTests
     {
         // Arrange
         var agentName = "TestSavedAgent";
-        var agentPath = $"{agentName}.md";
-        var fullPath = Path.Combine(testBasePath, "AgentTemplates", agentPath);
+        var fullPath = Path.Combine(testBasePath, "AgentTemplates", agentName + ".md");
         
         // Clean up any existing test file
         if (File.Exists(fullPath))
@@ -66,7 +64,7 @@ public class MarkdownStorageProviderTests
         try
         {
             // Act
-            storageProvider.SaveAgent(agentPath, agent);
+            storageProvider.SaveAgent(agentName, agent);
 
             // Assert
             Assert.True(File.Exists(fullPath));
@@ -89,8 +87,7 @@ public class MarkdownStorageProviderTests
     {
         // Arrange
         var agentName = "TestRoundTripAgent";
-        var agentPath = $"{agentName}.md";
-        var fullPath = Path.Combine(testBasePath, "AgentTemplates", agentPath);
+        var fullPath = Path.Combine(testBasePath, "AgentTemplates", agentName + ".md");
         
         // Clean up any existing test file
         if (File.Exists(fullPath))
@@ -104,8 +101,8 @@ public class MarkdownStorageProviderTests
         try
         {
             // Act
-            storageProvider.SaveAgent(agentPath, originalAgent);
-            var loadedAgent = storageProvider.LoadAgent(agentPath);
+            storageProvider.SaveAgent(agentName, originalAgent);
+            var loadedAgent = storageProvider.LoadAgent(agentName);
 
             // Assert
             Assert.NotNull(loadedAgent);

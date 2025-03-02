@@ -8,6 +8,18 @@ public class OrderedProperties
 {
     private readonly List<KeyValuePair<string, string>> _properties = new();
     
+    public OrderedProperties()
+    {
+    }
+    
+    public OrderedProperties(params (string key, string value)[] properties)
+    {
+        foreach (var (key, value) in properties)
+        {
+            Add(key, value);
+        }
+    }
+    
     public void Add(string key, string value)
     {
         // Replace existing key if it exists
