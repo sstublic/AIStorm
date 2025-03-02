@@ -155,7 +155,7 @@ public class MarkdownStorageProvider : IStorageProvider
                 messageContent = string.Join(Environment.NewLine, lines.Skip(1)).Trim();
             }
             
-            session.Messages.Add(new Message(agentName, timestamp, messageContent));
+            session.Messages.Add(new StormMessage(agentName, timestamp, messageContent));
         }
         
         return session;

@@ -46,16 +46,19 @@ AIStorm/
 │           ├── IStorageProvider.cs      # Storage provider interface
 │           └── MarkdownStorageProvider.cs # Markdown implementation
 └── test/
-    └── Core.Tests/             # Tests for Core project
-        ├── Services/           # Tests for services
-        │   └── MarkdownStorageProviderTests.cs # Tests for MarkdownStorageProvider
-        └── TestData/           # Test data for unit tests
-            └── SessionExample/ # Example session for testing
-                ├── Agents/     # Agent definitions
-                │   ├── Creative Thinker.md
-                │   ├── Critical Analyst.md
-                │   └── Practical Implementer.md
-                └── SessionExample.log.md # Conversation log
+    ├── Core.Tests/             # Unit tests for Core project
+    │   ├── Services/           # Tests for services
+    │   │   └── MarkdownStorageProviderTests.cs # Tests for MarkdownStorageProvider
+    │   └── TestData/           # Test data for unit tests
+    │       └── SessionExample/ # Example session for testing
+    │           ├── Agents/     # Agent definitions
+    │           │   ├── Creative Thinker.md
+    │           │   ├── Critical Analyst.md
+    │           │   └── Practical Implementer.md
+    │           └── SessionExample.log.md # Conversation log
+    └── Core.IntegrationTests/  # Integration tests for Core project
+        ├── Program.cs          # Console app entry point for integration tests
+        └── appsettings.json    # Configuration for integration tests
 ```
 
 The application will create an `AIStormSessions` directory at runtime to store user sessions.
@@ -248,7 +251,7 @@ The storage implementation is tested with xUnit tests:
   - `Agent` - Represents an AI agent with name, service type, model, and system prompt
   - `Session` - Represents a brainstorming session with metadata and a list of messages
   - `SessionPremise` - Represents the initial premise or context for a brainstorming session
-  - `Message` - Represents a message in a conversation with agent name, timestamp, and content
+  - `StormMessage` - Represents a message in a conversation with agent name, timestamp, and content
   - `MarkdownStorageProvider` - Handles reading and writing markdown files
   - `MarkdownSerializer` - Handles serialization and deserialization of markdown documents
   - `MarkdownSegment` - Represents a segment of a markdown document with properties and content
