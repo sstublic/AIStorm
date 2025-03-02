@@ -224,7 +224,8 @@ public class MarkdownStorageProviderSessionTests
             var loadedMessage = loadedSession.Messages[0];
             Assert.Equal(originalMessage.AgentName, loadedMessage.AgentName);
             Assert.Equal(originalMessage.Timestamp, loadedMessage.Timestamp);
-            Assert.Equal(originalMessage.Content, loadedMessage.Content);
+            // The loaded message contains the markdown header format with the agent name
+            Assert.Equal($"## [{originalMessage.AgentName}]:\n\n{originalMessage.Content}", loadedMessage.Content);
         }
         finally
         {
