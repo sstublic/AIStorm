@@ -51,6 +51,7 @@ Our approach for handling multi-agent conversations uses a standardized format w
 4. SessionRunner is responsible for formatting messages with the proper markdown header
 
 System prompt template:
+
 ```
 You are {AgentName}. {Original System Prompt}
 
@@ -61,6 +62,7 @@ When responding, DO NOT add the prefix to your response!
 ```
 
 Example API request structure (simplified):
+
 ```json
 {
   "messages": [
@@ -114,6 +116,7 @@ User message content...
 #### Provider Interface
 
 The storage provider interface defines operations for:
+
 - Loading and saving agent templates
 - Loading and saving complete sessions
 - Loading and saving session premises
@@ -122,6 +125,7 @@ The storage provider interface defines operations for:
 #### Markdown Storage
 
 The markdown implementation in the `AIStorm.Core.Storage.Markdown` namespace includes:
+
 - Parsing and generating markdown files with proper formatting
 - Handling file system operations
 - Creating the necessary directory structure at initialization
@@ -167,6 +171,7 @@ This design separates the responsibility of Session creation from Session runnin
 ## Testing
 
 The system includes comprehensive tests for:
+
 - Storage operations (loading/saving agents and sessions)
 - Serialization/deserialization
 - Complete session workflows
@@ -175,6 +180,7 @@ The system includes comprehensive tests for:
 ### Integration Testing
 
 The Core.IntegrationTests project provides end-to-end testing:
+
 - Tests for OpenAI API integration
 - Session flow integration tests
 - Configuration via appsettings.json

@@ -78,6 +78,7 @@ StorageRoot/
 ```
 
 Benefits of this approach:
+
 - Clear separation between templates and instances
 - Simplified file structure with fewer nested directories
 - Self-contained session files with embedded agents and premise
