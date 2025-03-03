@@ -100,9 +100,7 @@ public class OpenAIProvider : IAIProvider
                 
             var cleanedResponse = PromptTools.RemoveAgentNamePrefixFromMessage(responseText ?? string.Empty);
                 
-            string formattedResponse = $"[{agent.Name}]: {cleanedResponse}";
-            
-            return formattedResponse;
+            return cleanedResponse;
         }
         catch (HttpRequestException ex)
         {

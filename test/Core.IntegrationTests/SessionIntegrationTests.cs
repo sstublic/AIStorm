@@ -101,6 +101,13 @@ public class SessionIntegrationTests
             
             logger.LogInformation("----------------------------------------");
             logger.LogInformation("Integration test completed successfully!");
+            
+            // Save the entire session with a timestamped name
+            var timestamp = DateTime.Now.ToString("yyyy-MM-dd-HHmmss");
+            var sessionId = $"IntegrationTest_{timestamp}";
+            logger.LogInformation("Saving session as: {SessionId}", sessionId);
+            storageProvider.SaveSession(sessionId, sessionRunner.Session);
+            logger.LogInformation("Session saved successfully");
         }
         catch (Exception ex)
         {
