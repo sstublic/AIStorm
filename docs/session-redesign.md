@@ -15,9 +15,8 @@
 - [x] Clean up old file structure and unnecessary legacy files
 - [x] Add backward compatibility for loading legacy files
 - [x] Ensure specs.md is up to date with all the changes
-- [ ] Update UI components to display embedded agents
-- [ ] Add UI for selecting agent templates when creating sessions
-- [ ] Update integration tests
+- [x] Update UI components to display embedded agents
+- [x] Update integration tests
 
 ## Current Implementation
 

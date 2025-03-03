@@ -54,7 +54,12 @@ public class MarkdownStorageProvider : IStorageProvider
     private string ReadFile(string path)
     {
         if (!File.Exists(path))
-            throw new FileNotFoundException($"File not found: {Path.GetFullPath(path)}", path);
+        {
+            var absolutePath = Path.GetFullPath(path);
+            throw new FileNotFoundException(
+                $"File not found. Relative path: {path}, Absolute path: {absolutePath}", 
+                path);
+        }
         return File.ReadAllText(path);
     }
 
@@ -179,8 +184,9 @@ public class MarkdownStorageProvider : IStorageProvider
         
         if (!File.Exists(fullPath))
         {
+            var absolutePath = Path.GetFullPath(fullPath);
             throw new FileNotFoundException(
-                $"Session file not found. Path: {fullPath}, ID: {id}", 
+                $"Session file not found. Relative path: {fullPath}, Absolute path: {absolutePath}, ID: {id}", 
                 fullPath);
         }
 

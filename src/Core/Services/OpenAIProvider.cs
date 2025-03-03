@@ -46,10 +46,8 @@ public class OpenAIProvider : IAIProvider
             logger.LogInformation("Sending message to OpenAI for agent: {AgentName} using model: {Model}", 
                 agent.Name, agent.AIModel);
             
-            // Format conversation history according to OpenAI's API expectations
             var messages = FormatConversationForAgent(agent, conversationHistory, userMessage);
             
-            // Create the request JSON directly
             var requestData = new
             {
                 model = agent.AIModel,
@@ -57,7 +55,7 @@ public class OpenAIProvider : IAIProvider
                 temperature = 0.7f
             };
             
-            var requestJson = JsonSerializer.Serialize(requestData);
+            var requestJson = JsonSerializer.Serialize(requestData, new JsonSerializerOptions { WriteIndented = true });
             logger.LogDebug("OpenAI request payload: {RequestJson}", requestJson);
             
             var content = new StringContent(
@@ -67,7 +65,6 @@ public class OpenAIProvider : IAIProvider
                 
             var response = await httpClient.PostAsync("chat/completions", content);
             
-            // If the request fails, try to get more details about the error
             if (!response.IsSuccessStatusCode)
             {
                 string errorContent = await response.Content.ReadAsStringAsync();
@@ -86,7 +83,6 @@ public class OpenAIProvider : IAIProvider
             
             var responseJson = JsonDocument.Parse(responseContent);
             
-            // Parse response and extract the generated text
             var responseText = responseJson.RootElement
                 .GetProperty("choices")[0]
                 .GetProperty("message")
@@ -96,23 +92,19 @@ public class OpenAIProvider : IAIProvider
             logger.LogInformation("Received response from OpenAI, length: {Length} characters", 
                 responseText?.Length ?? 0);
                 
-            // Clean up any existing prefixes from the response
             var cleanedResponse = PromptTools.CleanupResponse(responseText ?? string.Empty);
                 
-            // Prepend the agent name to the response
             string formattedResponse = $"[{agent.Name}]: {cleanedResponse}";
             
             return formattedResponse;
         }
         catch (HttpRequestException ex)
         {
-            // Log the error and pass through our custom error message
             logger.LogError(ex, "HTTP error communicating with OpenAI API");
             throw;
         }
         catch (Exception ex)
         {
-            // Wrap other exceptions for more context
             logger.LogError(ex, "Error communicating with OpenAI API");
             throw new Exception($"Error communicating with OpenAI API: {ex.Message}", ex);
         }
@@ -126,7 +118,6 @@ public class OpenAIProvider : IAIProvider
             
             var response = await httpClient.GetAsync("models");
             
-            // If the request fails, try to get more details about the error
             if (!response.IsSuccessStatusCode)
             {
                 string errorContent = await response.Content.ReadAsStringAsync();
@@ -164,13 +155,11 @@ public class OpenAIProvider : IAIProvider
         }
         catch (HttpRequestException ex)
         {
-            // Log the error and pass through our custom error message
             logger.LogError(ex, "HTTP error retrieving models from OpenAI API");
             throw;
         }
         catch (Exception ex)
         {
-            // Wrap other exceptions for more context
             logger.LogError(ex, "Error retrieving models from OpenAI API: {Message}", ex.Message);
             throw new Exception($"Error retrieving models from OpenAI API: {ex.Message}", ex);
         }
@@ -185,22 +174,17 @@ public class OpenAIProvider : IAIProvider
             new OpenAIMessage("system", enhancedSystemPrompt)
         };
         
-        // Add conversation history
         foreach (var message in conversationHistory)
         {
-            // Determine role based on the agent name
-            string role = message.AgentName == agent.Name ? "assistant" : "user";
-            // The message content already includes the agent name prefix, so we don't need to add it again
+            var role = message.AgentName == agent.Name ? "assistant" : "user";
             messages.Add(new OpenAIMessage(role, message.Content));
         }
         
-        // Add the latest user message
         messages.Add(new OpenAIMessage("user", userMessage));
         
         return messages;
     }
     
-    // Private class for OpenAI messages
     private class OpenAIMessage
     {
         [JsonPropertyName("role")]

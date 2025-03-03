@@ -31,27 +31,23 @@ public class SessionIntegrationTests
         
         try
         {
-            // Load agents from test files
-            logger.LogInformation("Loading agents from test files");
-            var creativeAgent = storageProvider.LoadAgent("Creative Thinker");
-            var criticalAgent = storageProvider.LoadAgent("Critical Analyst");
-            
-            logger.LogInformation("Loaded agent: {AgentName} ({ServiceType}, {ModelName})", 
-                creativeAgent.Name, creativeAgent.AIServiceType, creativeAgent.AIModel);
-            logger.LogInformation("Loaded agent: {AgentName} ({ServiceType}, {ModelName})", 
-                criticalAgent.Name, criticalAgent.AIServiceType, criticalAgent.AIModel);
-            
-            // Load session with premise
-            logger.LogInformation("Loading session with premise");
+            // Load self-contained session with embedded agents and premise
+            logger.LogInformation("Loading session with embedded agents and premise");
             var session = storageProvider.LoadSession("SessionExample");
             
             logger.LogInformation("Session loaded successfully with ID: {SessionId}", session.Id);
-            var premise = session.Premise;
-            logger.LogInformation("Loaded premise: {Content}", premise.Content);
+            logger.LogInformation("Session contains {AgentCount} embedded agents", session.Agents.Count);
             
-            // Initialize session runner with agents and premise
-            var agents = new List<Agent> { creativeAgent, criticalAgent };
-            var sessionRunner = sessionRunnerFactory.Create(agents, premise);
+            foreach (var agent in session.Agents)
+            {
+                logger.LogInformation("Embedded agent: {AgentName} ({ServiceType}, {ModelName})", 
+                    agent.Name, agent.AIServiceType, agent.AIModel);
+            }
+            
+            logger.LogInformation("Session premise: {Premise}", session.Premise);
+            
+            // Initialize session runner with the session (contains embedded agents and premise)
+            var sessionRunner = sessionRunnerFactory.Create(session);
             
             logger.LogInformation("----------------------------------------");
             logger.LogInformation("Starting conversation");
