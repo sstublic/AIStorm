@@ -65,5 +65,7 @@ Reread `docs/project-overview.md` and `docs/system-architecture.md` often and wh
 11. Git commit messages should be concise and descriptive
     - Focus on the "what" and "why" rather than the "how"
     - Avoid listing specific properties, method names, or implementation details
+12. Use declarative or functional code whenever possible (e.g. LINQ instead of for loops)
+
 
 ## Don't forget any of 'AI Assistant Guidelines' above!!!

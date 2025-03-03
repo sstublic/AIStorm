@@ -19,7 +19,6 @@ public class SessionRunner
     {
         agents = agents ?? throw new ArgumentNullException(nameof(agents));
         
-        // Check if agents is empty using Any() instead of Count
         if (!agents.Any())
             throw new ArgumentException("At least one agent must be provided", nameof(agents));
         
