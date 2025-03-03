@@ -4,6 +4,7 @@ using AIStorm.Core.Models;
 using AIStorm.Core.AI;
 using AIStorm.Core.Storage;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -20,16 +21,24 @@ public class SessionRunnerFactory : ISessionRunnerFactory
         this.storageProvider = storageProvider;
     }
 
-    public SessionRunner Create(IEnumerable<Agent> agents, SessionPremise premise)
+    public SessionRunner CreateWithNewSession(IEnumerable<Agent> agents, SessionPremise premise)
     {
         var logger = loggerFactory.CreateLogger<SessionRunner>();
-        return new SessionRunner(agents, premise, aiProvider, logger);
+        
+        var session = new Session(
+            id: premise.Id,
+            created: DateTime.UtcNow,
+            premise: premise,
+            agents: agents
+        );
+        
+        return new SessionRunner(session, aiProvider, logger);
     }
     
-    public SessionRunner CreateFromExistingSession(string sessionId)
+    public SessionRunner CreateWithStoredSession(string sessionId)
     {
         var logger = loggerFactory.CreateLogger<SessionRunner>();
         var existingSession = storageProvider.LoadSession(sessionId);
-        return new SessionRunner(existingSession.Agents, existingSession.Premise, aiProvider, logger, existingSession);
+        return new SessionRunner(existingSession, aiProvider, logger);
     }
 }

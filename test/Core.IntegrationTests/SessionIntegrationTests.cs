@@ -49,7 +49,7 @@ public class SessionIntegrationTests
             logger.LogInformation("Session premise: {Premise}", session.Premise);
             
             // Initialize session runner with the agents and premise from the loaded session
-            var sessionRunner = sessionRunnerFactory.Create(session.Agents, session.Premise);
+            var sessionRunner = sessionRunnerFactory.CreateWithNewSession(session.Agents, session.Premise);
             
             logger.LogInformation("----------------------------------------");
             logger.LogInformation("Starting conversation");

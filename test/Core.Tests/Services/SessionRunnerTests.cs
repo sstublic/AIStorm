@@ -36,55 +36,40 @@ public class SessionRunnerTests
     [Fact]
     public void Constructor_WithValidParameters_InitializesProperties()
     {
+        // Arrange
+        var session = new Session(premise.Id, DateTime.UtcNow, premise, agents);
+        
         // Act
-        var runner = new SessionRunner(agents, premise, aiProviderMock.Object, loggerMock.Object);
+        var runner = new SessionRunner(session, aiProviderMock.Object, loggerMock.Object);
         
         // Assert
-        Assert.NotNull(runner.Session);
+        Assert.Same(session, runner.Session);
         Assert.Equal(premise.Id, runner.Session.Id);
         Assert.Equal(agents[0], runner.NextAgentToRespond);
         Assert.Empty(runner.GetConversationHistory());
     }
     
     [Fact]
-    public void Constructor_WithNullAgents_ThrowsArgumentNullException()
+    public void Constructor_WithNullSession_ThrowsArgumentNullException()
     {
         // Act & Assert
-        List<Agent>? nullAgents = null;
+        Session? nullSession = null;
         var exception = Assert.Throws<ArgumentNullException>(() => 
-            new SessionRunner(nullAgents!, premise, aiProviderMock.Object, loggerMock.Object));
+            new SessionRunner(nullSession!, aiProviderMock.Object, loggerMock.Object));
         
-        Assert.Equal("agents", exception.ParamName);
-    }
-    
-    [Fact]
-    public void Constructor_WithEmptyAgents_ThrowsArgumentException()
-    {
-        // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(() => 
-            new SessionRunner(new List<Agent>(), premise, aiProviderMock.Object, loggerMock.Object));
-        
-        Assert.Equal("agents", exception.ParamName);
-    }
-    
-    [Fact]
-    public void Constructor_WithNullPremise_ThrowsArgumentNullException()
-    {
-        // Act & Assert
-        SessionPremise? nullPremise = null;
-        var exception = Assert.Throws<ArgumentNullException>(() => 
-            new SessionRunner(agents, nullPremise!, aiProviderMock.Object, loggerMock.Object));
-        
-        Assert.Equal("premise", exception.ParamName);
+        Assert.Equal("session", exception.ParamName);
     }
     
     [Fact]
     public void Constructor_WithNullAIProvider_ThrowsArgumentNullException()
     {
+        // Arrange
+        var session = new Session(premise.Id, DateTime.UtcNow, premise, agents);
+        
         // Act & Assert
         IAIProvider? nullProvider = null;
         var exception = Assert.Throws<ArgumentNullException>(() => 
-            new SessionRunner(agents, premise, nullProvider!, loggerMock.Object));
+            new SessionRunner(session, nullProvider!, loggerMock.Object));
         
         Assert.Equal("aiProvider", exception.ParamName);
     }
@@ -92,10 +77,13 @@ public class SessionRunnerTests
     [Fact]
     public void Constructor_WithNullLogger_ThrowsArgumentNullException()
     {
+        // Arrange
+        var session = new Session(premise.Id, DateTime.UtcNow, premise, agents);
+        
         // Act & Assert
         ILogger<SessionRunner>? nullLogger = null;
         var exception = Assert.Throws<ArgumentNullException>(() => 
-            new SessionRunner(agents, premise, aiProviderMock.Object, nullLogger!));
+            new SessionRunner(session, aiProviderMock.Object, nullLogger!));
         
         Assert.Equal("logger", exception.ParamName);
     }
@@ -104,7 +92,8 @@ public class SessionRunnerTests
     public async Task Next_FirstMessage_SendsPremiseContent()
     {
         // Arrange
-        var runner = new SessionRunner(agents, premise, aiProviderMock.Object, loggerMock.Object);
+        var session = new Session(premise.Id, DateTime.UtcNow, premise, agents);
+        var runner = new SessionRunner(session, aiProviderMock.Object, loggerMock.Object);
         string expectedResponse = "This is a response from Agent1";
         
         aiProviderMock.Setup(p => p.SendMessageAsync(
@@ -141,7 +130,8 @@ public class SessionRunnerTests
     public async Task Next_SubsequentMessage_SendsPremiseAndHistory()
     {
         // Arrange
-        var runner = new SessionRunner(agents, premise, aiProviderMock.Object, loggerMock.Object);
+        var session = new Session(premise.Id, DateTime.UtcNow, premise, agents);
+        var runner = new SessionRunner(session, aiProviderMock.Object, loggerMock.Object);
         
         // Add a user message to create some history
         runner.AddUserMessage("Hello agents");
@@ -182,7 +172,8 @@ public class SessionRunnerTests
     public async Task Next_WhenAIProviderFails_PropagatesException()
     {
         // Arrange
-        var runner = new SessionRunner(agents, premise, aiProviderMock.Object, loggerMock.Object);
+        var session = new Session(premise.Id, DateTime.UtcNow, premise, agents);
+        var runner = new SessionRunner(session, aiProviderMock.Object, loggerMock.Object);
         var expectedException = new Exception("API failure");
         
         aiProviderMock.Setup(p => p.SendMessageAsync(
@@ -206,7 +197,8 @@ public class SessionRunnerTests
     public void AddUserMessage_AddsMessageToSession()
     {
         // Arrange
-        var runner = new SessionRunner(agents, premise, aiProviderMock.Object, loggerMock.Object);
+        var session = new Session(premise.Id, DateTime.UtcNow, premise, agents);
+        var runner = new SessionRunner(session, aiProviderMock.Object, loggerMock.Object);
         string userContent = "This is a user message";
         string expectedFormattedContent = $"[Human]: {userContent}";
         
@@ -231,7 +223,8 @@ public class SessionRunnerTests
     public async Task AgentRotation_FollowsConstructorOrder()
     {
         // Arrange
-        var runner = new SessionRunner(agents, premise, aiProviderMock.Object, loggerMock.Object);
+        var session = new Session(premise.Id, DateTime.UtcNow, premise, agents);
+        var runner = new SessionRunner(session, aiProviderMock.Object, loggerMock.Object);
         
         // Setup AI provider to return responses with agent name to verify message assignment
         aiProviderMock.Setup(p => p.SendMessageAsync(
@@ -312,7 +305,7 @@ public class SessionRunnerTests
         existingSession.AddMessage(agent2Msg);
         
         // Act
-        var runner = new SessionRunner(agents, premise, aiProviderMock.Object, loggerMock.Object, existingSession);
+        var runner = new SessionRunner(existingSession, aiProviderMock.Object, loggerMock.Object);
         
         // Assert
         // After Agent2 spoke, Agent3 should be next in rotation
@@ -337,7 +330,7 @@ public class SessionRunnerTests
         existingSession.AddMessage(unknownMsg);
         
         // Act
-        var runner = new SessionRunner(agents, premise, aiProviderMock.Object, loggerMock.Object, existingSession);
+        var runner = new SessionRunner(existingSession, aiProviderMock.Object, loggerMock.Object);
         
         // Assert
         // Should default to first agent since last agent isn't in our list
@@ -351,7 +344,7 @@ public class SessionRunnerTests
         var emptySession = new Session("test-session", DateTime.UtcNow, premise, agents);
         
         // Act
-        var runner = new SessionRunner(agents, premise, aiProviderMock.Object, loggerMock.Object, emptySession);
+        var runner = new SessionRunner(emptySession, aiProviderMock.Object, loggerMock.Object);
         
         // Assert
         Assert.Equal(agents[0], runner.NextAgentToRespond);

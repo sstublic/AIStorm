@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 public interface ISessionRunnerFactory
 {
-    SessionRunner Create(IEnumerable<Agent> agents, SessionPremise premise);
+    SessionRunner CreateWithNewSession(IEnumerable<Agent> agents, SessionPremise premise);
     
-    SessionRunner CreateFromExistingSession(string sessionId);
+    SessionRunner CreateWithStoredSession(string sessionId);
 }

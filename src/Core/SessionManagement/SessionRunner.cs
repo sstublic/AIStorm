@@ -12,37 +12,17 @@ public class SessionRunner
 {
     private readonly IAIProvider aiProvider;
     private readonly ILogger<SessionRunner> logger;
-    private Session session;
+    private readonly Session session;
     private int currentAgentIndex = 0;
 
-    public SessionRunner(IEnumerable<Agent> agents, SessionPremise premise, IAIProvider aiProvider, ILogger<SessionRunner> logger, Session? existingSession = null)
+    public SessionRunner(Session session, IAIProvider aiProvider, ILogger<SessionRunner> logger)
     {
-        agents = agents ?? throw new ArgumentNullException(nameof(agents));
-        
-        if (!agents.Any())
-            throw new ArgumentException("At least one agent must be provided", nameof(agents));
-        
-        premise = premise ?? throw new ArgumentNullException(nameof(premise));
+        this.session = session ?? throw new ArgumentNullException(nameof(session));
         this.aiProvider = aiProvider ?? throw new ArgumentNullException(nameof(aiProvider));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         
-        if (existingSession != null)
-        {
-            this.session = existingSession;
-            this.currentAgentIndex = GetNextAgentIndexFromHistory(session.Messages, session.Agents);
-            logger.LogInformation("Initialized SessionRunner with existing session: {SessionId}", session.Id);
-        }
-        else
-        {
-            this.session = new Session(
-                id: premise.Id,
-                created: DateTime.UtcNow,
-                premise: premise,
-                agents: agents
-            );
-            
-            logger.LogInformation("Initialized new SessionRunner with premise: {PremiseId}", premise.Id);
-        }
+        this.currentAgentIndex = GetNextAgentIndexFromHistory(session.Messages, session.Agents);
+        logger.LogInformation("Initialized SessionRunner with session: {SessionId}", session.Id);
     }
 
     public Session Session => session;

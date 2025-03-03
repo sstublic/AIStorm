@@ -124,6 +124,27 @@ The markdown implementation in the `AIStorm.Core.Storage.Markdown` namespace inc
 - Handling file system operations
 - Creating the necessary directory structure at initialization
 
+## Session Management
+
+The Session Management system coordinates conversations between multiple AI agents:
+
+### Session Runner
+
+- `SessionRunner` - Runs a session with a given set of AI agents, manages turn-taking, and handles message exchange
+  - Takes a pre-constructed `Session` object as input
+  - Determines which agent responds next based on conversation history
+  - Handles sending prompts to AI providers and processing responses
+  - Manages adding user messages to the conversation
+  - Maintains the state of the conversation
+
+### Session Runner Factory
+
+- `SessionRunnerFactory` - Creates `SessionRunner` instances with different initialization strategies:
+  - `CreateWithNewSession` - Creates a new session with the given agents and premise
+  - `CreateWithStoredSession` - Loads an existing session from storage by ID
+
+This design separates the responsibility of Session creation from Session running, making the code more maintainable and testable.
+
 ## Logging
 
 - Different log levels for appropriate information detail
