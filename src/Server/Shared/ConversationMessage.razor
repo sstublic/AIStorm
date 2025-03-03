@@ -1,12 +1,12 @@
 @using Markdig
 @using AIStorm.Core.Models
 
-<div class="message @MessageClass" style="border-left: 4px solid @AgentColor">
+<div class="message @MessageClass" style="border-left: 5px solid @AgentColor">
     <div class="message-header">
         <strong style="color: @AgentColor">@Message.AgentName</strong>
         <small class="text-muted ms-2">@Message.Timestamp.ToString("g")</small>
     </div>
-    <div class="message-content">
+    <div class="message-content markdown-content">
         @((MarkupString)RenderMarkdown(Message.Content))
     </div>
 </div>

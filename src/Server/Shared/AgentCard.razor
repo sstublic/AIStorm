@@ -1,12 +1,9 @@
 @using AIStorm.Core.Models
 @using AIStorm.Server.Shared
 
-<div class="agent-card @(IsExpanded ? "agent-card-expanded" : "")" @onclick="TogglePrompt">
+<div class="agent-card @(IsExpanded ? "agent-card-expanded" : "")" @onclick="TogglePrompt" 
+     style="@(string.IsNullOrEmpty(ColorIndicator) ? "" : $"border-left: 5px solid {ColorIndicator}")">
     <div class="d-flex align-items-center p-2">
-        @if (!string.IsNullOrEmpty(ColorIndicator))
-        {
-            <div class="agent-color-indicator" style="background-color: @ColorIndicator"></div>
-        }
         <div class="agent-info flex-grow-1">
             <strong>@Agent.Name</strong>
             <div class="agent-details">
@@ -37,9 +34,10 @@
 <style>
     .agent-card {
         transition: all 0.3s ease;
-        border-left: 4px solid #17a2b8;
+        border-left: 0; /* Reset default border - now controlled by inline style */
         cursor: pointer;
         padding: 0;
+        border-radius: 5px;
     }
     
     .agent-card:hover {

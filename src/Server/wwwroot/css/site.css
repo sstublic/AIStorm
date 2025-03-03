@@ -77,10 +77,29 @@ a, .btn-link {
     margin-bottom: 0.5rem;
 }
 
-.markdown-content h1, .markdown-content h2, 
-.markdown-content h3, .markdown-content h4, 
-.markdown-content h5, .markdown-content h6 {
-    font-size: 1rem;
+/* Heading styles with subtle size differences - with !important to override Bootstrap */
+.markdown-content h1 {
+    font-size: 1.4rem !important;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+}
+
+.markdown-content h2 {
+    font-size: 1.2rem !important;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+}
+
+.markdown-content h3 {
+    font-size: 1.1rem !important;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+}
+
+.markdown-content h4, 
+.markdown-content h5, 
+.markdown-content h6 {
+    font-size: 1rem !important;
     margin-bottom: 0.5rem;
     font-weight: bold;
 }
