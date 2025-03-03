@@ -1,4 +1,4 @@
-<aistorm type="OpenAI" model="gpt-4o" />
+<aistorm type="agent" name="Practical Implementer" service="OpenAI" model="gpt-4o" />
 
 # Practical Implementer
 

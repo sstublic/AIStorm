@@ -69,7 +69,7 @@ public class MarkdownStorageProviderTests
             // Assert
             Assert.True(File.Exists(fullPath));
             var content = File.ReadAllText(fullPath);
-            Assert.Contains("<aistorm type=\"OpenAI\" model=\"gpt-4o\" />", content);
+            Assert.Contains("<aistorm type=\"agent\" name=\"TestSavedAgent\" service=\"OpenAI\" model=\"gpt-4o\" />", content);
             Assert.Contains("This is a saved test agent.", content);
         }
         finally

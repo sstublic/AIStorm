@@ -45,9 +45,10 @@ AIStorm uses a dedicated prompt building system to ensure consistency across dif
 
 Our approach for handling multi-agent conversations uses a standardized format with agent name prefixes:
 
-1. All messages include sender name in brackets: `[SenderName]: message content`
+1. All messages include sender name in markdown header format: `## [SenderName]:\n\n message content`
 2. System prompts are enhanced with instructions about agent identity and expected format
 3. Agent message history is properly mapped to provider-specific formats
+4. SessionRunner is responsible for formatting messages with the proper markdown header
 
 System prompt template:
 ```

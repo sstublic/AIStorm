@@ -1,4 +1,4 @@
-<aistorm type="OpenAI" model="gpt-4o" />
+<aistorm type="agent" name="Critical Analyst" service="OpenAI" model="gpt-4o" />
 
 # Critical Analyst
 

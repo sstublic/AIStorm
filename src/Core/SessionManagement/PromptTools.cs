@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 
 public static class PromptTools
 {
-    public static string CleanupResponse(string response)
+    public static string RemoveAgentNamePrefixFromMessage(string response)
     {
         if (string.IsNullOrEmpty(response))
         {
@@ -17,6 +17,11 @@ public static class PromptTools
         var pattern = @"^\s*(\[\s*[^\]]+\]\s*:[\s\n]*)+";
         
         return Regex.Replace(response, pattern, string.Empty);
+    }
+    
+    public static string FormatMessageWithAgentNamePrefix(string agentName, string content)
+    {
+        return $"## [{agentName}]:\n\n{content}";
     }
 
     public static string CreateExtendedSystemPrompt(Agent agent, SessionPremise premise)

@@ -98,7 +98,7 @@ public class OpenAIProvider : IAIProvider
             logger.LogInformation("Received response from OpenAI, length: {Length} characters", 
                 responseText?.Length ?? 0);
                 
-            var cleanedResponse = PromptTools.CleanupResponse(responseText ?? string.Empty);
+            var cleanedResponse = PromptTools.RemoveAgentNamePrefixFromMessage(responseText ?? string.Empty);
                 
             string formattedResponse = $"[{agent.Name}]: {cleanedResponse}";
             

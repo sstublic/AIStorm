@@ -101,12 +101,12 @@ public class MarkdownStorageProviderSessionTests
             new StormMessage(
                 "user",
                 Tools.ParseAsUtc("2025-03-01T15:01:00"),
-                "Test message from user."
+                AIStorm.Core.SessionManagement.PromptTools.FormatMessageWithAgentNamePrefix("user", "Test message from user.")
             ),
             new StormMessage(
                 "Test Agent",
                 Tools.ParseAsUtc("2025-03-01T15:02:00"),
-                "Test response from agent."
+                AIStorm.Core.SessionManagement.PromptTools.FormatMessageWithAgentNamePrefix("Test Agent", "Test response from agent.")
             )
         };
         
@@ -187,12 +187,12 @@ public class MarkdownStorageProviderSessionTests
         
         var agents = new List<Agent> { agent };
         
-        // Create message
-        var message = new StormMessage(
-            "user",
-            Tools.ParseAsUtc("2025-03-01T15:01:00"),
-            "Round trip test message."
-        );
+            // Create message with the prefix already applied (simulating how SessionRunner would format it)
+            var message = new StormMessage(
+                "user",
+                Tools.ParseAsUtc("2025-03-01T15:01:00"),
+                AIStorm.Core.SessionManagement.PromptTools.FormatMessageWithAgentNamePrefix("user", "Round trip test message.")
+            );
         
         var messages = new List<StormMessage> { message };
         
@@ -234,8 +234,8 @@ public class MarkdownStorageProviderSessionTests
             var loadedMessage = loadedSession.Messages[0];
             Assert.Equal(originalMessage.AgentName, loadedMessage.AgentName);
             Assert.Equal(originalMessage.Timestamp, loadedMessage.Timestamp);
-            // The loaded message contains the markdown header format with the agent name
-            Assert.Equal($"## [{originalMessage.AgentName}]:\n\n{originalMessage.Content}", loadedMessage.Content);
+            // Compare the content directly since the original message already has the prefix
+            Assert.Equal(originalMessage.Content, loadedMessage.Content);
         }
         finally
         {

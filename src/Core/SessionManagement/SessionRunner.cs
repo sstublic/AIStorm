@@ -39,7 +39,9 @@ public class SessionRunner
         
         string response = await aiProvider.SendMessageAsync(agent, session.Premise, conversationHistory);
         
-        var message = new StormMessage(agent.Name, DateTime.UtcNow, response);
+        // Format the response with the agent name prefix
+        string formattedContent = PromptTools.FormatMessageWithAgentNamePrefix(agent.Name, response);
+        var message = new StormMessage(agent.Name, DateTime.UtcNow, formattedContent);
         
         session.AddMessage(message);
         
@@ -53,7 +55,7 @@ public class SessionRunner
 
     public void AddUserMessage(string content)
     {
-        var formattedContent = $"[Human]: {content}";
+        var formattedContent = PromptTools.FormatMessageWithAgentNamePrefix("Human", content);
         var message = new StormMessage("Human", DateTime.UtcNow, formattedContent);
         session.AddMessage(message);
     }

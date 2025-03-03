@@ -109,7 +109,7 @@ public class SessionRunnerTests
         var messages = runner.GetConversationHistory();
         Assert.Single(messages);
         Assert.Equal(agents[0].Name, messages[0].AgentName);
-        Assert.Equal(expectedResponse, messages[0].Content);
+        Assert.Equal(PromptTools.FormatMessageWithAgentNamePrefix(agents[0].Name, expectedResponse), messages[0].Content);
         
         // Verify the message was added to the session
         Assert.Single(runner.Session.Messages);
@@ -151,7 +151,7 @@ public class SessionRunnerTests
         var messages = runner.GetConversationHistory();
         Assert.Equal(2, messages.Count);
         Assert.Equal(agents[0].Name, messages[1].AgentName);
-        Assert.Equal(expectedResponse, messages[1].Content);
+        Assert.Equal(PromptTools.FormatMessageWithAgentNamePrefix(agents[0].Name, expectedResponse), messages[1].Content);
         
         // Verify the message was added to the session
         Assert.Equal(2, runner.Session.Messages.Count);
@@ -200,7 +200,7 @@ public class SessionRunnerTests
         var session = new Session(premise.Id, DateTime.UtcNow, premise, agents);
         var runner = new SessionRunner(session, aiProviderMock.Object, loggerMock.Object);
         string userContent = "This is a user message";
-        string expectedFormattedContent = $"[Human]: {userContent}";
+        string expectedFormattedContent = PromptTools.FormatMessageWithAgentNamePrefix("Human", userContent);
         
         // Act
         runner.AddUserMessage(userContent);
@@ -261,13 +261,13 @@ public class SessionRunnerTests
         Assert.Equal(3, messages.Count);
         
         Assert.Equal(agents[0].Name, messages[0].AgentName);
-        Assert.Equal("Response from Agent1", messages[0].Content);
+        Assert.Equal(PromptTools.FormatMessageWithAgentNamePrefix(agents[0].Name, "Response from Agent1"), messages[0].Content);
         
         Assert.Equal(agents[1].Name, messages[1].AgentName);
-        Assert.Equal("Response from Agent2", messages[1].Content);
+        Assert.Equal(PromptTools.FormatMessageWithAgentNamePrefix(agents[1].Name, "Response from Agent2"), messages[1].Content);
         
         Assert.Equal(agents[2].Name, messages[2].AgentName);
-        Assert.Equal("Response from Agent3", messages[2].Content);
+        Assert.Equal(PromptTools.FormatMessageWithAgentNamePrefix(agents[2].Name, "Response from Agent3"), messages[2].Content);
         
         // Second cycle to ensure the rotation continues correctly
         // Setup with correct parameter order for the next cycle
@@ -286,7 +286,7 @@ public class SessionRunnerTests
         messages = runner.GetConversationHistory();
         Assert.Equal(4, messages.Count);
         Assert.Equal(agents[0].Name, messages[3].AgentName);
-        Assert.Equal("Response from Agent1", messages[3].Content);
+        Assert.Equal(PromptTools.FormatMessageWithAgentNamePrefix(agents[0].Name, "Response from Agent1"), messages[3].Content);
     }
     
     [Fact]
