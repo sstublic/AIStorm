@@ -1,7 +1,8 @@
-namespace AIStorm.Core.Services;
+namespace AIStorm.Core.Storage;
 
 using System;
 using System.Collections.Generic;
+using AIStorm.Core.Common;
 
 public class MarkdownSegment
 {

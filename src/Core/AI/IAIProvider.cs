@@ -1,4 +1,4 @@
-namespace AIStorm.Core.Services;
+namespace AIStorm.Core.AI;
 
 using AIStorm.Core.Models;
 using System.Collections.Generic;

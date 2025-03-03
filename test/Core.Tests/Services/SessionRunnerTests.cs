@@ -1,7 +1,8 @@
 namespace AIStorm.Core.Tests.Services;
 
 using AIStorm.Core.Models;
-using AIStorm.Core.Services;
+using AIStorm.Core.AI;
+using AIStorm.Core.SessionManagement;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;

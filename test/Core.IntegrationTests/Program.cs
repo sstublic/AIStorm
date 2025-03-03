@@ -2,8 +2,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using AIStorm.Core.Services;
-using AIStorm.Core.Services.Options;
 using Microsoft.Extensions.Options;
 using NLog;
 using NLog.Extensions.Logging;

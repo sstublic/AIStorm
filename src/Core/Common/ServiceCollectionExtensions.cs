@@ -1,10 +1,13 @@
-namespace AIStorm.Core.Services;
+namespace AIStorm.Core.Common;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
-using AIStorm.Core.Services.Options;
+using AIStorm.Core.AI;
+using AIStorm.Core.AI.Options;
+using AIStorm.Core.Storage;
+using AIStorm.Core.SessionManagement;
 
 public static class ServiceCollectionExtensions
 {

@@ -1,7 +1,8 @@
-namespace AIStorm.Core.Services;
+namespace AIStorm.Core.AI;
 
 using AIStorm.Core.Models;
-using AIStorm.Core.Services.Options;
+using AIStorm.Core.AI.Options;
+using AIStorm.Core.SessionManagement;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;

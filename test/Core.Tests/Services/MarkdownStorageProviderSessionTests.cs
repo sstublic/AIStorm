@@ -1,6 +1,6 @@
 using AIStorm.Core.Models;
-using AIStorm.Core.Services;
-using AIStorm.Core.Services.Options;
+using AIStorm.Core.Storage;
+using AIStorm.Core.Common;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;

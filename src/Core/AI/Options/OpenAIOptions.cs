@@ -1,4 +1,4 @@
-namespace AIStorm.Core.Services.Options;
+namespace AIStorm.Core.AI.Options;
 
 public class OpenAIOptions
 {

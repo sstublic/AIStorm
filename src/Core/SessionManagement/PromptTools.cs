@@ -1,4 +1,4 @@
-namespace AIStorm.Core.Services;
+namespace AIStorm.Core.SessionManagement;
 
 using AIStorm.Core.Models;
 using System.Text.RegularExpressions;

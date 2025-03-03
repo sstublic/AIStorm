@@ -46,22 +46,31 @@ AIStorm/
 │   ├── Core/                   # Core business logic
 │   │   ├── Models/             # Domain models
 │   │   │   ├── Agent.cs        # Agent model
-│   │   │   ├── Session.cs      # Session model (updated to include agents and premise)
+│   │   │   ├── PromptMessage.cs # Prompt message model
+│   │   │   ├── Session.cs      # Session model (includes agents and premise)
 │   │   │   ├── SessionPremise.cs # Session premise model
 │   │   │   └── StormMessage.cs # Message model
-│   │   └── Services/           # Services
-│   │       ├── IAIProvider.cs  # AI provider interface
-│   │       ├── ISessionRunnerFactory.cs # Session runner factory interface
-│   │       ├── IStorageProvider.cs # Storage provider interface
-│   │       ├── MarkdownSerializer.cs # Markdown serialization
-│   │       ├── MarkdownStorageProvider.cs # Markdown implementation
-│   │       ├── OpenAIProvider.cs # OpenAI implementation
-│   │       ├── PromptTools.cs  # Tools for AI prompts
-│   │       ├── SessionRunner.cs # Session runner implementation (updated for embedded agents)
-│   │       ├── SessionRunnerFactory.cs # Session runner factory
-│   │       └── Options/        # Configuration options
-│   │           ├── MarkdownStorageOptions.cs # Storage options
-│   │           └── OpenAIOptions.cs # OpenAI options
+│   │   ├── AI/                 # AI provider implementations
+│   │   │   ├── IAIProvider.cs  # AI provider interface
+│   │   │   ├── OpenAIProvider.cs # OpenAI implementation
+│   │   │   └── OpenAIOptions.cs # OpenAI configuration options
+│   │   ├── Storage/            # Storage implementations
+│   │   │   ├── IStorageProvider.cs # Storage provider interface
+│   │   │   ├── MarkdownStorageProvider.cs # Markdown implementation
+│   │   │   ├── MarkdownStorageOptions.cs # Storage options
+│   │   │   ├── MarkdownSerializer.cs # Markdown serialization
+│   │   │   ├── MarkdownSegment.cs # Markdown document segment
+│   │   │   └── OrderedProperties.cs # Properties with preserved order
+│   │   ├── SessionManagement/  # Session management components
+│   │   │   ├── IPromptBuilder.cs # Prompt builder interface
+│   │   │   ├── PromptBuilder.cs # Prompt builder implementation
+│   │   │   ├── PromptTools.cs  # Tools for AI prompts
+│   │   │   ├── ISessionRunnerFactory.cs # Session runner factory interface
+│   │   │   ├── SessionRunner.cs # Session runner implementation
+│   │   │   └── SessionRunnerFactory.cs # Session runner factory
+│   │   └── Common/             # Common utilities
+│   │       ├── Tools.cs        # Utility functions for dates and times
+│   │       └── ServiceCollectionExtensions.cs # DI extensions
 │   └── Server/                 # Blazor Server application
 │       ├── Pages/              # Razor pages
 │       ├── Shared/             # Shared components

@@ -1,5 +1,5 @@
 using AIStorm.Core.Models;
-using AIStorm.Core.Services;
+using AIStorm.Core.AI;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
 using System.Text.Json.Serialization;

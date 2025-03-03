@@ -1,4 +1,4 @@
-namespace AIStorm.Core.Services;
+namespace AIStorm.Core.Storage;
 
 using AIStorm.Core.Models;
 

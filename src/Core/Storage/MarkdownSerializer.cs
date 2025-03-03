@@ -1,4 +1,4 @@
-namespace AIStorm.Core.Services;
+namespace AIStorm.Core.Storage;
 
 using System.Collections.Generic;
 using System.Linq;

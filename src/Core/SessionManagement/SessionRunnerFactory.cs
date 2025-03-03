@@ -1,6 +1,8 @@
-namespace AIStorm.Core.Services;
+namespace AIStorm.Core.SessionManagement;
 
 using AIStorm.Core.Models;
+using AIStorm.Core.AI;
+using AIStorm.Core.Storage;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
