@@ -19,8 +19,8 @@ DO NOT read or modify:
 
 ## Project specifications
 
-Whenever project specifications are changed or updated, update `docs/specs.md` file to reflect that and to keep it up to date.
-Reread `docs/specs.md` often and whenever you need to refresh your context with what the project is about and we agreed about it so far.
+Whenever project specifications are changed or updated, update `docs/project-overview.md` and `docs/system-architecture.md` files to reflect that and to keep it up to date.
+Reread `docs/project-overview.md` and `docs/system-architecture.md` often and whenever you need to refresh your context with what the project is about and we agreed about it so far.
 
 ## Behavior Guidelines
 
@@ -36,13 +36,12 @@ Reread `docs/specs.md` often and whenever you need to refresh your context with 
 1. Update `## Convention Rules` section of `.clinerules` file whenever user specifies a specific way he wants the code to look or the project to be organized. These rules should be **generic** and not tied to **this specific project**. If you want to document the rule you inferred from this project, generalize it first and don't use any names specific to the project.
 2. These conventions are the way user prefers to organize and handle technical aspects of the project, but unrelated to the project specification itself.
 3. Keep the rules concise and as an enumerated list.
-4. If you encounter project specific tech conventions, document them in `docs/specs.md` file instead.
-5. When creating markdown content, properly format it and use backticks for names of files, folder, classes, etc.
-6. Don't add generic C# or .NET conventions to the rules to keep it concise.
+4. When creating markdown content, properly format it and use backticks for names of files, folder, classes, etc.
+5. Don't add generic C# or .NET conventions to the rules to keep it concise.
 
 ## Convention Rules
 
-1. Project structure with `docs/` and `src/` folders
+1. Project structure with `docs/`, `src/` and `test/` folders
 2. C# project folder and file names do not include namespaces.
 3. Namespaces follow the pattern `{ProjectName}.{Module}`
 4. Use `appsettings.json` for application settings and `appsettings.local.json` for local development settings (not committed to Git)
@@ -66,6 +65,5 @@ Reread `docs/specs.md` often and whenever you need to refresh your context with 
 11. Git commit messages should be concise and descriptive
     - Focus on the "what" and "why" rather than the "how"
     - Avoid listing specific properties, method names, or implementation details
-
 
 ## Don't forget any of 'AI Assistant Guidelines' above!!!
