@@ -197,7 +197,6 @@ public class MarkdownStorageProvider : IStorageProvider
         var sessionSegment = GetRequiredSegment(segments, "session", "session");
         
         var created = sessionSegment.GetRequiredTimestampUtc("created");
-        var description = sessionSegment.GetRequiredProperty("description");
         
         var premiseSegment = GetRequiredSegment(segments, "premise", "session");
         var premise = new SessionPremise(id, premiseSegment.Content);

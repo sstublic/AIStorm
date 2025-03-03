@@ -1,4 +1,4 @@
-<aistorm type="session" created="2025-03-01T15:00:00" description="Simple example brainstorming session" />
+<aistorm type="session" created="2025-03-01T15:00:00" />
 
 # Simple example brainstorming session
 
