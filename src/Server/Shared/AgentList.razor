@@ -1,4 +1,5 @@
 @using AIStorm.Core.Models
+@using System.Collections.Generic
 
 <div class="card">
     <div class="card-header">
@@ -23,7 +24,7 @@
 
 @code {
     [Parameter]
-    public List<Agent> Agents { get; set; } = new List<Agent>();
+    public IReadOnlyList<Agent> Agents { get; set; } = new List<Agent>();
 
     [Parameter]
     public Dictionary<string, string> AgentColors { get; set; } = new Dictionary<string, string>();

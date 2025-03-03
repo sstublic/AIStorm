@@ -5,15 +5,15 @@
 @inject IStorageProvider StorageProvider
 @inject ILogger<Conversation> Logger
 
-<PageTitle>Conversation - @(session?.Description ?? "Loading...")</PageTitle>
+<PageTitle>Conversation - @(session?.Id ?? "Loading...")</PageTitle>
 
 <div class="container-fluid mt-3">
     <div class="row">
         <div class="col-md-3">
-            <AgentList Agents="@(session?.Agents ?? new List<Agent>())" AgentColors="@agentColors" />
+            <AgentList Agents="@(session?.Agents ?? Array.Empty<Agent>())" AgentColors="@agentColors" />
         </div>
         <div class="col-md-9">
-            <ConversationHistory Messages="@(session?.Messages ?? new List<StormMessage>())" AgentColors="@agentColors" />
+            <ConversationHistory Messages="@(session?.Messages ?? Array.Empty<StormMessage>())" AgentColors="@agentColors" />
         </div>
     </div>
 </div>
@@ -46,8 +46,8 @@
             // Load session data with embedded agents
             session = StorageProvider.LoadSession(SessionId);
             
-            Logger.LogInformation("Session loaded successfully. Description: '{Description}', Messages: {Count}, Agents: {AgentCount}", 
-                session.Description, session.Messages.Count, session.Agents.Count);
+            Logger.LogInformation("Session loaded successfully. Session ID: '{Id}', Messages: {Count}, Agents: {AgentCount}", 
+                session.Id, session.Messages.Count, session.Agents.Count);
                 
             // Assign colors to embedded agents
             for (int i = 0; i < session.Agents.Count; i++)

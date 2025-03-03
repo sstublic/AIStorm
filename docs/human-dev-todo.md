@@ -4,3 +4,5 @@
 4. Move creating message sequence logic from OpenAIProvider into generic (use System, Assistant,User)
 5. SessionRunner constructor is suspiciously redundant with Session creation
 6. PromptBuilder extensive test, options for format text?
+7. Make all props in Models readonly
+8. 

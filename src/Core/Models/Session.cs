@@ -2,23 +2,42 @@ namespace AIStorm.Core.Models;
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 public class Session
 {
-    public string Id { get; set; }
-    public DateTime Created { get; set; }
-    public string Description { get; set; }
-    public List<StormMessage> Messages { get; set; }
-    public List<Agent> Agents { get; set; }
-    public SessionPremise Premise { get; set; }
+    public string Id { get; }
+    public DateTime Created { get; }
+    public IReadOnlyList<StormMessage> Messages => messages;
+    public IReadOnlyList<Agent> Agents { get; }
+    public SessionPremise Premise { get; }
 
-    public Session(string id, DateTime created, string description, SessionPremise premise)
+    private readonly List<StormMessage> messages = new();
+
+    public Session(string id, DateTime created, SessionPremise premise, IEnumerable<Agent> agents, IEnumerable<StormMessage>? messages = null)
     {
         Id = id;
         Created = created;
-        Description = description;
-        Premise = premise;
-        Messages = new List<StormMessage>();
-        Agents = new List<Agent>();
+        Premise = premise ?? throw new ArgumentNullException(nameof(premise));
+        
+        if (agents == null)
+            throw new ArgumentNullException(nameof(agents));
+            
+        var agentList = new List<Agent>(agents);
+        if (agentList.Count == 0)
+            throw new ArgumentException("At least one agent must be provided", nameof(agents));
+            
+        Agents = agentList.AsReadOnly();
+        
+        if (messages != null)
+            this.messages.AddRange(messages);
+    }
+
+    public void AddMessage(StormMessage message)
+    {
+        if (message == null)
+            throw new ArgumentNullException(nameof(message));
+        
+        messages.Add(message);
     }
 }

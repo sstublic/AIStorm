@@ -300,12 +300,16 @@ public class SessionRunnerTests
     public void Constructor_WithExistingSession_DeterminesCorrectNextAgent()
     {
         // Arrange
-        var existingSession = new Session("test-session", DateTime.UtcNow, "Test Session", premise);
+        var existingSession = new Session("test-session", DateTime.UtcNow, premise, agents);
         
         // Add messages in sequence: Human → Agent1 → Agent2
-        existingSession.Messages.Add(new StormMessage("Human", DateTime.UtcNow.AddMinutes(-30), "[Human]: Hello agents"));
-        existingSession.Messages.Add(new StormMessage("Agent1", DateTime.UtcNow.AddMinutes(-25), "Response from Agent1"));
-        existingSession.Messages.Add(new StormMessage("Agent2", DateTime.UtcNow.AddMinutes(-20), "Response from Agent2"));
+        var humanMsg = new StormMessage("Human", DateTime.UtcNow.AddMinutes(-30), "[Human]: Hello agents");
+        var agent1Msg = new StormMessage("Agent1", DateTime.UtcNow.AddMinutes(-25), "Response from Agent1");
+        var agent2Msg = new StormMessage("Agent2", DateTime.UtcNow.AddMinutes(-20), "Response from Agent2");
+        
+        existingSession.AddMessage(humanMsg);
+        existingSession.AddMessage(agent1Msg);
+        existingSession.AddMessage(agent2Msg);
         
         // Act
         var runner = new SessionRunner(agents, premise, aiProviderMock.Object, loggerMock.Object, existingSession);
@@ -323,11 +327,14 @@ public class SessionRunnerTests
     public void Constructor_WithExistingSessionAndUnknownAgent_StartsWithFirstAgent()
     {
         // Arrange
-        var existingSession = new Session("test-session", DateTime.UtcNow, "Test Session", premise);
+        var existingSession = new Session("test-session", DateTime.UtcNow, premise, agents);
         
         // Add message from an unknown agent
-        existingSession.Messages.Add(new StormMessage("Human", DateTime.UtcNow.AddMinutes(-30), "[Human]: Hello agents"));
-        existingSession.Messages.Add(new StormMessage("UnknownAgent", DateTime.UtcNow.AddMinutes(-25), "Response from UnknownAgent"));
+        var humanMsg = new StormMessage("Human", DateTime.UtcNow.AddMinutes(-30), "[Human]: Hello agents");
+        var unknownMsg = new StormMessage("UnknownAgent", DateTime.UtcNow.AddMinutes(-25), "Response from UnknownAgent");
+        
+        existingSession.AddMessage(humanMsg);
+        existingSession.AddMessage(unknownMsg);
         
         // Act
         var runner = new SessionRunner(agents, premise, aiProviderMock.Object, loggerMock.Object, existingSession);
@@ -341,7 +348,7 @@ public class SessionRunnerTests
     public void Constructor_WithEmptyExistingSession_StartsWithFirstAgent()
     {
         // Arrange
-        var emptySession = new Session("test-session", DateTime.UtcNow, "Empty Test Session", premise);
+        var emptySession = new Session("test-session", DateTime.UtcNow, premise, agents);
         
         // Act
         var runner = new SessionRunner(agents, premise, aiProviderMock.Object, loggerMock.Object, emptySession);

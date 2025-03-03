@@ -8,6 +8,7 @@ using Moq;
 using System;
 using System.IO;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace Core.Tests.Services;
 
@@ -42,7 +43,6 @@ public class MarkdownStorageProviderSessionTests
         // Assert
         Assert.NotNull(session);
         Assert.Equal("SessionExample", session.Id);
-        Assert.Equal("Simple example brainstorming session", session.Description);
         
         // Verify premise was loaded
         Assert.NotNull(session.Premise);
@@ -87,32 +87,36 @@ public class MarkdownStorageProviderSessionTests
         }
         
         var premise = new SessionPremise(sessionId, "This is a test premise for the session.");
+        
+        var agents = new List<Agent> {
+            new Agent(
+                "Test Agent",
+                "OpenAI",
+                "gpt-4o",
+                "You are a test agent for checking the session serialization."
+            )
+        };
+        
+        var messages = new List<StormMessage> {
+            new StormMessage(
+                "user",
+                Tools.ParseAsUtc("2025-03-01T15:01:00"),
+                "Test message from user."
+            ),
+            new StormMessage(
+                "Test Agent",
+                Tools.ParseAsUtc("2025-03-01T15:02:00"),
+                "Test response from agent."
+            )
+        };
+        
         var session = new Session(
             sessionId,
             Tools.ParseAsUtc("2025-03-01T15:00:00"),
-            "Test Session",
-            premise
+            premise,
+            agents,
+            messages
         );
-        
-        // Add test agents
-        session.Agents.Add(new Agent(
-            "Test Agent",
-            "OpenAI",
-            "gpt-4o",
-            "You are a test agent for checking the session serialization."
-        ));
-        
-        session.Messages.Add(new StormMessage(
-            "user",
-            Tools.ParseAsUtc("2025-03-01T15:01:00"),
-            "Test message from user."
-        ));
-        
-        session.Messages.Add(new StormMessage(
-            "Test Agent",
-            Tools.ParseAsUtc("2025-03-01T15:02:00"),
-            "Test response from agent."
-        ));
 
         try
         {
@@ -122,8 +126,8 @@ public class MarkdownStorageProviderSessionTests
             // Assert
             Assert.True(File.Exists(fullPath));
             var content = File.ReadAllText(fullPath);
-            Assert.Contains("<aistorm type=\"session\" created=\"2025-03-01T15:00:00\" description=\"Test Session\" />", content);
-            Assert.Contains("# Test Session", content);
+            Assert.Contains("<aistorm type=\"session\" created=\"2025-03-01T15:00:00\" />", content);
+            Assert.Contains("# Session TestSession", content);
             
             // Check premise was saved
             Assert.Contains("<aistorm type=\"premise\" />", content);
@@ -172,27 +176,33 @@ public class MarkdownStorageProviderSessionTests
         }
         
         var premise = new SessionPremise(sessionId, "This is a test premise for the round trip session.");
-        var originalSession = new Session(
-            sessionId,
-            Tools.ParseAsUtc("2025-03-01T15:00:00"),
-            "Round Trip Test Session",
-            premise
-        );
         
-        // Add test agent
+        // Create agent
         var agent = new Agent(
             "Round Trip Agent",
             "OpenAI",
             "gpt-4o",
             "You are a test agent for checking the round trip session serialization."
         );
-        originalSession.Agents.Add(agent);
         
-        originalSession.Messages.Add(new StormMessage(
+        var agents = new List<Agent> { agent };
+        
+        // Create message
+        var message = new StormMessage(
             "user",
             Tools.ParseAsUtc("2025-03-01T15:01:00"),
             "Round trip test message."
-        ));
+        );
+        
+        var messages = new List<StormMessage> { message };
+        
+        var originalSession = new Session(
+            sessionId,
+            Tools.ParseAsUtc("2025-03-01T15:00:00"),
+            premise,
+            agents,
+            messages
+        );
 
         try
         {
@@ -203,7 +213,6 @@ public class MarkdownStorageProviderSessionTests
             // Assert
             Assert.NotNull(loadedSession);
             Assert.Equal(originalSession.Id, loadedSession.Id);
-            Assert.Equal(originalSession.Description, loadedSession.Description);
             Assert.Equal(originalSession.Created, loadedSession.Created);
             
             // Verify premise was round-tripped correctly

@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using Moq;
 using System;
 using System.IO;
+using System.Collections.Generic;
 
 namespace Core.Tests.Services;
 
@@ -62,11 +63,15 @@ public class MarkdownStorageProviderPremiseTests
             "This is a test session premise."
         );
         
+        var agents = new List<Agent> {
+            new Agent("Test Agent", "OpenAI", "gpt-4o", "You are a test agent.")
+        };
+        
         var session = new Session(
             sessionId,
             DateTime.UtcNow,
-            "Test Session with Premise",
-            premise
+            premise,
+            agents
         );
 
         try
@@ -108,11 +113,15 @@ public class MarkdownStorageProviderPremiseTests
             "This is a round trip test session premise."
         );
         
+        var agents = new List<Agent> {
+            new Agent("Test Agent", "OpenAI", "gpt-4o", "You are a test agent.")
+        };
+        
         var originalSession = new Session(
             sessionId,
             DateTime.UtcNow,
-            "Round Trip Session Test",
-            originalPremise
+            originalPremise,
+            agents
         );
 
         try

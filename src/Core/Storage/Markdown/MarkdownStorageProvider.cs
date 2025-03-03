@@ -92,61 +92,61 @@ public class MarkdownStorageProvider : IStorageProvider
 
     private Agent CreateAgentFromTemplate(MarkdownSegment segment)
     {
-        var name = segment.GetRequiredProperty("name");
-        var service = segment.GetRequiredProperty("service");
-        var model = segment.GetRequiredProperty("model");
-        
-        return new Agent(name, service, model, segment.Content);
+        try
+        {
+            var name = segment.GetRequiredProperty("name");
+            var service = segment.GetRequiredProperty("service");
+            var model = segment.GetRequiredProperty("model");
+            
+            return new Agent(name, service, model, segment.Content);
+        }
+        catch (Exception ex) when (ex is FormatException || ex is ArgumentException)
+        {
+            throw new FormatException($"Invalid agent template format: {ex.Message}", ex);
+        }
     }
 
     private List<MarkdownSegment> CreateAgentSegments(IEnumerable<Agent> agents)
     {
-        var segments = new List<MarkdownSegment>();
-        
-        foreach (var agent in agents)
-        {
-            var properties = new OrderedProperties(
-                ("type", "agent"),
-                ("name", agent.Name),
-                ("service", agent.AIServiceType),
-                ("model", agent.AIModel)
-            );
-            
-            segments.Add(new MarkdownSegment(properties, agent.SystemPrompt));
-        }
-        
-        return segments;
+        return agents.Select(agent => 
+            new MarkdownSegment(
+                new OrderedProperties(
+                    ("type", "agent"),
+                    ("name", agent.Name),
+                    ("service", agent.AIServiceType),
+                    ("model", agent.AIModel)
+                ),
+                agent.SystemPrompt
+            )
+        ).ToList();
     }
 
     private List<MarkdownSegment> CreateMessageSegments(IEnumerable<StormMessage> messages)
     {
-        var segments = new List<MarkdownSegment>();
-        
-        foreach (var message in messages)
-        {
-            var properties = new OrderedProperties(
-                ("type", "message"),
-                ("from", message.AgentName),
-                ("timestamp", Tools.UtcToString(message.Timestamp))
-            );
-            
-            var messageContent = $"## [{message.AgentName}]:\n\n{message.Content}";
-            segments.Add(new MarkdownSegment(properties, messageContent));
-        }
-        
-        return segments;
+        return messages.Select(message => 
+            new MarkdownSegment(
+                new OrderedProperties(
+                    ("type", "message"),
+                    ("from", message.AgentName),
+                    ("timestamp", Tools.UtcToString(message.Timestamp))
+                ),
+                $"## [{message.AgentName}]:\n\n{message.Content}"
+            )
+        ).ToList();
     }
 
     private StormMessage CreateMessageFromSegment(MarkdownSegment segment)
     {
-        var agentName = segment.GetRequiredProperty("from");
-        var timestamp = segment.GetRequiredTimestampUtc("timestamp");
-        
-        // Keep the original message content including the agent prefix
-        // This is important for AI to understand which message came from which participant
-        var messageContent = segment.Content;
-        
-        return new StormMessage(agentName, timestamp, messageContent);
+        try
+        {
+            var agentName = segment.GetRequiredProperty("from");
+            var timestamp = segment.GetRequiredTimestampUtc("timestamp");
+            return new StormMessage(agentName, timestamp, segment.Content);
+        }
+        catch (Exception ex) when (ex is FormatException || ex is ArgumentException)
+        {
+            throw new FormatException($"Invalid message format: {ex.Message}", ex);
+        }
     }
 
     public Agent LoadAgent(string id)
@@ -202,35 +202,15 @@ public class MarkdownStorageProvider : IStorageProvider
         var premiseSegment = GetRequiredSegment(segments, "premise", "session");
         var premise = new SessionPremise(id, premiseSegment.Content);
         
-        var session = new Session(id, created, description, premise);
+        var agents = serializer.FindSegments(segments, "agent")
+            .Select(segment => CreateAgentFromTemplate(segment))
+            .ToList();
         
-        var agentSegments = serializer.FindSegments(segments, "agent");
-        foreach (var agentSegment in agentSegments)
-        {
-            try {
-                var agent = CreateAgentFromTemplate(agentSegment);
-                session.Agents.Add(agent);
-            }
-            catch (FormatException ex) {
-                logger.LogWarning("Invalid agent segment found in session {SessionId}: {Error}", id, ex.Message);
-                continue;
-            }
-        }
+        var messages = serializer.FindSegments(segments, "message")
+            .Select(segment => CreateMessageFromSegment(segment))
+            .ToList();
         
-        var messageSegments = serializer.FindSegments(segments, "message");
-        foreach (var messageSegment in messageSegments)
-        {
-            try {
-                var message = CreateMessageFromSegment(messageSegment);
-                session.Messages.Add(message);
-            }
-            catch (FormatException ex) {
-                logger.LogWarning("Invalid message segment found in session {SessionId}: {Error}", id, ex.Message);
-                continue;
-            }
-        }
-        
-        return session;
+        return new Session(id, created, premise, agents, messages);
     }
 
     public void SaveSession(string id, Session session)
@@ -241,11 +221,10 @@ public class MarkdownStorageProvider : IStorageProvider
         
         var sessionProperties = new OrderedProperties(
             ("type", "session"),
-            ("created", Tools.UtcToString(session.Created)),
-            ("description", session.Description)
+            ("created", Tools.UtcToString(session.Created))
         );
         
-        var sessionContent = $"# {session.Description}";
+        var sessionContent = $"# Session {id}";
         segments.Add(new MarkdownSegment(sessionProperties, sessionContent));
         
         if (session.Premise != null)

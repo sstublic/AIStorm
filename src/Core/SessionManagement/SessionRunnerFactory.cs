@@ -20,7 +20,7 @@ public class SessionRunnerFactory : ISessionRunnerFactory
         this.storageProvider = storageProvider;
     }
 
-    public SessionRunner Create(List<Agent> agents, SessionPremise premise)
+    public SessionRunner Create(IEnumerable<Agent> agents, SessionPremise premise)
     {
         var logger = loggerFactory.CreateLogger<SessionRunner>();
         return new SessionRunner(agents, premise, aiProvider, logger);
