@@ -119,7 +119,7 @@ The storage provider interface defines operations for:
 
 #### Markdown Storage
 
-The markdown implementation includes:
+The markdown implementation in the `AIStorm.Core.Storage.Markdown` namespace includes:
 - Parsing and generating markdown files with proper formatting
 - Handling file system operations
 - Creating the necessary directory structure at initialization

@@ -5,8 +5,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
 using AIStorm.Core.AI;
-using AIStorm.Core.AI.Options;
 using AIStorm.Core.Storage;
+using AIStorm.Core.Storage.Markdown;
 using AIStorm.Core.SessionManagement;
 
 public static class ServiceCollectionExtensions

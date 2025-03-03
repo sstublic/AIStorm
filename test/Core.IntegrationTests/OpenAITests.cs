@@ -90,7 +90,13 @@ public class OpenAITests
             string userMessage = "What is the capital of France?";
             logger.LogInformation("Sending message: \"{Message}\"", userMessage);
             
-            var response = await aiProvider.SendMessageAsync(agent, conversationHistory, userMessage);
+            // Create a session premise
+            var premise = new SessionPremise("TestSession", "This is a test premise");
+            
+            // Add the user message to the conversation history
+            conversationHistory.Add(new StormMessage("user", DateTime.UtcNow, userMessage));
+            
+            var response = await aiProvider.SendMessageAsync(agent, premise, conversationHistory);
             
             logger.LogInformation("Response received: \"{Response}\"", response);
             

@@ -6,6 +6,8 @@ using Microsoft.Extensions.Options;
 using NLog;
 using NLog.Extensions.Logging;
 using System.IO;
+using AIStorm.Core.Storage.Markdown;
+using AIStorm.Core.Common;
 
 namespace AIStorm.Core.IntegrationTests;
 

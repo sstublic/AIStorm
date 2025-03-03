@@ -43,7 +43,8 @@ AIStorm/
 │   ├── Core/                   # Core business logic
 │   │   ├── Models/             # Domain models
 │   │   ├── AI/                 # AI provider implementations
-│   │   ├── Storage/            # Storage implementations
+│   │   ├── Storage/            # Storage interfaces and base implementations
+│   │   │   └── Markdown/       # Markdown-specific storage implementation
 │   │   ├── SessionManagement/  # Session management components
 │   │   └── Common/             # Common utilities
 │   └── Server/                 # Blazor Server application

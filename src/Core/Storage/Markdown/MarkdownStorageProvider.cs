@@ -1,4 +1,4 @@
-namespace AIStorm.Core.Storage;
+namespace AIStorm.Core.Storage.Markdown;
 
 using AIStorm.Core.Models;
 using Microsoft.Extensions.Logging;
@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using AIStorm.Core.Common;
+using AIStorm.Core.Storage;
 
 public class MarkdownStorageProvider : IStorageProvider
 {

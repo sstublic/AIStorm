@@ -1,4 +1,4 @@
-namespace AIStorm.Core.Storage;
+namespace AIStorm.Core.Storage.Markdown;
 
 using System.Collections.Generic;
 using System.Linq;

@@ -1,5 +1,6 @@
 using AIStorm.Core.Models;
 using AIStorm.Core.Storage;
+using AIStorm.Core.Storage.Markdown;
 using AIStorm.Core.SessionManagement;
 using Microsoft.Extensions.Logging;
 using System;
@@ -47,8 +48,8 @@ public class SessionIntegrationTests
             
             logger.LogInformation("Session premise: {Premise}", session.Premise);
             
-            // Initialize session runner with the session (contains embedded agents and premise)
-            var sessionRunner = sessionRunnerFactory.Create(session);
+            // Initialize session runner with the agents and premise from the loaded session
+            var sessionRunner = sessionRunnerFactory.Create(session.Agents, session.Premise);
             
             logger.LogInformation("----------------------------------------");
             logger.LogInformation("Starting conversation");

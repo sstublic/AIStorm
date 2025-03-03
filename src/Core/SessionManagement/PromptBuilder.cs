@@ -17,7 +17,7 @@ public class PromptBuilder : IPromptBuilder
     public PromptMessage[] BuildPrompt(Agent agent, SessionPremise premise, List<StormMessage> history)
     {
         logger.LogDebug("Building prompt for agent {AgentName} with premise and {MessageCount} history messages", 
-            agent.Name, history?.Count ?? 0);
+            agent.Name, history.Count);
             
         var messages = new List<PromptMessage>
         {
@@ -25,13 +25,10 @@ public class PromptBuilder : IPromptBuilder
         };
         
         // Add conversation history
-        if (history != null)
+        foreach (var message in history)
         {
-            foreach (var message in history)
-            {
-                string role = message.AgentName == agent.Name ? "assistant" : "user";
-                messages.Add(new PromptMessage(role, message.Content));
-            }
+            string role = message.AgentName == agent.Name ? "assistant" : "user";
+            messages.Add(new PromptMessage(role, message.Content));
         }
         
         logger.LogDebug("Built prompt with {MessageCount} messages", messages.Count);
