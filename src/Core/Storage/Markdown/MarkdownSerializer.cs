@@ -36,11 +36,9 @@ public class MarkdownSerializer
         
         foreach (var segment in segments)
         {
-            // Generate tag with properties
             sb.AppendLine(GenerateTagWithProperties(segment.Properties));
             sb.AppendLine();
             
-            // Add content
             if (!string.IsNullOrEmpty(segment.Content))
             {
                 sb.AppendLine(segment.Content);
