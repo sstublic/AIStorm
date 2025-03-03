@@ -7,14 +7,17 @@ public static class PromptTools
 {
     public static string RemoveAgentNamePrefixFromMessage(string response)
     {
+        ArgumentNullException.ThrowIfNull(response);
+
         if (string.IsNullOrEmpty(response))
         {
-            return response;
+            return string.Empty;
         }
 
-        // Regex to match the pattern "[AnyName]:" at the beginning of the string,
-        // possibly followed by whitespace, and possibly repeated multiple times
-        var pattern = @"^\s*(\[\s*[^\]]+\]\s*:[\s\n]*)+";
+        // Enhanced regex to match both:
+        // 1. Standard prefix: "[AnyName]:" possibly with whitespace
+        // 2. Markdown header: "## [AnyName]:" followed by newlines
+        var pattern = @"^(?:\#\#\s*)?(\[\s*[^\]]+\]\s*:[\s\n]*)+";
         
         return Regex.Replace(response, pattern, string.Empty);
     }
