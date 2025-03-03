@@ -20,6 +20,7 @@ public static class ServiceCollectionExtensions
         // Register services
         services.AddSingleton<MarkdownSerializer>();
         services.AddSingleton<IStorageProvider, MarkdownStorageProvider>();
+        services.AddSingleton<IPromptBuilder, PromptBuilder>();
         services.AddSingleton<IAIProvider, OpenAIProvider>();
         services.AddSingleton<ISessionRunnerFactory, SessionRunnerFactory>();
         

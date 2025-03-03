@@ -108,8 +108,8 @@ public class SessionRunnerTests
         
         aiProviderMock.Setup(p => p.SendMessageAsync(
                 agents[0],
-                It.IsAny<List<StormMessage>>(),
-                premise.Content))
+                premise,
+                It.IsAny<List<StormMessage>>()))
             .ReturnsAsync(expectedResponse);
         
         // Act
@@ -131,8 +131,8 @@ public class SessionRunnerTests
         // Verify the AI provider was called with the correct parameters
         aiProviderMock.Verify(p => p.SendMessageAsync(
             agents[0],
-            It.Is<List<StormMessage>>(m => m.Count == 0),
-            premise.Content),
+            premise,
+            It.Is<List<StormMessage>>(m => m.Count == 0)),
             Times.Once);
     }
     
@@ -149,8 +149,8 @@ public class SessionRunnerTests
         
         aiProviderMock.Setup(p => p.SendMessageAsync(
                 agents[0],
-                It.IsAny<List<StormMessage>>(),
-                It.Is<string>(s => s.Contains(premise.Content) && s.Contains("conversation history"))))
+                premise,
+                It.IsAny<List<StormMessage>>()))
             .ReturnsAsync(expectedResponse);
         
         // Act
@@ -172,8 +172,8 @@ public class SessionRunnerTests
         // Verify the AI provider was called with the correct parameters
         aiProviderMock.Verify(p => p.SendMessageAsync(
             agents[0],
-            It.Is<List<StormMessage>>(m => m.Count == 1 && m[0].AgentName == "Human"),
-            It.Is<string>(s => s.Contains(premise.Content) && s.Contains("conversation history"))),
+            premise,
+            It.Is<List<StormMessage>>(m => m.Count == 1 && m[0].AgentName == "Human")),
             Times.Once);
     }
     
@@ -186,8 +186,8 @@ public class SessionRunnerTests
         
         aiProviderMock.Setup(p => p.SendMessageAsync(
                 It.IsAny<Agent>(),
-                It.IsAny<List<StormMessage>>(),
-                It.IsAny<string>()))
+                It.IsAny<SessionPremise>(),
+                It.IsAny<List<StormMessage>>()))
             .ThrowsAsync(expectedException);
         
         // Act & Assert
@@ -235,20 +235,20 @@ public class SessionRunnerTests
         // Setup AI provider to return responses with agent name to verify message assignment
         aiProviderMock.Setup(p => p.SendMessageAsync(
                 agents[0],
-                It.IsAny<List<StormMessage>>(),
-                It.IsAny<string>()))
+                premise,
+                It.IsAny<List<StormMessage>>()))
             .ReturnsAsync("Response from Agent1");
             
         aiProviderMock.Setup(p => p.SendMessageAsync(
-                agents[1],
-                It.IsAny<List<StormMessage>>(),
-                It.IsAny<string>()))
+                agents[1], 
+                premise,
+                It.IsAny<List<StormMessage>>()))
             .ReturnsAsync("Response from Agent2");
             
         aiProviderMock.Setup(p => p.SendMessageAsync(
                 agents[2],
-                It.IsAny<List<StormMessage>>(),
-                It.IsAny<string>()))
+                premise,
+                It.IsAny<List<StormMessage>>()))
             .ReturnsAsync("Response from Agent3");
         
         // Assert initial state
@@ -276,6 +276,13 @@ public class SessionRunnerTests
         Assert.Equal("Response from Agent3", messages[2].Content);
         
         // Second cycle to ensure the rotation continues correctly
+        // Setup with correct parameter order for the next cycle
+        aiProviderMock.Setup(p => p.SendMessageAsync(
+                agents[0],
+                premise,
+                It.IsAny<List<StormMessage>>()))
+            .ReturnsAsync("Response from Agent1");
+        
         await runner.Next(); // Agent1 responds again, moves to Agent2
         
         // Verify we're now at Agent2

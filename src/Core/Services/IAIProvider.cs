@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 public interface IAIProvider
 {
     // Core method for sending a message to an AI service
-    Task<string> SendMessageAsync(Agent agent, List<StormMessage> conversationHistory, string userMessage);
+    Task<string> SendMessageAsync(Agent agent, SessionPremise premise, List<StormMessage> conversationHistory);
     
     // Get supported models from the service
     Task<string[]> GetAvailableModelsAsync();

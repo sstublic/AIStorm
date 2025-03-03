@@ -76,11 +76,7 @@ public class SessionRunner
         
         List<StormMessage> conversationHistory = GetConversationHistory();
         
-        string userMessage = conversationHistory.Count == 0 
-            ? session.Premise.Content 
-            : $"Premise: {session.Premise.Content}\n\nContinue the conversation based on the above premise and the conversation history.";
-            
-        string response = await aiProvider.SendMessageAsync(agent, conversationHistory, userMessage);
+        string response = await aiProvider.SendMessageAsync(agent, session.Premise, conversationHistory);
         
         var message = new StormMessage(agent.Name, DateTime.UtcNow, response);
         

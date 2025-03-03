@@ -150,6 +150,22 @@ Current file structure:
     - appsettings.json (not recommended for production)
   - BaseUrl defaults to "https://api.openai.com/v1/" but can be configured for custom endpoints
 
+#### Prompt Building System
+
+To ensure consistency across different AI providers and separate prompt construction from provider-specific implementations, we've implemented a dedicated prompt building system:
+
+1. **PromptMessage**: A simple class representing a message in a prompt sequence with role and content.
+2. **IPromptBuilder**: Interface defining methods to build prompts from agents, premises, and conversation history.
+3. **PromptBuilder**: Implementation of IPromptBuilder that formats messages appropriately for AI providers.
+4. **PromptTools**: Helper class with utilities for prompt creation and response cleanup.
+
+The system standardizes how prompts are prepared before sending them to AI providers:
+
+- System prompts include the agent's name, system prompt content, and the session premise
+- Conversation history is properly mapped to roles (assistant/user) based on the current agent
+- Agent name prefixes are managed consistently
+- Response cleanup is handled to prevent duplicate prefixes
+
 #### Multi-Agent Conversation Format
 
 When implementing conversations with multiple AI agents, we need a strategy for representing the conversation context when sending requests to AI APIs. Most AI APIs (like OpenAI) only support basic "user" and "assistant" roles, which doesn't directly map to our multi-agent scenario.
@@ -163,9 +179,11 @@ Our approach for AIStorm uses a standardized message format with agent name pref
 
 Implementation details:
 
-- The system prompt now includes the agent's name and instructions about the conversation format:
+- The system prompt now includes the agent's name, system prompt content, and premise when provided:
   ```
   You are {AgentName}. {Original System Prompt}
+  
+  Context: {Premise Content}
   
   You will be provided with the history of the conversation so far with each participant's message prefixed by the name of the speaker in the form `[<SpeakerName>]: `
   

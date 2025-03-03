@@ -19,9 +19,16 @@ public static class PromptTools
         return Regex.Replace(response, pattern, string.Empty);
     }
 
-    public static string CreateExtendedSystemPrompt(Agent agent)
+    public static string CreateExtendedSystemPrompt(Agent agent, SessionPremise premise = null)
     {
-        string enhancedSystemPrompt = $"You are {agent.Name}. {agent.SystemPrompt}\n\n" +
+        string enhancedSystemPrompt = $"You are {agent.Name}. {agent.SystemPrompt}\n\n";
+        
+        if (premise != null)
+        {
+            enhancedSystemPrompt += $"Context: {premise.Content}\n\n";
+        }
+        
+        enhancedSystemPrompt += 
             $"You will be provided with the history of the conversation so far with each participant's message prefixed by the name of the speaker in the form `[<SpeakerName>]: `\n\n" +
             "When responding, DO NOT add the prefix to your response!\n\n";
             

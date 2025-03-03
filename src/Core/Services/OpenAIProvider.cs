@@ -6,8 +6,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -17,10 +17,15 @@ public class OpenAIProvider : IAIProvider
 {
     private readonly HttpClient httpClient;
     private readonly ILogger<OpenAIProvider> logger;
+    private readonly IPromptBuilder promptBuilder;
     
-    public OpenAIProvider(IOptions<OpenAIOptions> options, ILogger<OpenAIProvider> logger)
+    public OpenAIProvider(
+        IOptions<OpenAIOptions> options, 
+        ILogger<OpenAIProvider> logger,
+        IPromptBuilder promptBuilder)
     {
         this.logger = logger;
+        this.promptBuilder = promptBuilder;
         var openAIOptions = options.Value;
         
         logger.LogInformation("Initializing OpenAIProvider with base URL: {BaseUrl}", openAIOptions.BaseUrl);
@@ -39,19 +44,20 @@ public class OpenAIProvider : IAIProvider
         this.httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {openAIOptions.ApiKey}");
     }
     
-    public async Task<string> SendMessageAsync(Agent agent, List<StormMessage> conversationHistory, string userMessage)
+    public async Task<string> SendMessageAsync(Agent agent, SessionPremise premise, List<StormMessage> conversationHistory)
     {
         try
         {
             logger.LogInformation("Sending message to OpenAI for agent: {AgentName} using model: {Model}", 
                 agent.Name, agent.AIModel);
             
-            var messages = FormatConversationForAgent(agent, conversationHistory, userMessage);
+            var promptMessages = promptBuilder.BuildPrompt(agent, premise, conversationHistory);
+            var messages = promptMessages.Select(m => new OpenAIMessage(m.Role, m.Content)).ToList();
             
             var requestData = new
             {
                 model = agent.AIModel,
-                messages = messages,
+                messages,
                 temperature = 0.7f
             };
             
@@ -163,26 +169,6 @@ public class OpenAIProvider : IAIProvider
             logger.LogError(ex, "Error retrieving models from OpenAI API: {Message}", ex.Message);
             throw new Exception($"Error retrieving models from OpenAI API: {ex.Message}", ex);
         }
-    }
-    
-    private List<OpenAIMessage> FormatConversationForAgent(Agent agent, List<StormMessage> conversationHistory, string userMessage)
-    {
-        string enhancedSystemPrompt = PromptTools.CreateExtendedSystemPrompt(agent);
-            
-        var messages = new List<OpenAIMessage>
-        {
-            new OpenAIMessage("system", enhancedSystemPrompt)
-        };
-        
-        foreach (var message in conversationHistory)
-        {
-            var role = message.AgentName == agent.Name ? "assistant" : "user";
-            messages.Add(new OpenAIMessage(role, message.Content));
-        }
-        
-        messages.Add(new OpenAIMessage("user", userMessage));
-        
-        return messages;
     }
     
     private class OpenAIMessage
