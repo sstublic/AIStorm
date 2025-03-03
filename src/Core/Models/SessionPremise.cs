@@ -2,8 +2,8 @@ namespace AIStorm.Core.Models;
 
 public class SessionPremise
 {
-    public string Id { get; set; }
-    public string Content { get; set; }
+    public string Id { get; }
+    public string Content { get; }
 
     public SessionPremise(string id, string content)
     {

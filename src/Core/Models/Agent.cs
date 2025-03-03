@@ -2,10 +2,10 @@ namespace AIStorm.Core.Models;
 
 public class Agent
 {
-    public string Name { get; set; }
-    public string AIServiceType { get; set; }
-    public string AIModel { get; set; }
-    public string SystemPrompt { get; set; }
+    public string Name { get; }
+    public string AIServiceType { get; }
+    public string AIModel { get; }
+    public string SystemPrompt { get; }
 
     public Agent(string name, string aiServiceType, string aiModel, string systemPrompt)
     {

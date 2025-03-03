@@ -2,9 +2,9 @@ namespace AIStorm.Core.Models;
 
 public class StormMessage
 {
-    public string AgentName { get; set; }
-    public DateTime Timestamp { get; set; }
-    public string Content { get; set; }
+    public string AgentName { get; }
+    public DateTime Timestamp { get; }
+    public string Content { get; }
 
     public StormMessage(string agentName, DateTime timestamp, string content)
     {
