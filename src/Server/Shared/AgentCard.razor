@@ -1,0 +1,125 @@
+@using AIStorm.Core.Models
+@using AIStorm.Server.Shared
+
+<div class="agent-card @(IsExpanded ? "agent-card-expanded" : "")" @onclick="TogglePrompt">
+    <div class="d-flex align-items-center p-2">
+        @if (!string.IsNullOrEmpty(ColorIndicator))
+        {
+            <div class="agent-color-indicator" style="background-color: @ColorIndicator"></div>
+        }
+        <div class="agent-info flex-grow-1">
+            <strong>@Agent.Name</strong>
+            <div class="agent-details">
+                @if (!string.IsNullOrEmpty(Agent.AIModel))
+                {
+                    <span class="badge bg-info me-1">@Agent.AIServiceType</span>
+                    <span class="badge bg-success">@Agent.AIModel</span>
+                }
+            </div>
+        </div>
+        
+        @if (ShowPrompt && !string.IsNullOrEmpty(Agent.SystemPrompt))
+        {
+            <div class="expand-indicator">
+                <i class="oi @(IsExpanded ? "oi-chevron-top" : "oi-chevron-bottom")" aria-hidden="true"></i>
+            </div>
+        }
+    </div>
+    
+    @if (ShowPrompt && !string.IsNullOrEmpty(Agent.SystemPrompt))
+    {
+        <div class="agent-prompt @(IsExpanded ? "expanded" : "collapsed")">
+            <MarkdownView Content="@Agent.SystemPrompt" />
+        </div>
+    }
+</div>
+
+<style>
+    .agent-card {
+        transition: all 0.3s ease;
+        border-left: 4px solid #17a2b8;
+        cursor: pointer;
+        padding: 0;
+    }
+    
+    .agent-card:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .agent-card-expanded {
+        background-color: #f8f9fa;
+    }
+    
+    .agent-color-indicator {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        margin-right: 10px;
+    }
+    
+    .agent-details {
+        margin-top: 3px;
+        font-size: 0.85rem;
+    }
+    
+    .expand-indicator {
+        font-size: 0.8rem;
+        color: #6c757d;
+        padding: 4px;
+    }
+    
+    .agent-prompt {
+        background-color: #f8f9fa;
+        border-radius: 4px;
+        border-left: 3px solid #6c757d;
+        font-size: 0.9rem;
+        margin: 0 10px 10px 10px;
+        padding: 8px;
+        overflow: hidden;
+        transform-origin: top;
+        transition: transform 0.3s ease, opacity 0.3s ease, margin-top 0.3s ease;
+    }
+    
+    .agent-prompt.collapsed {
+        transform: scaleY(0);
+        opacity: 0;
+        margin-top: -8px;
+        height: 0;
+        padding: 0;
+    }
+    
+    .agent-prompt.expanded {
+        transform: scaleY(1);
+        opacity: 1;
+        margin-top: 8px;
+    }
+</style>
+
+@code {
+    [Parameter]
+    public Agent Agent { get; set; } = null!;
+
+    [Parameter]
+    public EventCallback<Agent> OnSelected { get; set; }
+
+    [Parameter]
+    public string? ColorIndicator { get; set; }
+    
+    [Parameter]
+    public bool ShowPrompt { get; set; } = true;
+    
+    private bool IsExpanded { get; set; }
+
+    private async Task TogglePrompt()
+    {
+        if (ShowPrompt && !string.IsNullOrEmpty(Agent.SystemPrompt))
+        {
+            IsExpanded = !IsExpanded;
+        }
+        
+        if (OnSelected.HasDelegate)
+        {
+            await OnSelected.InvokeAsync(Agent);
+        }
+    }
+}

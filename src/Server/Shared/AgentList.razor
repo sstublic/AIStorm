@@ -8,15 +8,12 @@
     <div class="list-group list-group-flush">
         @foreach (var agent in Agents)
         {
-            <div class="list-group-item d-flex align-items-center">
-                <div class="agent-color-indicator" style="background-color: @GetColorForAgent(agent.Name)"></div>
-                <div>
-                    <strong>@agent.Name</strong>
-                    @if (!string.IsNullOrEmpty(agent.AIModel))
-                    {
-                        <div class="small text-muted">@agent.AIServiceType / @agent.AIModel</div>
-                    }
-                </div>
+            <div class="list-group-item">
+                <AgentCard 
+                    Agent="@agent" 
+                    ColorIndicator="@GetColorForAgent(agent.Name)"
+                    ShowPrompt="false"
+                    OnSelected="@OnAgentSelected" />
             </div>
         }
     </div>
@@ -28,18 +25,12 @@
 
     [Parameter]
     public Dictionary<string, string> AgentColors { get; set; } = new Dictionary<string, string>();
+    
+    [Parameter]
+    public EventCallback<Agent> OnAgentSelected { get; set; }
 
     private string GetColorForAgent(string agentName)
     {
         return AgentColors.TryGetValue(agentName, out var color) ? color : "#6c757d";
     }
 }
-
-<style>
-    .agent-color-indicator {
-        width: 16px;
-        height: 16px;
-        border-radius: 50%;
-        margin-right: 10px;
-    }
-</style>

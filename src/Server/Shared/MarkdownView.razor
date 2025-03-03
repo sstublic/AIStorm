@@ -1,0 +1,41 @@
+@using Markdig
+@inherits ComponentBase
+
+<div class="markdown-content">
+    @((MarkupString)RenderedContent)
+</div>
+
+@code {
+    [Parameter]
+    public string Content { get; set; } = "";
+
+    [Parameter]
+    public bool Truncate { get; set; } = false;
+    
+    [Parameter]
+    public int MaxLength { get; set; } = 100;
+
+    private string RenderedContent => RenderMarkdown(ProcessContent());
+
+    private string ProcessContent()
+    {
+        var content = Content ?? "";
+        
+        if (Truncate && content.Length > MaxLength)
+        {
+            return content.Substring(0, MaxLength) + "...";
+        }
+        
+        return content;
+    }
+
+    private string RenderMarkdown(string markdownContent)
+    {
+        // Use Markdig to render markdown to HTML
+        var pipeline = new MarkdownPipelineBuilder()
+            .UseAdvancedExtensions()
+            .Build();
+            
+        return Markdown.ToHtml(markdownContent, pipeline);
+    }
+}

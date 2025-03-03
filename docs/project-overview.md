@@ -18,6 +18,7 @@ AIStorm is a Blazor Server application that allows users to set up brainstorming
 - Integration with various AI service APIs
 - Markdown-based storage system for conversations
 - HTML/JS frontend for user interaction
+- Overview of all sessions and agent templates
 
 ## Technical Architecture
 
@@ -92,6 +93,7 @@ Benefits of this approach:
 3. Start the brainstorming session
 4. Interact with the agents
 5. Save/export the conversation
+6. Review past sessions and available agent templates
 
 ## Project-Specific Conventions
 

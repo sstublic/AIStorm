@@ -117,6 +117,7 @@ The storage provider interface defines operations for:
 - Loading and saving agent templates
 - Loading and saving complete sessions
 - Loading and saving session premises
+- Retrieving all available sessions and agent templates
 
 #### Markdown Storage
 
@@ -124,6 +125,7 @@ The markdown implementation in the `AIStorm.Core.Storage.Markdown` namespace inc
 - Parsing and generating markdown files with proper formatting
 - Handling file system operations
 - Creating the necessary directory structure at initialization
+- Scanning file system for all available sessions and agent templates
 
 ## Session Management
 

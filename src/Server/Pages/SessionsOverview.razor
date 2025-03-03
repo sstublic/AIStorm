@@ -1,0 +1,134 @@
+@page "/sessions"
+@using AIStorm.Core.Models
+@using AIStorm.Core.Storage
+@using Microsoft.Extensions.Logging
+@using AIStorm.Server.Shared
+@inject IStorageProvider StorageProvider
+@inject ILogger<SessionsOverview> Logger
+
+<PageTitle>Sessions & Agent Templates - AIStorm</PageTitle>
+
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Sessions</h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    @if (loadingSessions)
+                    {
+                        <div class="list-group-item text-center">
+                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                            Loading sessions...
+                        </div>
+                    }
+                    else if (sessions.Count == 0)
+                    {
+                        <div class="list-group-item">
+                            <em>No sessions available</em>
+                        </div>
+                    }
+                    else
+                    {
+                        @foreach (var session in sessions)
+                        {
+                            <a href="/conversation/@session.Id" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1">@session.Id</h5>
+                                    <small>@session.Created.ToString("yyyy-MM-dd")</small>
+                                </div>
+                                <p class="mb-1">
+                                    <span class="badge bg-primary me-2">@session.Agents.Count Agent@(session.Agents.Count != 1 ? "s" : "")</span>
+                                    <span class="badge bg-secondary">@session.Messages.Count Message@(session.Messages.Count != 1 ? "s" : "")</span>
+                                </p>
+                                <small class="text-muted">
+                                    <MarkdownView Content="@(session.Premise?.Content ?? "")" Truncate="true" MaxLength="100" />
+                                </small>
+                            </a>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Agent Templates</h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    @if (loadingAgents)
+                    {
+                        <div class="list-group-item text-center">
+                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                            Loading agent templates...
+                        </div>
+                    }
+                    else if (agents.Count == 0)
+                    {
+                        <div class="list-group-item">
+                            <em>No agent templates available</em>
+                        </div>
+                    }
+                    else
+                    {
+                        @foreach (var agent in agents)
+                        {
+                            <div class="list-group-item" @key="agent.Name">
+                                <AgentCard 
+                                    Agent="@agent" 
+                                    ShowPrompt="true"
+                                    OnSelected="@OnAgentSelected" />
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@code {
+    private IReadOnlyList<Session> sessions = new List<Session>();
+    private IReadOnlyList<Agent> agents = new List<Agent>();
+    private bool loadingSessions = true;
+    private bool loadingAgents = true;
+    private void OnAgentSelected(Agent agent)
+    {
+        // You can implement agent selection logic here if needed
+        // For now, this is a placeholder for future functionality
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Logger.LogInformation("Loading all sessions and agent templates");
+            
+            // Load data in parallel
+            var sessionsTask = Task.Run(() => StorageProvider.GetAllSessions());
+            var agentsTask = Task.Run(() => StorageProvider.GetAllAgentTemplates());
+            
+            // Process results when both tasks complete
+            await Task.WhenAll(sessionsTask, agentsTask);
+            
+            sessions = sessionsTask.Result;
+            loadingSessions = false;
+            
+            agents = agentsTask.Result;
+            loadingAgents = false;
+            
+            Logger.LogInformation("Loaded {SessionCount} sessions and {AgentCount} agent templates", 
+                sessions.Count, agents.Count);
+        }
+        catch (Exception ex)
+        {
+            // Handle errors
+            Logger.LogError(ex, "Error loading sessions or agent templates: {ErrorMessage}", ex.Message);
+            loadingSessions = false;
+            loadingAgents = false;
+        }
+    }
+}

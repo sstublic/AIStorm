@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using AIStorm.Core.Storage;
 
 public class MarkdownStorageProvider : IStorageProvider
 {
@@ -44,6 +43,12 @@ public class MarkdownStorageProvider : IStorageProvider
     private string GetAgentPath(string id) => Path.Combine(agentTemplatesPath, id + ".md");
 
     private string GetSessionPath(string id) => Path.Combine(sessionsPath, id + ".session.md");
+    
+    private string GetAgentIdFromPath(string path) => 
+        Path.GetFileNameWithoutExtension(path);
+        
+    private string GetSessionIdFromPath(string path) => 
+        Path.GetFileNameWithoutExtension(path).Replace(".session", "");
 
     private string ReadFile(string path)
     {
@@ -128,5 +133,59 @@ public class MarkdownStorageProvider : IStorageProvider
         
         var content = serializer.SerializeDocument(segments);
         WriteFile(fullPath, content);
+    }
+    
+    public IReadOnlyList<Session> GetAllSessions()
+    {
+        logger.LogInformation("GetAllSessions called");
+        
+        var sessionFiles = Directory.GetFiles(sessionsPath, "*.session.md");
+        logger.LogInformation("Found {Count} session files", sessionFiles.Length);
+        
+        var sessions = new List<Session>();
+        
+        foreach (var file in sessionFiles)
+        {
+            try
+            {
+                var sessionId = GetSessionIdFromPath(file);
+                var session = LoadSession(sessionId);
+                sessions.Add(session);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error loading session from file {FilePath}", file);
+                // Continue with next file instead of failing the entire operation
+            }
+        }
+        
+        return sessions.AsReadOnly();
+    }
+    
+    public IReadOnlyList<Agent> GetAllAgentTemplates()
+    {
+        logger.LogInformation("GetAllAgentTemplates called");
+        
+        var agentFiles = Directory.GetFiles(agentTemplatesPath, "*.md");
+        logger.LogInformation("Found {Count} agent template files", agentFiles.Length);
+        
+        var agents = new List<Agent>();
+        
+        foreach (var file in agentFiles)
+        {
+            try
+            {
+                var agentId = GetAgentIdFromPath(file);
+                var agent = LoadAgent(agentId);
+                agents.Add(agent);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error loading agent from file {FilePath}", file);
+                // Continue with next file instead of failing the entire operation
+            }
+        }
+        
+        return agents.AsReadOnly();
     }
 }
