@@ -1,3 +1,4 @@
+using AIStorm.Core.Storage;
 using AIStorm.Core.Storage.Markdown;
 using System.Collections.Generic;
 using System.Linq;
@@ -62,10 +63,10 @@ Second content.";
     public void SerializeDocument_SingleSegment_ReturnsCorrectMarkdown()
     {
         // Arrange
-        var segment = new MarkdownSegment(
-            new Dictionary<string, string> { ["type"] = "test", ["value"] = "123" },
-            "This is test content."
-        );
+        var properties = new OrderedProperties();
+        properties.Add("type", "test");
+        properties.Add("value", "123");
+        var segment = new MarkdownSegment(properties, "This is test content.");
 
         // Act
         var markdown = serializer.SerializeDocument(new List<MarkdownSegment> { segment });
@@ -82,11 +83,11 @@ Second content.";
         var segments = new List<MarkdownSegment>
         {
             new MarkdownSegment(
-                new Dictionary<string, string> { ["type"] = "first", ["value"] = "1" },
+                new OrderedProperties(("type", "first"), ("value", "1")),
                 "First content."
             ),
             new MarkdownSegment(
-                new Dictionary<string, string> { ["type"] = "second", ["value"] = "2" },
+                new OrderedProperties(("type", "second"), ("value", "2")),
                 "Second content."
             )
         };
@@ -108,11 +109,11 @@ Second content.";
         var segments = new List<MarkdownSegment>
         {
             new MarkdownSegment(
-                new Dictionary<string, string> { ["type"] = "first", ["value"] = "1" },
+                new OrderedProperties(("type", "first"), ("value", "1")),
                 "First content."
             ),
             new MarkdownSegment(
-                new Dictionary<string, string> { ["type"] = "second", ["value"] = "2" },
+                new OrderedProperties(("type", "second"), ("value", "2")),
                 "Second content."
             )
         };
@@ -134,7 +135,7 @@ Second content.";
         var segments = new List<MarkdownSegment>
         {
             new MarkdownSegment(
-                new Dictionary<string, string> { ["type"] = "first", ["value"] = "1" },
+                new OrderedProperties(("type", "first"), ("value", "1")),
                 "First content."
             )
         };
@@ -153,15 +154,15 @@ Second content.";
         var segments = new List<MarkdownSegment>
         {
             new MarkdownSegment(
-                new Dictionary<string, string> { ["type"] = "message", ["from"] = "user1" },
+                new OrderedProperties(("type", "message"), ("from", "user1")),
                 "Message 1."
             ),
             new MarkdownSegment(
-                new Dictionary<string, string> { ["type"] = "message", ["from"] = "user2" },
+                new OrderedProperties(("type", "message"), ("from", "user2")),
                 "Message 2."
             ),
             new MarkdownSegment(
-                new Dictionary<string, string> { ["type"] = "other", ["value"] = "3" },
+                new OrderedProperties(("type", "other"), ("value", "3")),
                 "Other content."
             )
         };
@@ -180,7 +181,7 @@ Second content.";
     {
         // Arrange
         var segment = new MarkdownSegment(
-            new Dictionary<string, string> { ["number"] = "123", ["text"] = "hello" },
+            new OrderedProperties(("number", "123"), ("text", "hello")),
             "Content"
         );
 
@@ -198,7 +199,7 @@ Second content.";
     {
         // Arrange
         var segment = new MarkdownSegment(
-            new Dictionary<string, string> { ["existing"] = "value" },
+            new OrderedProperties(("existing", "value")),
             "Content"
         );
 
@@ -214,7 +215,7 @@ Second content.";
     {
         // Arrange
         var segment = new MarkdownSegment(
-            new Dictionary<string, string> { ["text"] = "not a number" },
+            new OrderedProperties(("text", "not a number")),
             "Content"
         );
 
@@ -232,15 +233,27 @@ Second content.";
         var originalSegments = new List<MarkdownSegment>
         {
             new MarkdownSegment(
-                new Dictionary<string, string> { ["type"] = "session", ["created"] = "2025-03-01T15:00:00Z", ["description"] = "Test Session" },
+                new OrderedProperties(
+                    ("type", "session"), 
+                    ("created", "2025-03-01T15:00:00Z"), 
+                    ("description", "Test Session")
+                ),
                 "# Test Session"
             ),
             new MarkdownSegment(
-                new Dictionary<string, string> { ["type"] = "message", ["from"] = "user", ["timestamp"] = "2025-03-01T15:01:00Z" },
+                new OrderedProperties(
+                    ("type", "message"), 
+                    ("from", "user"), 
+                    ("timestamp", "2025-03-01T15:01:00Z")
+                ),
                 "## [user]:\n\nHello, world!"
             ),
             new MarkdownSegment(
-                new Dictionary<string, string> { ["type"] = "message", ["from"] = "agent", ["timestamp"] = "2025-03-01T15:02:00Z" },
+                new OrderedProperties(
+                    ("type", "message"), 
+                    ("from", "agent"), 
+                    ("timestamp", "2025-03-01T15:02:00Z")
+                ),
                 "## [agent]:\n\nHi there!"
             )
         };

@@ -1,7 +1,6 @@
 namespace AIStorm.Core.Storage.Markdown;
 
 using System;
-using System.Collections.Generic;
 using AIStorm.Core.Common;
 
 public class MarkdownSegment
@@ -21,24 +20,6 @@ public class MarkdownSegment
         Content = content ?? string.Empty;
     }
     
-    // Add a constructor that accepts Dictionary for backward compatibility
-    public MarkdownSegment(Dictionary<string, string> properties, string content)
-        : this(ConvertToOrderedProperties(properties), content)
-    {
-    }
-    
-    private static OrderedProperties ConvertToOrderedProperties(Dictionary<string, string> dict)
-    {
-        if (dict == null)
-            return new OrderedProperties();
-            
-        var ordered = new OrderedProperties();
-        foreach (var kvp in dict)
-        {
-            ordered.Add(kvp.Key, kvp.Value);
-        }
-        return ordered;
-    }
     
     public T GetProperty<T>(string key, T? defaultValue = default)
     {
