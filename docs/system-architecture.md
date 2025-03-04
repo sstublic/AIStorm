@@ -152,9 +152,32 @@ The Session Management system coordinates conversations between multiple AI agen
 
 This design separates the responsibility of Session creation from Session running, making the code more maintainable and testable.
 
-### Session Creation
+### Management UI Components
 
-The user interface provides a workflow for creating new sessions:
+#### Agent Template Management
+
+The user interface provides a comprehensive workflow for creating and managing agent templates:
+
+1. **Agent Name Validation** - Ensures agent names are valid for the storage implementation
+   - Uses the same `ValidateId` method as session validation to ensure consistent rules
+   - Checks for name uniqueness when creating new agents
+   - Names cannot be changed after creation (to maintain referential integrity)
+
+2. **Agent Service and Model Selection** - Users can select from available AI service providers and models
+   - Fixed dropdown lists for available services (currently OpenAI)
+   - Service-specific model options (gpt-4o, gpt-4, gpt-3.5-turbo)
+   - Extensible design for adding more services and models in the future
+
+3. **Agent System Prompt Editing** - Users can define the agent's personality and behavior
+   - Multi-line text area for entering detailed system prompts
+
+4. **Agent Editing** - All agent templates can be edited at any time
+   - Unlike sessions, there are no restrictions on when agents can be edited
+   - Changes to agent templates do not affect existing sessions (since agents are copied)
+
+#### Session Management
+
+The user interface provides a comprehensive workflow for creating and managing sessions:
 
 1. **Session ID Validation** - Ensures session IDs are valid for the storage implementation
    - The `IStorageProvider` interface includes a `ValidateId` method to check for valid filenames
@@ -164,10 +187,30 @@ The user interface provides a workflow for creating new sessions:
 2. **Agent Selection** - Users can select one or more agents from available templates
    - Agent templates display their name, AI service, model, and system prompt
    - Selection is enforced (at least one agent must be selected)
+   - Users are informed that agent templates are copied into the session (no live relationship)
 
 3. **Session Premise** - Users define the context and goals for the brainstorming session
    - The premise is saved as part of the session metadata
    - The premise is included in system prompts to provide context to agents
+
+4. **Session Editing** - Users can edit sessions under specific conditions
+   - Sessions can only be edited if they have no conversation messages
+   - When editing is not possible, users can view session details in read-only mode
+   - The SessionEditor component handles both creation and editing functionality
+
+#### Sessions Overview
+
+The SessionsOverview page serves as the central hub for managing both sessions and agent templates:
+
+1. **Session Management**
+   - View all available sessions with summary information (name, creation date, agent count, message count)
+   - Quick access to open, edit, or view session details
+   - Visual indication of which sessions can be edited (based on message count)
+
+2. **Agent Template Management**
+   - View all available agent templates with details and expandable system prompts
+   - Quick access to edit any agent template
+   - Create new agent templates
 
 ## Logging
 

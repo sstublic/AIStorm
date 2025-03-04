@@ -1,0 +1,295 @@
+@page "/agent-editor"
+@page "/agent-editor/{AgentName}"
+@using AIStorm.Core.Models
+@using AIStorm.Core.Storage
+@using Microsoft.Extensions.Logging
+@using AIStorm.Server.Shared
+@inject IStorageProvider StorageProvider
+@inject NavigationManager NavigationManager
+@inject ILogger<AgentEditor> Logger
+
+<PageTitle>@pageTitle - AIStorm</PageTitle>
+
+<div class="container mt-4">
+    <h2>@pageTitle</h2>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="agentName" class="form-label">Agent Name</label>
+                        <input type="text" class="form-control @(string.IsNullOrEmpty(nameError) ? "" : "is-invalid")" 
+                               id="agentName" @bind="agentName" @bind:event="oninput" @onblur="ValidateAgentName" 
+                               disabled="@isEditMode" />
+                        @if (!string.IsNullOrEmpty(nameError))
+                        {
+                            <div class="invalid-feedback">
+                                @nameError
+                            </div>
+                        }
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="aiServiceType" class="form-label">AI Service Type</label>
+                        <select class="form-select @(string.IsNullOrEmpty(serviceTypeError) ? "" : "is-invalid")" 
+                                id="aiServiceType" @bind="aiServiceType" @bind:after="UpdateModelOptions">
+                            @foreach (var service in serviceTypes)
+                            {
+                                <option value="@service">@service</option>
+                            }
+                        </select>
+                        @if (!string.IsNullOrEmpty(serviceTypeError))
+                        {
+                            <div class="invalid-feedback">
+                                @serviceTypeError
+                            </div>
+                        }
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="aiModel" class="form-label">AI Model</label>
+                        <select class="form-select @(string.IsNullOrEmpty(modelError) ? "" : "is-invalid")" 
+                                id="aiModel" @bind="aiModel">
+                            @foreach (var model in availableModels)
+                            {
+                                <option value="@model">@model</option>
+                            }
+                        </select>
+                        @if (!string.IsNullOrEmpty(modelError))
+                        {
+                            <div class="invalid-feedback">
+                                @modelError
+                            </div>
+                        }
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="systemPrompt" class="form-label">System Prompt</label>
+                        <textarea class="form-control @(string.IsNullOrEmpty(promptError) ? "" : "is-invalid")" 
+                                  id="systemPrompt" rows="10" @bind="systemPrompt" @bind:event="oninput"></textarea>
+                        @if (!string.IsNullOrEmpty(promptError))
+                        {
+                            <div class="invalid-feedback">
+                                @promptError
+                            </div>
+                        }
+                        <div class="form-text mt-2">
+                            The system prompt defines the agent's personality, role, and behavior.
+                        </div>
+                    </div>
+                    
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4 mb-5">
+        <div class="col">
+            <button class="btn btn-primary" @onclick="SaveAgent" disabled="@(!CanSaveAgent())">
+                @(isEditMode ? "Save Changes" : "Create Agent Template")
+            </button>
+            <a href="/sessions" class="btn btn-secondary ms-2">Cancel</a>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string? AgentName { get; set; }
+    
+    private string agentName = string.Empty;
+    private string aiServiceType = "OpenAI";
+    private string aiModel = "gpt-4o";
+    private string systemPrompt = string.Empty;
+    private bool isEditMode = false;
+    private string pageTitle = "Create New Agent Template";
+    
+    // Validation errors
+    private string nameError = string.Empty;
+    private string serviceTypeError = string.Empty;
+    private string modelError = string.Empty;
+    private string promptError = string.Empty;
+    
+    // Fixed options for dropdowns
+    private readonly List<string> serviceTypes = new()
+    {
+        "OpenAI"
+        // Additional service types can be added in the future
+    };
+
+    private readonly Dictionary<string, List<string>> modelsByService = new()
+    {
+        ["OpenAI"] = new List<string> { "gpt-4o", "gpt-4", "gpt-3.5-turbo" }
+        // Additional models can be added in the future
+    };
+    
+    private List<string> availableModels = new();
+    
+    protected override void OnInitialized()
+    {
+        try
+        {
+            // Initialize available models based on default service type
+            UpdateModelOptions();
+            
+            // Check if we're in edit mode
+            isEditMode = !string.IsNullOrEmpty(AgentName);
+            
+            if (isEditMode)
+            {
+                pageTitle = "Edit Agent Template";
+                LoadExistingAgent();
+            }
+            
+            Logger.LogInformation("Agent editor initialized in {Mode} mode", isEditMode ? "Edit" : "Create");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error initializing agent editor: {ErrorMessage}", ex.Message);
+        }
+    }
+    
+    private void UpdateModelOptions()
+    {
+        if (modelsByService.TryGetValue(aiServiceType, out var models))
+        {
+            availableModels = new List<string>(models);
+            
+            // If the current model isn't in the available models, set to first in list
+            if (!availableModels.Contains(aiModel) && availableModels.Count > 0)
+            {
+                aiModel = availableModels[0];
+            }
+        }
+        else
+        {
+            availableModels = new List<string>();
+        }
+    }
+    
+    private void LoadExistingAgent()
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(AgentName))
+                return;
+                
+            var agent = StorageProvider.LoadAgent(AgentName);
+            
+            // Set form values from agent
+            agentName = agent.Name;
+            aiServiceType = agent.AIServiceType;
+            
+            // Update available models for the service type
+            UpdateModelOptions();
+            
+            // Set AI model if available, otherwise use first available model
+            aiModel = availableModels.Contains(agent.AIModel) 
+                ? agent.AIModel 
+                : (availableModels.Count > 0 ? availableModels[0] : "");
+                
+            systemPrompt = agent.SystemPrompt;
+            
+            Logger.LogInformation("Loaded existing agent for editing: '{AgentName}'", AgentName);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error loading existing agent: {ErrorMessage}", ex.Message);
+            NavigationManager.NavigateTo("/sessions");
+        }
+    }
+    
+    private void ValidateAgentName()
+    {
+        if (!StorageProvider.ValidateId(agentName, out string error))
+        {
+            nameError = error;
+        }
+        else if (!isEditMode)
+        {
+            // Only check for existing agents when creating new (not when editing)
+            try
+            {
+                StorageProvider.LoadAgent(agentName);
+                // If we get here, the agent exists
+                nameError = $"An agent with name '{agentName}' already exists. Please choose a different name.";
+            }
+            catch (FileNotFoundException)
+            {
+                // This is what we want - the agent doesn't exist
+                nameError = string.Empty;
+            }
+            catch (Exception ex)
+            {
+                // Some other error occurred
+                Logger.LogError(ex, "Error checking if agent exists: {ErrorMessage}", ex.Message);
+                nameError = string.Empty;
+            }
+        }
+        else
+        {
+            // In edit mode, we expect the agent to exist, so no error
+            nameError = string.Empty;
+        }
+    }
+    
+    private bool CanSaveAgent()
+    {
+        // Validate system prompt
+        if (string.IsNullOrWhiteSpace(systemPrompt))
+        {
+            promptError = "System prompt cannot be empty.";
+        }
+        else
+        {
+            promptError = string.Empty;
+        }
+        
+        return !string.IsNullOrEmpty(agentName) && 
+               string.IsNullOrEmpty(nameError) &&
+               !string.IsNullOrEmpty(aiServiceType) &&
+               !string.IsNullOrEmpty(aiModel) &&
+               !string.IsNullOrEmpty(systemPrompt);
+    }
+    
+    private void SaveAgent()
+    {
+        // Validate agent name one more time
+        ValidateAgentName();
+        
+        if (!CanSaveAgent())
+        {
+            return;
+        }
+        
+        try
+        {
+            Logger.LogInformation("{Mode} agent with name: '{AgentName}'", 
+                isEditMode ? "Updating" : "Creating new", agentName);
+            
+            // Create agent
+            var agent = new Agent(
+                agentName,
+                aiServiceType,
+                aiModel,
+                systemPrompt
+            );
+                
+            // Save the agent
+            StorageProvider.SaveAgent(agentName, agent);
+            
+            Logger.LogInformation("Agent {Mode} successfully: '{AgentName}'", 
+                isEditMode ? "updated" : "created", agentName);
+            
+            // Navigate back to sessions overview
+            NavigationManager.NavigateTo("/sessions");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error saving agent: {ErrorMessage}", ex.Message);
+            // Handle error (could show a general error message)
+        }
+    }
+}

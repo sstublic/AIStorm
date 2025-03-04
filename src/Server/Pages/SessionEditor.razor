@@ -1,16 +1,25 @@
-@page "/create-session"
+@page "/session-editor"
+@page "/session-editor/{SessionId}"
 @using AIStorm.Core.Models
 @using AIStorm.Core.Storage
 @using Microsoft.Extensions.Logging
 @using AIStorm.Server.Shared
 @inject IStorageProvider StorageProvider
 @inject NavigationManager NavigationManager
-@inject ILogger<CreateSession> Logger
+@inject ILogger<SessionEditor> Logger
 
-<PageTitle>Create New Session - AIStorm</PageTitle>
+<PageTitle>@pageTitle - AIStorm</PageTitle>
 
 <div class="container mt-4">
-    <h2>Create New Session</h2>
+    <h2>@pageTitle</h2>
+    
+    @if (isReadOnly)
+    {
+        <div class="alert alert-warning">
+            <i class="oi oi-warning me-2"></i>
+            This session cannot be edited because it already contains conversation messages.
+        </div>
+    }
     
     <div class="row">
         <div class="col-md-8">
@@ -19,7 +28,8 @@
                     <div class="mb-3">
                         <label for="sessionId" class="form-label">Session ID</label>
                         <input type="text" class="form-control @(string.IsNullOrEmpty(sessionIdError) ? "" : "is-invalid")" 
-                               id="sessionId" @bind="sessionId" @bind:event="oninput" @onblur="ValidateSessionId" />
+                               id="sessionId" @bind="sessionId" @bind:event="oninput" @onblur="ValidateSessionId" 
+                               disabled="@(isEditMode || isReadOnly)" />
                         @if (!string.IsNullOrEmpty(sessionIdError))
                         {
                             <div class="invalid-feedback">
@@ -31,7 +41,8 @@
                     <div class="mb-3">
                         <label for="sessionPremise" class="form-label">Session Premise</label>
                         <textarea class="form-control @(string.IsNullOrEmpty(premiseError) ? "" : "is-invalid")" 
-                                  id="sessionPremise" rows="5" @bind="premiseContent" @bind:event="oninput"></textarea>
+                                  id="sessionPremise" rows="5" @bind="premiseContent" @bind:event="oninput"
+                                  disabled="@isReadOnly"></textarea>
                         @if (!string.IsNullOrEmpty(premiseError))
                         {
                             <div class="invalid-feedback">
@@ -47,6 +58,12 @@
     <div class="row mt-4">
         <div class="col-md-12">
             <h3>Select Agents</h3>
+            
+            <div class="alert alert-info">
+                <i class="oi oi-info me-2"></i>
+                Selected agent templates will be copied into the session. Changes to the original templates will not affect agents in existing sessions.
+            </div>
+            
             <p>Choose at least one agent for your session:</p>
             
             @if (loadingAgents)
@@ -74,7 +91,8 @@
                                         <input class="form-check-input" type="checkbox" 
                                                id="agent-@agent.Name.Replace(" ", "-")" 
                                                checked="@selectedAgents.Contains(agent)" 
-                                               @onchange="e => ToggleAgentSelection(agent)" />
+                                               @onchange="e => ToggleAgentSelection(agent)"
+                                               disabled="@isReadOnly" />
                                         <label class="form-check-label fw-bold" for="agent-@agent.Name.Replace(" ", "-")">
                                             @agent.Name
                                         </label>
@@ -101,20 +119,29 @@
     
     <div class="row mt-4 mb-5">
         <div class="col">
-            <button class="btn btn-primary" @onclick="CreateNewSession" disabled="@(!CanCreateSession())">
-                Create Session
-            </button>
-            <a href="/sessions" class="btn btn-secondary ms-2">Cancel</a>
+            @if (!isReadOnly)
+            {
+                <button class="btn btn-primary" @onclick="SaveSession" disabled="@(!CanSaveSession())">
+                    @(isEditMode ? "Save Changes" : "Create Session")
+                </button>
+            }
+            <a href="/sessions" class="btn btn-secondary ms-2">Back to Sessions</a>
         </div>
     </div>
 </div>
 
 @code {
+    [Parameter]
+    public string? SessionId { get; set; }
+    
     private string sessionId = string.Empty;
     private string premiseContent = string.Empty;
     private List<Agent> availableAgents = new();
     private List<Agent> selectedAgents = new();
     private bool loadingAgents = true;
+    private bool isEditMode = false;
+    private bool isReadOnly = false;
+    private string pageTitle = "Create New Session";
     
     // Validation errors
     private string sessionIdError = string.Empty;
@@ -125,18 +152,81 @@
     {
         try
         {
-            Logger.LogInformation("Loading agent templates for session creation");
+            Logger.LogInformation("Loading agent templates for session editor");
             
             var agents = await Task.Run(() => StorageProvider.GetAllAgentTemplates());
             availableAgents = new List<Agent>(agents);
             loadingAgents = false;
             
             Logger.LogInformation("Loaded {AgentCount} agent templates", availableAgents.Count);
+            
+            // Check if we're in edit mode
+            isEditMode = !string.IsNullOrEmpty(SessionId);
+            
+            if (isEditMode)
+            {
+                pageTitle = "Edit Session";
+                LoadExistingSession();
+            }
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error loading agent templates: {ErrorMessage}", ex.Message);
             loadingAgents = false;
+        }
+    }
+    
+    private void LoadExistingSession()
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(SessionId))
+                return;
+                
+            var session = StorageProvider.LoadSession(SessionId);
+            
+            // Set form values from session
+            sessionId = session.Id;
+            premiseContent = session.Premise.Content;
+            
+            // Configure selected agents
+            selectedAgents.Clear();
+            foreach (var agent in session.Agents)
+            {
+                // Find the matching agent template
+                var matchingAgent = availableAgents.FirstOrDefault(a => a.Name == agent.Name);
+                if (matchingAgent != null)
+                {
+                    selectedAgents.Add(matchingAgent);
+                }
+                else
+                {
+                    // If no matching template is found, add the agent directly
+                    selectedAgents.Add(agent);
+                    
+                    // Also add it to availableAgents to ensure it appears in the UI
+                    if (!availableAgents.Any(a => a.Name == agent.Name))
+                    {
+                        availableAgents.Add(agent);
+                    }
+                }
+            }
+            
+            // Check if session has messages
+            if (session.Messages.Count > 0)
+            {
+                isReadOnly = true;
+                pageTitle = "View Session";
+                Logger.LogInformation("Session has messages, setting to read-only mode");
+            }
+            
+            Logger.LogInformation("Loaded existing session for editing: '{SessionId}', ReadOnly: {IsReadOnly}", 
+                SessionId, isReadOnly);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error loading existing session: {ErrorMessage}", ex.Message);
+            NavigationManager.NavigateTo("/sessions");
         }
     }
     
@@ -146,9 +236,9 @@
         {
             sessionIdError = error;
         }
-        else
+        else if (!isEditMode)
         {
-            // Check if session already exists (to prevent overwriting)
+            // Only check for existing sessions when creating new (not when editing)
             try
             {
                 StorageProvider.LoadSession(sessionId);
@@ -166,6 +256,11 @@
                 Logger.LogError(ex, "Error checking if session exists: {ErrorMessage}", ex.Message);
                 sessionIdError = string.Empty;
             }
+        }
+        else
+        {
+            // In edit mode, we expect the session to exist, so no error
+            sessionIdError = string.Empty;
         }
     }
     
@@ -187,16 +282,17 @@
         }
     }
     
-    private bool CanCreateSession()
+    private bool CanSaveSession()
     {
         return !string.IsNullOrEmpty(sessionId) && 
                string.IsNullOrEmpty(sessionIdError) &&
                !string.IsNullOrEmpty(premiseContent) &&
                selectedAgents.Count > 0 &&
-               !loadingAgents;
+               !loadingAgents &&
+               !isReadOnly;
     }
     
-    private void CreateNewSession()
+    private void SaveSession()
     {
         // Validate session ID one more time
         ValidateSessionId();
@@ -223,36 +319,58 @@
             agentsError = string.Empty;
         }
         
-        if (!CanCreateSession())
+        if (!CanSaveSession())
         {
             return;
         }
         
         try
         {
-            Logger.LogInformation("Creating new session with ID: '{SessionId}'", sessionId);
+            Logger.LogInformation("{Mode} session with ID: '{SessionId}'", 
+                isEditMode ? "Updating" : "Creating new", sessionId);
             
             // Create session premise
             var premise = new SessionPremise(sessionId, premiseContent);
             
-            // Create session with selected agents
-            var session = new Session(
-                sessionId,
-                DateTime.UtcNow,
-                premise,
-                selectedAgents);
+            if (isEditMode)
+            {
+                // For editing, load the existing session to preserve messages
+                var existingSession = StorageProvider.LoadSession(sessionId);
                 
-            // Save the session
-            StorageProvider.SaveSession(sessionId, session);
+                // Create updated session with same created date and messages, but new premise and agents
+                var session = new Session(
+                    sessionId,
+                    existingSession.Created,
+                    premise,
+                    selectedAgents,
+                    existingSession.Messages);
+                
+                // Save the updated session
+                StorageProvider.SaveSession(sessionId, session);
+                
+                Logger.LogInformation("Session updated successfully: '{SessionId}'", sessionId);
+            }
+            else
+            {
+                // Create new session with selected agents
+                var session = new Session(
+                    sessionId,
+                    DateTime.UtcNow,
+                    premise,
+                    selectedAgents);
+                    
+                // Save the session
+                StorageProvider.SaveSession(sessionId, session);
+                
+                Logger.LogInformation("Session created successfully: '{SessionId}'", sessionId);
+            }
             
-            Logger.LogInformation("Session created successfully: '{SessionId}'", sessionId);
-            
-            // Navigate to the conversation page for the new session
+            // Navigate to the conversation page for the session
             NavigationManager.NavigateTo($"/conversation/{sessionId}");
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Error creating session: {ErrorMessage}", ex.Message);
+            Logger.LogError(ex, "Error saving session: {ErrorMessage}", ex.Message);
             // Handle error (could show a general error message)
         }
     }

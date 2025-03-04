@@ -89,14 +89,24 @@ Benefits of this approach:
 
 ### Basic Workflow
 
-1. Create a new brainstorming session
+1. Create and manage agent templates
+   - Create new agent templates with name, service type, model, and system prompt
+   - Edit existing agent templates at any time
+
+2. Create a new brainstorming session
    - Enter a valid session ID (which will be used as the filename)
    - Write a premise that defines the session's context and goals
    - Select one or more agent templates to participate in the session
-2. Start the brainstorming session with the configured agents
-3. Interact with the agents in the conversation interface
-4. Save/export the conversation (happens automatically)
-5. Review past sessions and available agent templates in the sessions overview
+   - Agent templates are copied into the session (changes to templates won't affect existing sessions)
+
+3. Start the brainstorming session with the configured agents
+   - Interact with the agents in the conversation interface
+   - Save/export the conversation (happens automatically)
+
+4. Manage sessions
+   - Review past sessions and available agent templates in the sessions overview
+   - Edit sessions (only possible for sessions with no conversation messages)
+   - View session details for sessions with existing conversations
 
 ## Project-Specific Conventions
 
