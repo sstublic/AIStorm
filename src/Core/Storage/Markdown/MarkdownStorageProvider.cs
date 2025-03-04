@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 public class MarkdownStorageProvider : IStorageProvider
 {
@@ -187,5 +188,33 @@ public class MarkdownStorageProvider : IStorageProvider
         }
         
         return agents.AsReadOnly();
+    }
+    
+    public bool ValidateId(string id, out string errorMessage)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            errorMessage = "ID cannot be empty or whitespace.";
+            return false;
+        }
+
+        var invalidChars = Path.GetInvalidFileNameChars();
+        if (id.IndexOfAny(invalidChars) >= 0)
+        {
+            var invalidCharsList = new StringBuilder();
+            foreach (char c in invalidChars)
+            {
+                if (c >= 32) // Skip non-printable characters
+                {
+                    invalidCharsList.Append(c).Append(' ');
+                }
+            }
+            
+            errorMessage = $"ID contains invalid filename characters. The following characters are not allowed: {invalidCharsList}";
+            return false;
+        }
+
+        errorMessage = string.Empty;
+        return true;
     }
 }

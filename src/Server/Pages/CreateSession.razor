@@ -1,0 +1,259 @@
+@page "/create-session"
+@using AIStorm.Core.Models
+@using AIStorm.Core.Storage
+@using Microsoft.Extensions.Logging
+@using AIStorm.Server.Shared
+@inject IStorageProvider StorageProvider
+@inject NavigationManager NavigationManager
+@inject ILogger<CreateSession> Logger
+
+<PageTitle>Create New Session - AIStorm</PageTitle>
+
+<div class="container mt-4">
+    <h2>Create New Session</h2>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="sessionId" class="form-label">Session ID</label>
+                        <input type="text" class="form-control @(string.IsNullOrEmpty(sessionIdError) ? "" : "is-invalid")" 
+                               id="sessionId" @bind="sessionId" @bind:event="oninput" @onblur="ValidateSessionId" />
+                        @if (!string.IsNullOrEmpty(sessionIdError))
+                        {
+                            <div class="invalid-feedback">
+                                @sessionIdError
+                            </div>
+                        }
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="sessionPremise" class="form-label">Session Premise</label>
+                        <textarea class="form-control @(string.IsNullOrEmpty(premiseError) ? "" : "is-invalid")" 
+                                  id="sessionPremise" rows="5" @bind="premiseContent" @bind:event="oninput"></textarea>
+                        @if (!string.IsNullOrEmpty(premiseError))
+                        {
+                            <div class="invalid-feedback">
+                                @premiseError
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <h3>Select Agents</h3>
+            <p>Choose at least one agent for your session:</p>
+            
+            @if (loadingAgents)
+            {
+                <div class="text-center">
+                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    Loading agent templates...
+                </div>
+            }
+            else if (availableAgents.Count == 0)
+            {
+                <div class="alert alert-warning">
+                    No agent templates available. Please create some agent templates first.
+                </div>
+            }
+            else
+            {
+                <div class="row row-cols-1 row-cols-md-3 g-4">
+                    @foreach (var agent in availableAgents)
+                    {
+                        <div class="col">
+                            <div class="card h-100 @(selectedAgents.Contains(agent) ? "border-primary" : "")">
+                                <div class="card-body">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" 
+                                               id="agent-@agent.Name.Replace(" ", "-")" 
+                                               checked="@selectedAgents.Contains(agent)" 
+                                               @onchange="e => ToggleAgentSelection(agent)" />
+                                        <label class="form-check-label fw-bold" for="agent-@agent.Name.Replace(" ", "-")">
+                                            @agent.Name
+                                        </label>
+                                    </div>
+                                    <AgentCard 
+                                        Agent="@agent" 
+                                        ShowPrompt="true"
+                                        OnSelected="@(_ => { })" />
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+                
+                @if (!string.IsNullOrEmpty(agentsError))
+                {
+                    <div class="alert alert-danger mt-3">
+                        @agentsError
+                    </div>
+                }
+            }
+        </div>
+    </div>
+    
+    <div class="row mt-4 mb-5">
+        <div class="col">
+            <button class="btn btn-primary" @onclick="CreateNewSession" disabled="@(!CanCreateSession())">
+                Create Session
+            </button>
+            <a href="/sessions" class="btn btn-secondary ms-2">Cancel</a>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string sessionId = string.Empty;
+    private string premiseContent = string.Empty;
+    private List<Agent> availableAgents = new();
+    private List<Agent> selectedAgents = new();
+    private bool loadingAgents = true;
+    
+    // Validation errors
+    private string sessionIdError = string.Empty;
+    private string premiseError = string.Empty;
+    private string agentsError = string.Empty;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Logger.LogInformation("Loading agent templates for session creation");
+            
+            var agents = await Task.Run(() => StorageProvider.GetAllAgentTemplates());
+            availableAgents = new List<Agent>(agents);
+            loadingAgents = false;
+            
+            Logger.LogInformation("Loaded {AgentCount} agent templates", availableAgents.Count);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error loading agent templates: {ErrorMessage}", ex.Message);
+            loadingAgents = false;
+        }
+    }
+    
+    private void ValidateSessionId()
+    {
+        if (!StorageProvider.ValidateId(sessionId, out string error))
+        {
+            sessionIdError = error;
+        }
+        else
+        {
+            // Check if session already exists (to prevent overwriting)
+            try
+            {
+                StorageProvider.LoadSession(sessionId);
+                // If we get here, the session exists
+                sessionIdError = $"A session with ID '{sessionId}' already exists. Please choose a different ID.";
+            }
+            catch (FileNotFoundException)
+            {
+                // This is what we want - the session doesn't exist
+                sessionIdError = string.Empty;
+            }
+            catch (Exception ex)
+            {
+                // Some other error occurred
+                Logger.LogError(ex, "Error checking if session exists: {ErrorMessage}", ex.Message);
+                sessionIdError = string.Empty;
+            }
+        }
+    }
+    
+    private void ToggleAgentSelection(Agent agent)
+    {
+        if (selectedAgents.Contains(agent))
+        {
+            selectedAgents.Remove(agent);
+        }
+        else
+        {
+            selectedAgents.Add(agent);
+        }
+        
+        // Clear any previous agent selection error
+        if (selectedAgents.Count > 0)
+        {
+            agentsError = string.Empty;
+        }
+    }
+    
+    private bool CanCreateSession()
+    {
+        return !string.IsNullOrEmpty(sessionId) && 
+               string.IsNullOrEmpty(sessionIdError) &&
+               !string.IsNullOrEmpty(premiseContent) &&
+               selectedAgents.Count > 0 &&
+               !loadingAgents;
+    }
+    
+    private void CreateNewSession()
+    {
+        // Validate session ID one more time
+        ValidateSessionId();
+        
+        // Validate premise
+        if (string.IsNullOrWhiteSpace(premiseContent))
+        {
+            premiseError = "Session premise cannot be empty.";
+            return;
+        }
+        else
+        {
+            premiseError = string.Empty;
+        }
+        
+        // Validate agent selection
+        if (selectedAgents.Count == 0)
+        {
+            agentsError = "You must select at least one agent.";
+            return;
+        }
+        else
+        {
+            agentsError = string.Empty;
+        }
+        
+        if (!CanCreateSession())
+        {
+            return;
+        }
+        
+        try
+        {
+            Logger.LogInformation("Creating new session with ID: '{SessionId}'", sessionId);
+            
+            // Create session premise
+            var premise = new SessionPremise(sessionId, premiseContent);
+            
+            // Create session with selected agents
+            var session = new Session(
+                sessionId,
+                DateTime.UtcNow,
+                premise,
+                selectedAgents);
+                
+            // Save the session
+            StorageProvider.SaveSession(sessionId, session);
+            
+            Logger.LogInformation("Session created successfully: '{SessionId}'", sessionId);
+            
+            // Navigate to the conversation page for the new session
+            NavigationManager.NavigateTo($"/conversation/{sessionId}");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error creating session: {ErrorMessage}", ex.Message);
+            // Handle error (could show a general error message)
+        }
+    }
+}

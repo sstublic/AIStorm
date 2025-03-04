@@ -13,6 +13,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>AIStorm.Server</RootNamespace>
+    <UserSecretsId>aistorm-integration-tests</UserSecretsId>
   </PropertyGroup>
 
 </Project>

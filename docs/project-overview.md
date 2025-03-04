@@ -90,11 +90,13 @@ Benefits of this approach:
 ### Basic Workflow
 
 1. Create a new brainstorming session
-2. Configure AI agents (number, roles, personalities)
-3. Start the brainstorming session
-4. Interact with the agents
-5. Save/export the conversation
-6. Review past sessions and available agent templates
+   - Enter a valid session ID (which will be used as the filename)
+   - Write a premise that defines the session's context and goals
+   - Select one or more agent templates to participate in the session
+2. Start the brainstorming session with the configured agents
+3. Interact with the agents in the conversation interface
+4. Save/export the conversation (happens automatically)
+5. Review past sessions and available agent templates in the sessions overview
 
 ## Project-Specific Conventions
 

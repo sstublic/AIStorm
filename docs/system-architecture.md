@@ -152,6 +152,23 @@ The Session Management system coordinates conversations between multiple AI agen
 
 This design separates the responsibility of Session creation from Session running, making the code more maintainable and testable.
 
+### Session Creation
+
+The user interface provides a workflow for creating new sessions:
+
+1. **Session ID Validation** - Ensures session IDs are valid for the storage implementation
+   - The `IStorageProvider` interface includes a `ValidateId` method to check for valid filenames
+   - The `MarkdownStorageProvider` implementation validates IDs against filesystem constraints
+   - Meaningful error messages help users understand validation requirements
+
+2. **Agent Selection** - Users can select one or more agents from available templates
+   - Agent templates display their name, AI service, model, and system prompt
+   - Selection is enforced (at least one agent must be selected)
+
+3. **Session Premise** - Users define the context and goals for the brainstorming session
+   - The premise is saved as part of the session metadata
+   - The premise is included in system prompts to provide context to agents
+
 ## Logging
 
 - Different log levels for appropriate information detail

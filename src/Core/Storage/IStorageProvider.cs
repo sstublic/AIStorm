@@ -13,4 +13,6 @@ public interface IStorageProvider
     
     IReadOnlyList<Session> GetAllSessions();
     IReadOnlyList<Agent> GetAllAgentTemplates();
+    
+    bool ValidateId(string id, out string errorMessage);
 }
