@@ -1,0 +1,10 @@
+.agent-list-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.agent-list-card .card-body {
+    flex-grow: 1;
+    overflow-y: auto;
+}

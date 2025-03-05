@@ -1,0 +1,85 @@
+<div class="aistorm-card @StatusClass @(IsClickable ? "clickable" : "") @(IsExpanded ? "expanded" : "")" @onclick="HandleCardClick">
+    <div class="card-header">
+        <div>
+            <div class="title">@Title</div>
+            @if (!string.IsNullOrEmpty(Subtitle))
+            {
+                <div class="subtitle">@Subtitle</div>
+            }
+        </div>
+        @if (CanExpand)
+        {
+            <div class="expand-icon" @onclick:stopPropagation>
+                <i class="oi @(IsExpanded ? "oi-chevron-top" : "oi-chevron-bottom")" aria-hidden="true"></i>
+            </div>
+        }
+    </div>
+    
+    @if (MetadataContent != null)
+    {
+        <div class="metadata">
+            @MetadataContent
+        </div>
+    }
+    
+    @if (CanExpand && ChildContent != null)
+    {
+        <div class="content @(IsExpanded ? "expanded" : "collapsed")">
+            @ChildContent
+        </div>
+    }
+    
+    @if (ActionContent != null)
+    {
+        <div class="actions" @onclick:stopPropagation>
+            @ActionContent
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string Title { get; set; } = string.Empty;
+    
+    [Parameter]
+    public string Subtitle { get; set; } = string.Empty;
+    
+    [Parameter]
+    public string StatusClass { get; set; } = "status-neutral";
+    
+    [Parameter]
+    public bool CanExpand { get; set; } = false;
+    
+    [Parameter]
+    public bool IsClickable { get; set; } = true;
+    
+    [Parameter]
+    public RenderFragment? MetadataContent { get; set; }
+    
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+    
+    [Parameter]
+    public RenderFragment? ActionContent { get; set; }
+    
+    [Parameter]
+    public EventCallback<MouseEventArgs> OnCardClick { get; set; }
+    
+    private bool IsExpanded { get; set; } = false;
+    
+    private async Task HandleCardClick(MouseEventArgs args)
+    {
+        // Only toggle expansion if we can expand and have content to show
+        if (CanExpand && ChildContent != null)
+        {
+            IsExpanded = !IsExpanded;
+            StateHasChanged();
+        }
+        
+        // Only trigger click callback if this card is meant to be clickable
+        if (IsClickable && OnCardClick.HasDelegate)
+        {
+            await OnCardClick.InvokeAsync(args);
+        }
+    }
+}

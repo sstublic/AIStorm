@@ -16,17 +16,17 @@
                     <h5 class="mb-0">Sessions</h5>
                     <a href="/session-editor" class="btn btn-sm btn-primary">Create New Session</a>
                 </div>
-                <div class="list-group list-group-flush">
+                <div class="list-group list-group-flush p-3">
                     @if (loadingSessions)
                     {
-                        <div class="list-group-item text-center">
+                        <div class="text-center py-3">
                             <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
                             Loading sessions...
                         </div>
                     }
                     else if (sessions.Count == 0)
                     {
-                        <div class="list-group-item">
+                        <div class="text-center py-3">
                             <em>No sessions available</em>
                         </div>
                     }
@@ -34,30 +34,9 @@
                     {
                         @foreach (var session in sessions)
                         {
-                            <div class="list-group-item">
-                                <div class="d-flex w-100 justify-content-between mb-2">
-                                    <h5 class="mb-1">@session.Id</h5>
-                                    <small>@session.Created.ToString("yyyy-MM-dd")</small>
-                                </div>
-                                <p class="mb-1">
-                                    <span class="badge bg-primary me-2">@session.Agents.Count Agent@(session.Agents.Count != 1 ? "s" : "")</span>
-                                    <span class="badge bg-secondary">@session.Messages.Count Message@(session.Messages.Count != 1 ? "s" : "")</span>
-                                </p>
-                                <small class="text-muted">
-                                    <MarkdownView Content="@(session.Premise?.Content ?? "")" Truncate="true" MaxLength="100" />
-                                </small>
-                                <div class="mt-3">
-                                    <a href="/conversation/@session.Id" class="btn btn-sm btn-primary">Open Conversation</a>
-                                    @if (session.Messages.Count == 0)
-                                    {
-                                        <a href="/session-editor/@session.Id" class="btn btn-sm btn-outline-primary ms-2">Edit Session</a>
-                                    }
-                                    else
-                                    {
-                                        <a href="/session-editor/@session.Id" class="btn btn-sm btn-outline-secondary ms-2" title="This session cannot be edited because it has messages">View Session Details</a>
-                                    }
-                                </div>
-                            </div>
+                            <SessionCard 
+                                Session="@session"
+                                OnSelected="@OnSessionSelected" />
                         }
                     }
                 </div>
@@ -70,17 +49,17 @@
                     <h5 class="mb-0">Agent Templates</h5>
                     <a href="/agent-editor" class="btn btn-sm btn-primary">Create New Agent</a>
                 </div>
-                <div class="list-group list-group-flush">
+                <div class="list-group list-group-flush p-3">
                     @if (loadingAgents)
                     {
-                        <div class="list-group-item text-center">
+                        <div class="text-center py-3">
                             <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
                             Loading agent templates...
                         </div>
                     }
                     else if (agents.Count == 0)
                     {
-                        <div class="list-group-item">
+                        <div class="text-center py-3">
                             <em>No agent templates available</em>
                         </div>
                     }
@@ -88,15 +67,11 @@
                     {
                         @foreach (var agent in agents)
                         {
-                            <div class="list-group-item" @key="agent.Name">
-                                <AgentCard 
-                                    Agent="@agent" 
-                                    ShowPrompt="true"
-                                    OnSelected="@OnAgentSelected" />
-                                <div class="mt-3">
-                                    <a href="/agent-editor/@agent.Name" class="btn btn-sm btn-outline-primary">Edit Agent</a>
-                                </div>
-                            </div>
+                            <AgentCard 
+                                Agent="@agent" 
+                                ShowPrompt="true"
+                                ShowEditButton="true"
+                                OnSelected="@OnAgentSelected" />
                         }
                     }
                 </div>
@@ -111,9 +86,16 @@
     private IReadOnlyList<Agent> agents = new List<Agent>();
     private bool loadingSessions = true;
     private bool loadingAgents = true;
+    
     private void OnAgentSelected(Agent agent)
     {
         // You can implement agent selection logic here if needed
+        // For now, this is a placeholder for future functionality
+    }
+    
+    private void OnSessionSelected(Session session)
+    {
+        // You can implement session selection logic here if needed
         // For now, this is a placeholder for future functionality
     }
 

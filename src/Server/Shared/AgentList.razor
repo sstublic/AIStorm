@@ -1,20 +1,28 @@
 @using AIStorm.Core.Models
 @using System.Collections.Generic
 
-<div class="card">
+<div class="card agent-list-card">
     <div class="card-header">
         <h5 class="mb-0">Participants</h5>
     </div>
-    <div class="list-group list-group-flush">
-        @foreach (var agent in Agents)
+    <div class="card-body p-3">
+        @if (Agents.Count == 0)
         {
-            <div class="list-group-item">
+            <div class="text-center py-3">
+                <em>No agents in this session</em>
+            </div>
+        }
+        else
+        {
+            @foreach (var agent in Agents)
+            {
                 <AgentCard 
                     Agent="@agent" 
                     ColorIndicator="@GetColorForAgent(agent.Name)"
-                    ShowPrompt="false"
+                    ShowPrompt="true"
+                    ShowEditButton="false"
                     OnSelected="@OnAgentSelected" />
-            </div>
+            }
         }
     </div>
 </div>
@@ -31,6 +39,6 @@
 
     private string GetColorForAgent(string agentName)
     {
-        return AgentColors.TryGetValue(agentName, out var color) ? color : "#6c757d";
+        return AgentColors.TryGetValue(agentName, out var color) ? color : "#dee2e6";
     }
 }

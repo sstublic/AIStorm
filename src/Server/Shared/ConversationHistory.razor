@@ -2,14 +2,14 @@
 @using System.Collections.Generic
 @inject IJSRuntime JSRuntime
 
-<div class="card conversation-container">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">Conversation</h5>
+<div class="conversation-history-container">
+    <div class="header">
+        <h5 class="title">Conversation</h5>
         <div>
-            <span class="text-muted small">@Messages.Count messages</span>
+            <span class="message-count">@Messages.Count messages</span>
         </div>
     </div>
-    <div class="card-body conversation-messages" @ref="messagesContainer">
+    <div class="messages-container" @ref="messagesContainer">
         @foreach (var message in Messages)
         {
             <ConversationMessage 

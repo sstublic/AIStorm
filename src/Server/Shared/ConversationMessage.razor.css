@@ -1,0 +1,57 @@
+.message {
+    --message-agent-color: #dee2e6;
+    padding: 10px;
+    margin-bottom: 15px;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    border-left: 3px solid var(--message-agent-color);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.message-header {
+    margin-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+}
+
+.agent-name {
+    font-weight: 600;
+    color: #212529;
+}
+
+.message-time {
+    color: #6c757d;
+    font-size: 0.8rem;
+}
+
+.message-content {
+    font-size: 1rem;
+}
+
+.message-content :deep(p:last-child) {
+    margin-bottom: 0;
+}
+
+.message-content :deep(pre) {
+    background-color: #f1f1f1;
+    padding: 10px;
+    border-radius: 4px;
+    overflow-x: auto;
+}
+
+.message-content :deep(code) {
+    background-color: #f1f1f1;
+    padding: 2px 4px;
+    border-radius: 3px;
+}
+
+.message-content :deep(blockquote) {
+    border-left: 3px solid #dee2e6;
+    padding-left: 10px;
+    color: #6c757d;
+}
+
+.user-message {
+    background-color: #f0f7ff;
+}

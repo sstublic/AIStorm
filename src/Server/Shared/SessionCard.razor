@@ -1,0 +1,45 @@
+@using AIStorm.Core.Models
+
+<AistormCard 
+    Title="@Session.Id"
+    Subtitle="@($"Created: {Session.Created:yyyy-MM-dd}")"
+    StatusClass="@GetStatusClass()"
+    CanExpand="false"
+    IsClickable="false">
+    
+    <MetadataContent>
+        <div class="metadata-tags">
+            <span class="tag">@Session.Agents.Count Agent@(Session.Agents.Count != 1 ? "s" : "")</span>
+            <span class="tag">@Session.Messages.Count Message@(Session.Messages.Count != 1 ? "s" : "")</span>
+        </div>
+    </MetadataContent>
+    
+    <ChildContent>
+        <MarkdownView Content="@(Session.Premise?.Content ?? "")" Truncate="true" MaxLength="100" />
+    </ChildContent>
+    
+    <ActionContent>
+        <a href="/conversation/@Session.Id" class="btn btn-primary btn-sm">Open Conversation</a>
+        @if (Session.Messages.Count == 0)
+        {
+            <a href="/session-editor/@Session.Id" class="btn btn-outline-primary btn-sm">Edit Session</a>
+        }
+        else
+        {
+            <a href="/session-editor/@Session.Id" class="btn btn-outline-secondary btn-sm" title="This session cannot be edited because it has messages">View Details</a>
+        }
+    </ActionContent>
+</AistormCard>
+
+@code {
+    [Parameter]
+    public Session Session { get; set; } = null!;
+    
+    [Parameter]
+    public EventCallback<Session> OnSelected { get; set; }
+    
+    private string GetStatusClass()
+    {
+        return Session.Messages.Count == 0 ? "status-empty" : "status-active";
+    }
+}

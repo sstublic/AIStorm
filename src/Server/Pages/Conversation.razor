@@ -22,7 +22,7 @@
             @if (sessionRunner != null)
             {
                 <div class="mt-3">
-                    <button class="btn btn-primary w-100" 
+                    <button class="btn btn-primary w-100 next-agent-button" 
                             @onclick="HandleNextClick" 
                             disabled="@isProcessing">
                         @if (isProcessing)
@@ -47,21 +47,21 @@
             {
                 <div class="conversation-input-container">
                     <form id="messageForm" @onsubmit="HandleSendClick" @onsubmit:preventDefault>
-<div class="input-group">
-    <textarea class="form-control" 
-            id="userMessageInput"
-            placeholder="Type your message..." 
-            @bind="userMessage" 
-            @bind:event="oninput"
-            @onkeydown="@HandleKeyDown"
-            @ref="userMessageTextArea"
-            disabled="@isProcessing"></textarea>
-    <button type="submit" 
-            class="btn btn-primary send-button ms-2" 
-            disabled="@(isProcessing || string.IsNullOrWhiteSpace(userMessage))">
-        Send
-    </button>
-</div>
+                        <div class="input-group">
+                            <textarea class="form-control" 
+                                    id="userMessageInput"
+                                    placeholder="Type your message..." 
+                                    @bind="userMessage" 
+                                    @bind:event="oninput"
+                                    @onkeydown="@HandleKeyDown"
+                                    @ref="userMessageTextArea"
+                                    disabled="@isProcessing"></textarea>
+                            <button type="submit" 
+                                    class="btn btn-primary send-button" 
+                                    disabled="@(isProcessing || string.IsNullOrWhiteSpace(userMessage))">
+                                Send
+                            </button>
+                        </div>
                     </form>
                 </div>
             }
@@ -79,16 +79,17 @@
     private bool isProcessing = false;
     private ElementReference userMessageTextArea;
 
+    // More subtle pastel color palette
     private static readonly string[] colorPalette = new[]
     {
-        "#0d6efd",  // Bootstrap primary
-        "#dc3545",  // Bootstrap danger
-        "#198754",  // Bootstrap success
-        "#ffc107",  // Bootstrap warning
-        "#6610f2",  // Bootstrap indigo
-        "#fd7e14",  // Bootstrap orange
-        "#20c997",  // Bootstrap teal
-        "#d63384",  // Bootstrap pink
+        "#cfe2ff",  // Light blue
+        "#f8d7da",  // Light red  
+        "#d1e7dd",  // Light green
+        "#fff3cd",  // Light yellow
+        "#e2d9f3",  // Light purple
+        "#ffe5d0",  // Light orange
+        "#d2f4ea",  // Light teal
+        "#f5d0e3"   // Light pink
     };
 
     private void OnAgentSelected(Agent agent)
@@ -143,8 +144,8 @@
                 }
                 
                 // Add color for "user" or "Human" messages
-                agentColors["user"] = "#343a40";  // Bootstrap dark
-                agentColors["Human"] = "#343a40"; // Bootstrap dark
+                agentColors["user"] = "#dee2e6";  // Light gray
+                agentColors["Human"] = "#dee2e6"; // Light gray
                 
                 // Ensure we have colors for all message senders (in case there are messages from agents not in the embedded list)
                 var messageSenders = sessionRunner.Session.Messages

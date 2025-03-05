@@ -1,0 +1,33 @@
+.metadata-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.tag {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 1rem;
+    background-color: #f1f3f5;
+    color: #495057;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+}
+
+.tag.service-type {
+    background-color: #e9ecef;
+}
+
+.tag.model-type {
+    background-color: #f1f3f5;
+}
+
+/* Agent card with color indicator */
+.agent-card {
+    --agent-color: transparent;
+}
+
+.agent-card :deep(.aistorm-card) {
+    border-left: 3px solid var(--agent-color, #dee2e6);
+}
