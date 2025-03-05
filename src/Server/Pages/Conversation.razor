@@ -1,22 +1,68 @@
 @page "/conversation/{*SessionId}"
 @using AIStorm.Core.Models
 @using AIStorm.Core.Storage
+@using AIStorm.Core.SessionManagement
 @using Microsoft.Extensions.Logging
+@using Microsoft.AspNetCore.Components.Web
 @inject IStorageProvider StorageProvider
+@inject ISessionRunnerFactory SessionRunnerFactory
 @inject ILogger<Conversation> Logger
+@inject IJSRuntime JSRuntime
 
-<PageTitle>Conversation - @(session?.Id ?? "Loading...")</PageTitle>
+<PageTitle>Conversation - @(sessionRunner?.Session?.Id ?? "Loading...")</PageTitle>
 
 <div class="container-fluid mt-3">
     <div class="row">
         <div class="col-md-3">
             <AgentList 
-                Agents="@(session?.Agents ?? Array.Empty<Agent>())" 
+                Agents="@(sessionRunner?.Session?.Agents ?? Array.Empty<Agent>())" 
                 AgentColors="@agentColors" 
                 OnAgentSelected="@OnAgentSelected" />
+                
+            @if (sessionRunner != null)
+            {
+                <div class="mt-3">
+                    <button class="btn btn-primary w-100" 
+                            @onclick="HandleNextClick" 
+                            disabled="@isProcessing">
+                        @if (isProcessing)
+                        {
+                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                            <span> Processing...</span>
+                        }
+                        else
+                        {
+                            <span>Next: @sessionRunner.NextAgentToRespond.Name</span>
+                        }
+                    </button>
+                </div>
+            }
         </div>
         <div class="col-md-9">
-            <ConversationHistory Messages="@(session?.Messages ?? Array.Empty<StormMessage>())" AgentColors="@agentColors" />
+            <ConversationHistory Messages="@(sessionRunner?.Session?.Messages ?? Array.Empty<StormMessage>())" AgentColors="@agentColors" />
+            
+            @if (sessionRunner != null)
+            {
+                <div class="mt-3">
+                    <form id="messageForm" @onsubmit="HandleSendClick" @onsubmit:preventDefault>
+                        <div class="input-group">
+                            <textarea class="form-control" 
+                                    id="userMessageInput"
+                                    placeholder="Type your message..." 
+                                    @bind="userMessage" 
+                                    @bind:event="oninput"
+                                    @onkeydown="@HandleKeyDown"
+                                    @ref="userMessageTextArea"
+                                    disabled="@isProcessing"></textarea>
+                            <button type="submit" 
+                                    class="btn btn-outline-primary" 
+                                    disabled="@(isProcessing || string.IsNullOrWhiteSpace(userMessage))">
+                                Send
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            }
         </div>
     </div>
 </div>
@@ -25,8 +71,11 @@
     [Parameter]
     public required string SessionId { get; set; }
 
-    private Session? session;
+    private SessionRunner? sessionRunner;
     private Dictionary<string, string> agentColors = new();
+    private string userMessage = string.Empty;
+    private bool isProcessing = false;
+    private ElementReference userMessageTextArea;
 
     private static readonly string[] colorPalette = new[]
     {
@@ -46,40 +95,67 @@
         // For now, this is just a placeholder
     }
     
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                // Setup auto-resize for message textarea
+                await JSRuntime.InvokeVoidAsync("setupAutoResizeTextarea", "userMessageInput");
+                
+                // Prevent form submission on Enter
+                await JSRuntime.InvokeVoidAsync("preventFormSubmitOnEnter", "messageForm");
+                
+                // Focus the message input
+                await JSRuntime.InvokeVoidAsync("focusMessageInput", userMessageTextArea);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Error initializing JavaScript functions: {ErrorMessage}", ex.Message);
+            }
+        }
+    }
+    
     protected override Task OnInitializedAsync()
     {
         try
         {
             Logger.LogInformation("Loading conversation with session ID: '{SessionId}'", SessionId);
             
-            // Load session data with embedded agents
-            session = StorageProvider.LoadSession(SessionId);
+            // Create SessionRunner instance - this is now our source of truth
+            sessionRunner = SessionRunnerFactory.CreateWithStoredSession(SessionId);
             
-            Logger.LogInformation("Session loaded successfully. Session ID: '{Id}', Messages: {Count}, Agents: {AgentCount}", 
-                session.Id, session.Messages.Count, session.Agents.Count);
-                
-            // Assign colors to embedded agents
-            for (int i = 0; i < session.Agents.Count; i++)
+            if (sessionRunner != null)
             {
-                var agent = session.Agents[i];
-                agentColors[agent.Name] = colorPalette[i % colorPalette.Length];
-            }
-            
-            // Add color for "user" or "Human" messages
-            agentColors["user"] = "#343a40";  // Bootstrap dark
-            agentColors["Human"] = "#343a40"; // Bootstrap dark
-            
-            // Ensure we have colors for all message senders (in case there are messages from agents not in the embedded list)
-            var messageSenders = session.Messages
-                .Select(m => m.AgentName)
-                .Where(name => !agentColors.ContainsKey(name))
-                .Distinct();
+                Logger.LogInformation("SessionRunner created for session: {SessionId}", SessionId);
+                Logger.LogInformation("Session loaded successfully. Session ID: '{Id}', Messages: {Count}, Agents: {AgentCount}", 
+                    sessionRunner.Session.Id, sessionRunner.Session.Messages.Count, sessionRunner.Session.Agents.Count);
+                Logger.LogInformation("Next agent to respond: {AgentName}", sessionRunner.NextAgentToRespond.Name);
+                    
+                // Assign colors to embedded agents
+                for (int i = 0; i < sessionRunner.Session.Agents.Count; i++)
+                {
+                    var agent = sessionRunner.Session.Agents[i];
+                    agentColors[agent.Name] = colorPalette[i % colorPalette.Length];
+                }
                 
-            foreach (var sender in messageSenders)
-            {
-                // Assign a color from the palette
-                var index = agentColors.Count;
-                agentColors[sender] = colorPalette[index % colorPalette.Length];
+                // Add color for "user" or "Human" messages
+                agentColors["user"] = "#343a40";  // Bootstrap dark
+                agentColors["Human"] = "#343a40"; // Bootstrap dark
+                
+                // Ensure we have colors for all message senders (in case there are messages from agents not in the embedded list)
+                var messageSenders = sessionRunner.Session.Messages
+                    .Select(m => m.AgentName)
+                    .Where(name => !agentColors.ContainsKey(name))
+                    .Distinct();
+                    
+                foreach (var sender in messageSenders)
+                {
+                    // Assign a color from the palette
+                    var index = agentColors.Count;
+                    agentColors[sender] = colorPalette[index % colorPalette.Length];
+                }
             }
         }
         catch (Exception ex)
@@ -89,5 +165,93 @@
         }
         
         return Task.CompletedTask;
+    }
+    
+    private async Task HandleNextClick()
+    {
+        if (sessionRunner == null || isProcessing)
+            return;
+            
+        try
+        {
+            isProcessing = true;
+            StateHasChanged();
+            
+            Logger.LogInformation("Triggering next agent response: {AgentName}", sessionRunner.NextAgentToRespond.Name);
+            
+            await sessionRunner.Next();
+            
+            // Save the updated session
+            await SaveSessionAsync();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error getting next agent response: {ErrorMessage}", ex.Message);
+        }
+        finally
+        {
+            isProcessing = false;
+            StateHasChanged();
+        }
+    }
+    
+    private async Task HandleSendClick()
+    {
+        if (sessionRunner == null || string.IsNullOrWhiteSpace(userMessage) || isProcessing)
+            return;
+            
+        try
+        {
+            isProcessing = true;
+            StateHasChanged();
+            
+            string message = userMessage;
+            userMessage = string.Empty;
+            
+            Logger.LogInformation("Adding user message to session: {SessionId}", SessionId);
+            
+            sessionRunner.AddUserMessage(message);
+            
+            // Save the updated session
+            await SaveSessionAsync();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error adding user message: {ErrorMessage}", ex.Message);
+        }
+        finally
+        {
+            isProcessing = false;
+            StateHasChanged();
+        }
+    }
+    
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !e.ShiftKey)
+        {
+            // Only process Enter without Shift (Shift+Enter should add a new line)
+            await HandleSendClick();
+        }
+    }
+    
+    private async Task SaveSessionAsync()
+    {
+        if (sessionRunner?.Session == null)
+            return;
+            
+        try
+        {
+            // Save the updated session
+            StorageProvider.SaveSession(SessionId, sessionRunner.Session);
+            Logger.LogInformation("Session saved successfully: {SessionId}", SessionId);
+            
+            await Task.Delay(50); // Brief delay to ensure UI updates
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error saving session: {ErrorMessage}", ex.Message);
+        }
     }
 }
