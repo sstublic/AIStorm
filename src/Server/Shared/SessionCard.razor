@@ -19,15 +19,25 @@
     </ChildContent>
     
     <ActionContent>
-        <a href="/conversation/@Session.Id" class="btn btn-primary btn-sm">Open Conversation</a>
-        @if (Session.Messages.Count == 0)
-        {
-            <a href="/session-editor/@Session.Id" class="btn btn-outline-primary btn-sm">Edit Session</a>
-        }
-        else
-        {
-            <a href="/session-editor/@Session.Id" class="btn btn-outline-secondary btn-sm" title="This session cannot be edited because it has messages">View Details</a>
-        }
+        <div class="actions-left">
+            @if (Session.Messages.Count == 0)
+            {
+                <a href="/session-editor/@Session.Id" class="btn btn-primary" title="Edit Session">
+                    <i class="oi oi-pencil" aria-hidden="true"></i>
+                </a>
+            }
+            else
+            {
+                <a href="/session-editor/@Session.Id" class="btn btn-secondary" title="View Session Details">
+                    <i class="oi oi-info" aria-hidden="true"></i>
+                </a>
+            }
+        </div>
+        <div class="actions-right">
+            <a href="/conversation/@Session.Id" class="btn btn-success" title="Open Conversation">
+                <i class="oi oi-media-play" aria-hidden="true"></i>
+            </a>
+        </div>
     </ActionContent>
 </AistormCard>
 

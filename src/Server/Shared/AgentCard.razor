@@ -24,10 +24,14 @@
         </ChildContent>
         
         <ActionContent>
-            @if (ShowEditButton)
-            {
-                <a href="/agent-editor/@Agent.Name" class="btn btn-outline-primary btn-sm">Edit Agent</a>
-            }
+            <div class="actions-left">
+                @if (ShowEditButton)
+                {
+                    <a href="/agent-editor/@Agent.Name" class="btn btn-primary" title="Edit Agent">
+                        <i class="oi oi-pencil" aria-hidden="true"></i>
+                    </a>
+                }
+            </div>
         </ActionContent>
     </AistormCard>
 </div>

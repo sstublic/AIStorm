@@ -37,13 +37,18 @@
     border-bottom: none;
 }
 
+.card-header > div:first-child {
+    flex: 1;
+    min-width: 0; /* Important for text-overflow to work properly */
+}
+
 .title {
     margin: 0;
     font-weight: 600;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 90%;
+    width: 100%;
     color: #212529;
 }
 
@@ -69,24 +74,34 @@
 
 /* Card Metadata */
 .metadata {
-    padding: 0 1rem 0.5rem 1rem;
+    padding: 0.5rem 1rem 0.5rem 1rem;
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
     align-items: center;
     border-top: none;
+    margin-top: 0.25rem;
 }
 
 /* Card Content */
 .content {
-    background-color: #f8f9fa;
     overflow: hidden;
     transform-origin: top;
     transition: transform 0.3s ease, opacity 0.3s ease, max-height 0.3s ease;
     padding: 0.75rem 1rem;
-    border-top: 1px solid rgba(0, 0, 0, 0.075);
     margin: 0 0.5rem;
     border-radius: 4px;
+    position: relative;
+}
+
+.content:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 5%;
+    right: 5%;
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.1), transparent);
 }
 
 .content.collapsed {
@@ -111,50 +126,59 @@
 .actions {
     padding: 0.5rem 1rem 0.75rem 1rem;
     display: flex;
-    gap: 0.5rem;
+    gap: 0.75rem;
     border-top: none;
+    justify-content: space-between;
 }
 
-.actions :deep(.btn) {
+.actions-left {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.actions-right {
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* More specific selectors for buttons instead of using !important */
+.aistorm-card .actions :deep(.btn.btn-primary),
+.aistorm-card .actions :deep(.btn.btn-secondary),
+.aistorm-card .actions :deep(.btn.btn-success) {
     transition: all 0.2s ease;
     box-shadow: none;
+    width: 36px;
+    height: 28px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
 }
 
-.actions :deep(.btn:hover) {
+.aistorm-card .actions :deep(.btn:hover) {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     transform: translateY(-1px);
 }
 
-.actions :deep(.btn-primary) {
-    background-color: #0d6efd;
-}
-
-.actions :deep(.btn-outline-primary), 
-.actions :deep(.btn-outline-secondary) {
-    background-color: transparent;
-    border-color: #dee2e6;
-    color: #6c757d;
-}
-
-.actions :deep(.btn-outline-primary:hover) {
-    background-color: #f8f9fa;
-    border-color: #0d6efd;
-    color: #0d6efd;
-}
-
-.actions :deep(.btn-outline-secondary:hover) {
-    background-color: #f8f9fa;
-    border-color: #6c757d;
-    color: #6c757d;
+/* More specific selector for icons */
+.aistorm-card .actions :deep(.btn) :deep(i.oi) {
+    font-size: 0.9rem;
+    line-height: 1;
+    margin: 0;
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .actions {
-        flex-direction: column;
+        flex-direction: row;
+        flex-wrap: wrap;
     }
     
-    .actions :deep(.btn) {
-        width: 100%;
+    .aistorm-card .actions :deep(.btn.btn-primary),
+    .aistorm-card .actions :deep(.btn.btn-secondary),
+    .aistorm-card .actions :deep(.btn.btn-success) {
+        width: 36px;
+        height: 28px;
     }
 }
