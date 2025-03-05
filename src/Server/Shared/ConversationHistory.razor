@@ -59,21 +59,3 @@
         return AgentColors.TryGetValue(agentName, out var color) ? color : "#6c757d";
     }
 }
-
-<style>
-    .conversation-container {
-        height: calc(100vh - 150px);
-        display: flex;
-        flex-direction: column;
-    }
-
-    .conversation-messages {
-        flex-grow: 1;
-        overflow-y: auto;
-        padding: 15px;
-    }
-
-    .user-message {
-        background-color: #e9f5ff;
-    }
-</style>

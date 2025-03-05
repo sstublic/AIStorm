@@ -64,7 +64,12 @@ main {
     }
 
     .top-row, article {
-        padding-left: 2rem !important;
-        padding-right: 1.5rem !important;
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
     }
+}
+
+article.content {
+    padding-top: 0.5rem !important;
+    margin-top: 0;
 }

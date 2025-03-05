@@ -1,0 +1,15 @@
+.conversation-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.conversation-messages {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+.user-message {
+    background-color: #e9f5ff;
+}

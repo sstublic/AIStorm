@@ -11,9 +11,9 @@
 
 <PageTitle>Conversation - @(sessionRunner?.Session?.Id ?? "Loading...")</PageTitle>
 
-<div class="container-fluid mt-3">
-    <div class="row">
-        <div class="col-md-3">
+<div class="container-fluid mt-3 conversation-container">
+    <div class="row h-100">
+        <div class="col-md-3 py-2">
             <AgentList 
                 Agents="@(sessionRunner?.Session?.Agents ?? Array.Empty<Agent>())" 
                 AgentColors="@agentColors" 
@@ -38,28 +38,30 @@
                 </div>
             }
         </div>
-        <div class="col-md-9">
-            <ConversationHistory Messages="@(sessionRunner?.Session?.Messages ?? Array.Empty<StormMessage>())" AgentColors="@agentColors" />
+        <div class="col-md-9 conversation-column py-2">
+            <div class="conversation-history">
+                <ConversationHistory Messages="@(sessionRunner?.Session?.Messages ?? Array.Empty<StormMessage>())" AgentColors="@agentColors" />
+            </div>
             
             @if (sessionRunner != null)
             {
-                <div class="mt-3">
+                <div class="conversation-input-container">
                     <form id="messageForm" @onsubmit="HandleSendClick" @onsubmit:preventDefault>
-                        <div class="input-group">
-                            <textarea class="form-control" 
-                                    id="userMessageInput"
-                                    placeholder="Type your message..." 
-                                    @bind="userMessage" 
-                                    @bind:event="oninput"
-                                    @onkeydown="@HandleKeyDown"
-                                    @ref="userMessageTextArea"
-                                    disabled="@isProcessing"></textarea>
-                            <button type="submit" 
-                                    class="btn btn-outline-primary" 
-                                    disabled="@(isProcessing || string.IsNullOrWhiteSpace(userMessage))">
-                                Send
-                            </button>
-                        </div>
+<div class="input-group">
+    <textarea class="form-control" 
+            id="userMessageInput"
+            placeholder="Type your message..." 
+            @bind="userMessage" 
+            @bind:event="oninput"
+            @onkeydown="@HandleKeyDown"
+            @ref="userMessageTextArea"
+            disabled="@isProcessing"></textarea>
+    <button type="submit" 
+            class="btn btn-primary send-button ms-2" 
+            disabled="@(isProcessing || string.IsNullOrWhiteSpace(userMessage))">
+        Send
+    </button>
+</div>
                     </form>
                 </div>
             }
