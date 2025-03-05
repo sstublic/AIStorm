@@ -142,9 +142,9 @@
 }
 
 /* More specific selectors for buttons instead of using !important */
-.aistorm-card .actions :deep(.btn.btn-primary),
-.aistorm-card .actions :deep(.btn.btn-secondary),
-.aistorm-card .actions :deep(.btn.btn-success) {
+.aistorm-card ::deep .actions .btn.btn-primary,
+.aistorm-card ::deep .actions .btn.btn-secondary,
+.aistorm-card ::deep .actions .btn.btn-success {
     transition: all 0.2s ease;
     box-shadow: none;
     width: 36px;
@@ -156,13 +156,13 @@
     border-radius: 4px;
 }
 
-.aistorm-card .actions :deep(.btn:hover) {
+.aistorm-card ::deep .actions .btn:hover {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     transform: translateY(-1px);
 }
 
 /* More specific selector for icons */
-.aistorm-card .actions :deep(.btn) :deep(i.oi) {
+.aistorm-card ::deep .actions .btn i.oi {
     font-size: 0.9rem;
     line-height: 1;
     margin: 0;
@@ -175,9 +175,9 @@
         flex-wrap: wrap;
     }
     
-    .aistorm-card .actions :deep(.btn.btn-primary),
-    .aistorm-card .actions :deep(.btn.btn-secondary),
-    .aistorm-card .actions :deep(.btn.btn-success) {
+    .aistorm-card ::deep .actions .btn.btn-primary,
+    .aistorm-card ::deep .actions .btn.btn-secondary,
+    .aistorm-card ::deep .actions .btn.btn-success {
         width: 36px;
         height: 28px;
     }

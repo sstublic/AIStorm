@@ -28,6 +28,6 @@
     --agent-color: transparent;
 }
 
-.agent-card :deep(.aistorm-card) {
+.agent-card ::deep .aistorm-card {
     border-left: 3px solid var(--agent-color, #dee2e6);
 }

@@ -29,24 +29,24 @@
     font-size: 1rem;
 }
 
-.message-content :deep(p:last-child) {
+.message-content ::deep p:last-child {
     margin-bottom: 0;
 }
 
-.message-content :deep(pre) {
+.message-content ::deep pre {
     background-color: #f1f1f1;
     padding: 10px;
     border-radius: 4px;
     overflow-x: auto;
 }
 
-.message-content :deep(code) {
+.message-content ::deep code {
     background-color: #f1f1f1;
     padding: 2px 4px;
     border-radius: 3px;
 }
 
-.message-content :deep(blockquote) {
+.message-content ::deep blockquote {
     border-left: 3px solid #dee2e6;
     padding-left: 10px;
     color: #6c757d;

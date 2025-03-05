@@ -31,6 +31,6 @@
     padding: 1rem;
 }
 
-:deep(.user-message) {
+::deep .user-message {
     background-color: #e9f5ff;
 }
