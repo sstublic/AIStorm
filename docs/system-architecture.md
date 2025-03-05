@@ -13,6 +13,7 @@ AIStorm consists of several key components that work together to enable AI-power
 1. **AI System** - Manages communication with AI service providers and handles prompt construction
 2. **Data Storage System** - Handles persistence of sessions, agents, and conversation history
 3. **Session Management** - Coordinates conversations between multiple AI agents
+4. **UI Components** - Reusable Blazor components for consistent user interface elements
 
 ## AI System
 
@@ -131,6 +132,66 @@ The markdown implementation in the `AIStorm.Core.Storage.Markdown` namespace inc
 - Creating the necessary directory structure at initialization
 - Scanning file system for all available sessions and agent templates
 
+## UI Components
+
+AIStorm uses a component-based UI architecture with several reusable components that provide consistent styling and behavior throughout the application:
+
+### Core UI Components
+
+1. **AistormCard** - A flexible card component used as the foundation for various content displays:
+   - Supports expandable/collapsible content sections
+   - Includes title, subtitle, and metadata display areas
+   - Provides a standardized container for various content types
+
+2. **MarkdownView** - Renders markdown content in the UI:
+   - Uses the Markdig library for markdown processing
+   - Supports advanced markdown extensions
+   - Renders content as HTML with appropriate styling
+
+3. **AgentCard** - Displays agent information in a consistent format:
+   - Shows agent name, service type, and model information
+   - Optional color indicators for visual differentiation of agents
+   - Expandable system prompt display
+   - Conditional edit buttons based on context
+
+4. **ConversationMessage** - Displays individual messages in the conversation:
+   - Renders message content with markdown support
+   - Shows agent name and timestamp
+   - Uses consistent styling with agent-specific color indicators
+   - Differentiates between user and AI agent messages
+
+### Styling and Theming
+
+- CSS variables for consistent theming throughout the application
+- Agent-specific colors for visual differentiation in conversation view
+- Responsive design for different screen sizes
+- Bootstrap integration for grid system and basic components
+- Custom CSS for specialized components
+
+### Navigation Flow
+
+The application uses a structured navigation flow:
+
+1. **Sessions Overview** (`/sessions`) - The main hub for accessing all content:
+   - Lists all available sessions with metadata
+   - Provides access to agent templates
+   - Entry point for creating new sessions or agents
+
+2. **Session Editor** (`/session-editor[/{SessionId}]`) - For creating or editing sessions:
+   - Form for session ID, premise, and agent selection
+   - Validation for all inputs
+   - Conditionally enables editing based on session state
+
+3. **Agent Editor** (`/agent-editor[/{AgentName}]`) - For creating or editing agent templates:
+   - Form for agent name, service type, model, and system prompt
+   - Dynamic model selection based on service type
+   - Validation for all inputs
+
+4. **Conversation View** (`/conversation/{SessionId}`) - For viewing and participating in sessions:
+   - Displays conversation history with agent-specific styling
+   - Input area for adding new user messages
+   - Real-time updates when agents respond
+
 ## Session Management
 
 The Session Management system coordinates conversations between multiple AI agents:
@@ -174,6 +235,7 @@ The user interface provides a comprehensive workflow for creating and managing a
 4. **Agent Editing** - All agent templates can be edited at any time
    - Unlike sessions, there are no restrictions on when agents can be edited
    - Changes to agent templates do not affect existing sessions (since agents are copied)
+   - The AgentEditor component provides a form interface for both creating and editing agents
 
 #### Session Management
 

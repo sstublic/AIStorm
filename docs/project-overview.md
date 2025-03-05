@@ -19,6 +19,8 @@ AIStorm is a Blazor Server application that allows users to set up brainstorming
 - Markdown-based storage system for conversations
 - HTML/JS frontend for user interaction
 - Overview of all sessions and agent templates
+- Color-coded agents for visual differentiation in the conversation view
+- Markdown rendering for rich message content
 
 ## Technical Architecture
 
@@ -61,6 +63,24 @@ AIStorm/
 
 The application creates storage directories at runtime to store sessions and agent templates.
 
+## UI Components
+
+AIStorm uses a component-based UI architecture with reusable components for consistency:
+
+### Core Components
+
+- **AistormCard** - A flexible card component serving as the foundation for various content displays
+- **MarkdownView** - Renders markdown content with support for advanced markdown extensions
+- **AgentCard** - Displays agent information with optional color indicators and expandable content
+- **ConversationMessage** - Renders conversation messages with markdown support and agent styling
+
+### Pages
+
+- **SessionsOverview** - Main hub for accessing sessions and agent templates
+- **AgentEditor** - For creating and editing agent templates
+- **SessionEditor** - For creating and editing sessions
+- **Conversation** - For viewing and participating in brainstorming sessions
+
 ## File Structure
 
 The storage structure for sessions and agents is organized as follows:
@@ -101,12 +121,38 @@ Benefits of this approach:
 
 3. Start the brainstorming session with the configured agents
    - Interact with the agents in the conversation interface
+   - Messages are styled with agent-specific colors for visual differentiation
+   - Markdown content is rendered for rich message formatting
    - Save/export the conversation (happens automatically)
 
 4. Manage sessions
    - Review past sessions and available agent templates in the sessions overview
    - Edit sessions (only possible for sessions with no conversation messages)
    - View session details for sessions with existing conversations
+
+## Navigation Flow
+
+The application uses a structured navigation flow:
+
+1. **Sessions Overview** (`/sessions`) - The main entry point that provides access to:
+   - Available sessions with their details
+   - Agent templates with expandable details
+   - Creation of new sessions and agent templates
+
+2. **Agent Editor** (`/agent-editor[/{AgentName}]`) - For creating or editing agent templates:
+   - Form for agent name, service type, model, and system prompt
+   - Dynamic model selection based on selected service type
+   - Input validation with clear error messages
+
+3. **Session Editor** (`/session-editor[/{SessionId}]`) - For creating or editing sessions:
+   - Form for session ID, premise, and agent template selection
+   - Input validation for all fields
+   - Restriction on editing sessions with existing messages
+
+4. **Conversation View** (`/conversation/{SessionId}`) - For interacting with sessions:
+   - Display of all messages with agent styling
+   - Input area for adding user messages
+   - Automatic updating when agents respond
 
 ## Project-Specific Conventions
 
