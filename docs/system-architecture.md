@@ -29,15 +29,23 @@ AIStorm consists of several key components that work together to enable AI-power
 - Base options class (`AIOptionsBase`) with common configuration:
   - API key provision via user secrets, environment variables, or appsettings.json
   - Configurable list of models available for each provider
-- Provider-specific options (e.g., `OpenAIOptions`) that inherit from the base class
+- Provider-specific options (e.g., `OpenAIOptions`, `AIMockOptions`) that inherit from the base class
 - Interface-based design with `IAIProvider` for common operations
-- OpenAI service implemented as the first provider with built-in endpoint URL
+- Multiple providers implemented:
+  - OpenAI service with built-in endpoint URL
+  - AIMock provider for testing with predefined behaviors:
+    - AlwaysThrows model: Always throws an exception (useful for integration tests and error handling testing)
+    - AlwaysReturns model: Always returns a predictable response (useful for UI testing and development)
 - Configuration structure follows the pattern `AI:{ProviderName}` in appsettings.json:
   ```json
   "AI": {
     "OpenAI": {
       "ApiKey": "",
       "Models": ["gpt-3.5-turbo", "gpt-4"]
+    },
+    "AIMock": {
+      "ApiKey": "not-needed", 
+      "Models": ["AlwaysThrows", "AlwaysReturns"]
     }
   }
   ```

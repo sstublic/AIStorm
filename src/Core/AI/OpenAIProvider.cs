@@ -36,15 +36,18 @@ public class OpenAIProvider : IAIProvider
         // Validate options
         if (string.IsNullOrEmpty(this.options.ApiKey))
         {
-            logger.LogError("OpenAI API key is missing");
-            throw new ArgumentException("OpenAI API key is missing. Please provide a valid API key in your configuration. ", nameof(options));
+            logger.LogWarning("OpenAI API key is missing - provider may not work correctly");
         }
             
         this.httpClient = new HttpClient
         {
             BaseAddress = new Uri(BASE_URL)
         };
-        this.httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {this.options.ApiKey}");
+        
+        if (!string.IsNullOrEmpty(this.options.ApiKey))
+        {
+            this.httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {this.options.ApiKey}");
+        }
     }
     
     public async Task<string> SendMessageAsync(Agent agent, SessionPremise premise, List<StormMessage> conversationHistory)

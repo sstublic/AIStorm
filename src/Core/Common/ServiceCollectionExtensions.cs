@@ -16,6 +16,9 @@ public static class ServiceCollectionExtensions
         // Configure AI options
         services.Configure<OpenAIOptions>(
             configuration.GetSection($"AI:{OpenAIOptions.ProviderName}"));
+            
+        services.Configure<AIMockOptions>(
+            configuration.GetSection($"AI:{AIMockOptions.ProviderName}"));
         
         services.Configure<MarkdownStorageOptions>(
             configuration.GetSection(nameof(MarkdownStorageOptions)));
@@ -25,6 +28,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IStorageProvider, MarkdownStorageProvider>();
         services.AddSingleton<IPromptBuilder, PromptBuilder>();
         services.AddSingleton<IAIProvider, OpenAIProvider>();
+        services.AddSingleton<IAIProvider, AIMockProvider>();
         services.AddSingleton<ISessionRunnerFactory, SessionRunnerFactory>();
         
         // Add logging (already provided by default through DI in most .NET apps)
