@@ -34,3 +34,23 @@
 ::deep .user-message {
     background-color: #e9f5ff;
 }
+
+.premise-message {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #efe6fd; /* Purple-ish background to make it stand out */
+    border-radius: 6px;
+    border-left: 6px solid #6f42c1; /* Bold purple left border */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.premise-content h4 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #6f42c1;
+    font-weight: 600;
+}
+
+.premise-content ::deep p:last-child {
+    margin-bottom: 0;
+}

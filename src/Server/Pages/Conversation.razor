@@ -40,7 +40,10 @@
         </div>
         <div class="col-md-9 conversation-column py-2">
             <div class="conversation-history">
-                <ConversationHistory Messages="@(sessionRunner?.Session?.Messages ?? Array.Empty<StormMessage>())" AgentColors="@agentColors" />
+                <ConversationHistory 
+                    Messages="@(sessionRunner?.Session?.Messages ?? Array.Empty<StormMessage>())" 
+                    AgentColors="@agentColors" 
+                    Premise="@(sessionRunner?.Session?.Premise?.Content ?? string.Empty)" />
             </div>
             
             @if (sessionRunner != null)

@@ -1,15 +1,26 @@
 @using AIStorm.Core.Models
 @using System.Collections.Generic
+@using Markdig
+@using Markdig.Extensions.Bootstrap
 @inject IJSRuntime JSRuntime
 
 <div class="conversation-history-container">
     <div class="header">
-        <h5 class="title">Conversation</h5>
+        <h5 class="title">Conversation (premise is shown at the beginning of message history)</h5>
         <div>
             <span class="message-count">@Messages.Count messages</span>
         </div>
     </div>
     <div class="messages-container" @ref="messagesContainer">
+        @if (!string.IsNullOrEmpty(Premise))
+        {
+            <div class="premise-message">
+                <div class="premise-content markdown-content">
+                    <h4>Session Premise</h4>
+                    @((MarkupString)RenderMarkdown(Premise))
+                </div>
+            </div>
+        }
         @foreach (var message in Messages)
         {
             <ConversationMessage 
@@ -28,6 +39,9 @@
 
     [Parameter]
     public Dictionary<string, string> AgentColors { get; set; } = new Dictionary<string, string>();
+    
+    [Parameter]
+    public string Premise { get; set; } = string.Empty;
 
     private ElementReference messagesContainer;
     private ElementReference scrollTarget;
@@ -57,5 +71,15 @@
     private string GetColorForAgent(string agentName)
     {
         return AgentColors.TryGetValue(agentName, out var color) ? color : "#6c757d";
+    }
+    
+    private string RenderMarkdown(string content)
+    {
+        var pipeline = new MarkdownPipelineBuilder()
+            .UseAdvancedExtensions()
+            .UseBootstrap()
+            .Build();
+            
+        return Markdown.ToHtml(content ?? string.Empty, pipeline);
     }
 }
