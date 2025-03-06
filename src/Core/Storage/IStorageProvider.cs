@@ -7,9 +7,11 @@ public interface IStorageProvider
 {
     Agent LoadAgent(string id);
     void SaveAgent(string id, Agent agent);
+    bool DeleteAgent(string id);
     
     Session LoadSession(string id);
     void SaveSession(string id, Session session);
+    bool DeleteSession(string id);
     
     IReadOnlyList<Session> GetAllSessions();
     IReadOnlyList<Agent> GetAllAgentTemplates();

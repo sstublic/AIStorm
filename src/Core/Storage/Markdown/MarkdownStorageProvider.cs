@@ -190,6 +190,56 @@ public class MarkdownStorageProvider : IStorageProvider
         return agents.AsReadOnly();
     }
     
+    public bool DeleteAgent(string id)
+    {
+        logger.LogInformation("DeleteAgent called with ID: '{AgentId}'", id);
+        
+        var fullPath = GetAgentPath(id);
+        
+        if (!File.Exists(fullPath))
+        {
+            logger.LogWarning("Agent file not found at path: '{FullPath}'", fullPath);
+            return false;
+        }
+        
+        try
+        {
+            File.Delete(fullPath);
+            logger.LogInformation("Successfully deleted agent file at path: '{FullPath}'", fullPath);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error deleting agent file at path: '{FullPath}'", fullPath);
+            return false;
+        }
+    }
+    
+    public bool DeleteSession(string id)
+    {
+        logger.LogInformation("DeleteSession called with ID: '{SessionId}'", id);
+        
+        var fullPath = GetSessionPath(id);
+        
+        if (!File.Exists(fullPath))
+        {
+            logger.LogWarning("Session file not found at path: '{FullPath}'", fullPath);
+            return false;
+        }
+        
+        try
+        {
+            File.Delete(fullPath);
+            logger.LogInformation("Successfully deleted session file at path: '{FullPath}'", fullPath);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error deleting session file at path: '{FullPath}'", fullPath);
+            return false;
+        }
+    }
+    
     public bool ValidateId(string id, out string errorMessage)
     {
         if (string.IsNullOrWhiteSpace(id))

@@ -120,6 +120,7 @@ The storage provider interface defines operations for:
 
 - Loading and saving agent templates
 - Loading and saving complete sessions
+- Deleting agent templates and sessions
 - Loading and saving session premises
 - Retrieving all available sessions and agent templates
 
