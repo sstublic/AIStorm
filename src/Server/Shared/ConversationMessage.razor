@@ -25,7 +25,9 @@
     {
         var pipeline = new MarkdownPipelineBuilder()
             .UseAdvancedExtensions()
+            .UseBootstrap()
             .Build();
+            
         return Markdown.ToHtml(content ?? string.Empty, pipeline);
     }
 }
