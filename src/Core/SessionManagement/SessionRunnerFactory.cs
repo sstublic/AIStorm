@@ -10,13 +10,13 @@ using Microsoft.Extensions.DependencyInjection;
 
 public class SessionRunnerFactory : ISessionRunnerFactory
 {
-    private readonly IAIProvider aiProvider;
+    private readonly AIProviderManager providerManager;
     private readonly ILoggerFactory loggerFactory;
     private readonly IStorageProvider storageProvider;
 
-    public SessionRunnerFactory(IAIProvider aiProvider, ILoggerFactory loggerFactory, IStorageProvider storageProvider)
+    public SessionRunnerFactory(AIProviderManager providerManager, ILoggerFactory loggerFactory, IStorageProvider storageProvider)
     {
-        this.aiProvider = aiProvider;
+        this.providerManager = providerManager;
         this.loggerFactory = loggerFactory;
         this.storageProvider = storageProvider;
     }
@@ -32,13 +32,13 @@ public class SessionRunnerFactory : ISessionRunnerFactory
             agents: agents
         );
         
-        return new SessionRunner(session, aiProvider, logger);
+        return new SessionRunner(session, providerManager, logger);
     }
     
     public SessionRunner CreateWithStoredSession(string sessionId)
     {
         var logger = loggerFactory.CreateLogger<SessionRunner>();
         var existingSession = storageProvider.LoadSession(sessionId);
-        return new SessionRunner(existingSession, aiProvider, logger);
+        return new SessionRunner(existingSession, providerManager, logger);
     }
 }

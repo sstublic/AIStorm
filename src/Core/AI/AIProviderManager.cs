@@ -55,4 +55,20 @@ public class AIProviderManager
         
         return result;
     }
+    
+    public virtual IAIProvider GetProviderByName(string providerName)
+    {
+        var provider = providers.FirstOrDefault(p => p.GetProviderName() == providerName);
+        
+        if (provider == null)
+        {
+            logger.LogWarning("No provider found with name '{ProviderName}'", providerName);
+            throw new InvalidOperationException($"No provider found with name '{providerName}'");
+        }
+            
+        logger.LogDebug("Found provider {ProviderType} for name '{ProviderName}'", 
+            provider.GetType().Name, providerName);
+            
+        return provider;
+    }
 }

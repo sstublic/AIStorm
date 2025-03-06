@@ -14,8 +14,9 @@ public class SessionRunnerTests
 {
     private readonly SessionPremise premise;
     private readonly List<Agent> agents;
-    private readonly Mock<IAIProvider> aiProviderMock;
+    private readonly Mock<AIProviderManager> providerManagerMock;
     private readonly Mock<ILogger<SessionRunner>> loggerMock;
+    private readonly Mock<IAIProvider> defaultProviderMock;
 
     public SessionRunnerTests()
     {
@@ -29,8 +30,22 @@ public class SessionRunnerTests
             new Agent("Agent3", "OpenAI", "gpt-4", "You are Agent3")
         };
         
-        aiProviderMock = new Mock<IAIProvider>();
+        // Set up mocks
+        defaultProviderMock = new Mock<IAIProvider>();
         loggerMock = new Mock<ILogger<SessionRunner>>();
+        
+        // Create provider manager mock
+        providerManagerMock = new Mock<AIProviderManager>(
+            new[] { defaultProviderMock.Object },
+            new Mock<ILogger<AIProviderManager>>().Object);
+            
+        // Setup default provider name to match agents AIServiceType ("OpenAI")
+        defaultProviderMock.Setup(p => p.GetProviderName()).Returns("OpenAI");
+        
+        // Setup provider manager to return the default provider for "OpenAI"
+        providerManagerMock
+            .Setup(m => m.GetProviderByName("OpenAI"))
+            .Returns(defaultProviderMock.Object);
     }
 
     [Fact]
@@ -40,7 +55,7 @@ public class SessionRunnerTests
         var session = new Session(premise.Id, DateTime.UtcNow, premise, agents);
         
         // Act
-        var runner = new SessionRunner(session, aiProviderMock.Object, loggerMock.Object);
+        var runner = new SessionRunner(session, providerManagerMock.Object, loggerMock.Object);
         
         // Assert
         Assert.Same(session, runner.Session);
@@ -55,23 +70,23 @@ public class SessionRunnerTests
         // Act & Assert
         Session? nullSession = null;
         var exception = Assert.Throws<ArgumentNullException>(() => 
-            new SessionRunner(nullSession!, aiProviderMock.Object, loggerMock.Object));
+            new SessionRunner(nullSession!, providerManagerMock.Object, loggerMock.Object));
         
         Assert.Equal("session", exception.ParamName);
     }
     
     [Fact]
-    public void Constructor_WithNullAIProvider_ThrowsArgumentNullException()
+    public void Constructor_WithNullProviderManager_ThrowsArgumentNullException()
     {
         // Arrange
         var session = new Session(premise.Id, DateTime.UtcNow, premise, agents);
         
         // Act & Assert
-        IAIProvider? nullProvider = null;
+        AIProviderManager? nullProviderManager = null;
         var exception = Assert.Throws<ArgumentNullException>(() => 
-            new SessionRunner(session, nullProvider!, loggerMock.Object));
+            new SessionRunner(session, nullProviderManager!, loggerMock.Object));
         
-        Assert.Equal("aiProvider", exception.ParamName);
+        Assert.Equal("providerManager", exception.ParamName);
     }
     
     [Fact]
@@ -83,7 +98,7 @@ public class SessionRunnerTests
         // Act & Assert
         ILogger<SessionRunner>? nullLogger = null;
         var exception = Assert.Throws<ArgumentNullException>(() => 
-            new SessionRunner(session, aiProviderMock.Object, nullLogger!));
+            new SessionRunner(session, providerManagerMock.Object, nullLogger!));
         
         Assert.Equal("logger", exception.ParamName);
     }
@@ -93,10 +108,10 @@ public class SessionRunnerTests
     {
         // Arrange
         var session = new Session(premise.Id, DateTime.UtcNow, premise, agents);
-        var runner = new SessionRunner(session, aiProviderMock.Object, loggerMock.Object);
+        var runner = new SessionRunner(session, providerManagerMock.Object, loggerMock.Object);
         string expectedResponse = "This is a response from Agent1";
         
-        aiProviderMock.Setup(p => p.SendMessageAsync(
+        defaultProviderMock.Setup(p => p.SendMessageAsync(
                 agents[0],
                 premise,
                 It.IsAny<List<StormMessage>>()))
@@ -119,7 +134,7 @@ public class SessionRunnerTests
         Assert.Equal(agents[1], runner.NextAgentToRespond);
         
         // Verify the AI provider was called with the correct parameters
-        aiProviderMock.Verify(p => p.SendMessageAsync(
+        defaultProviderMock.Verify(p => p.SendMessageAsync(
             agents[0],
             premise,
             It.Is<List<StormMessage>>(m => m.Count == 0)),
@@ -131,14 +146,14 @@ public class SessionRunnerTests
     {
         // Arrange
         var session = new Session(premise.Id, DateTime.UtcNow, premise, agents);
-        var runner = new SessionRunner(session, aiProviderMock.Object, loggerMock.Object);
+        var runner = new SessionRunner(session, providerManagerMock.Object, loggerMock.Object);
         
         // Add a user message to create some history
         runner.AddUserMessage("Hello agents");
         
         string expectedResponse = "This is a response from Agent1";
         
-        aiProviderMock.Setup(p => p.SendMessageAsync(
+        defaultProviderMock.Setup(p => p.SendMessageAsync(
                 agents[0],
                 premise,
                 It.IsAny<List<StormMessage>>()))
@@ -161,7 +176,7 @@ public class SessionRunnerTests
         Assert.Equal(agents[1], runner.NextAgentToRespond);
         
         // Verify the AI provider was called with the correct parameters
-        aiProviderMock.Verify(p => p.SendMessageAsync(
+        defaultProviderMock.Verify(p => p.SendMessageAsync(
             agents[0],
             premise,
             It.Is<List<StormMessage>>(m => m.Count == 1 && m[0].AgentName == "Human")),
@@ -173,10 +188,10 @@ public class SessionRunnerTests
     {
         // Arrange
         var session = new Session(premise.Id, DateTime.UtcNow, premise, agents);
-        var runner = new SessionRunner(session, aiProviderMock.Object, loggerMock.Object);
+        var runner = new SessionRunner(session, providerManagerMock.Object, loggerMock.Object);
         var expectedException = new Exception("API failure");
         
-        aiProviderMock.Setup(p => p.SendMessageAsync(
+        defaultProviderMock.Setup(p => p.SendMessageAsync(
                 It.IsAny<Agent>(),
                 It.IsAny<SessionPremise>(),
                 It.IsAny<List<StormMessage>>()))
@@ -202,7 +217,7 @@ public class SessionRunnerTests
     {
         // Arrange
         var session = new Session(premise.Id, DateTime.UtcNow, premise, agents);
-        var runner = new SessionRunner(session, aiProviderMock.Object, loggerMock.Object);
+        var runner = new SessionRunner(session, providerManagerMock.Object, loggerMock.Object);
         string userContent = "This is a user message";
         string expectedFormattedContent = PromptTools.FormatMessageWithAgentNamePrefix("Human", userContent);
         
@@ -228,22 +243,22 @@ public class SessionRunnerTests
     {
         // Arrange
         var session = new Session(premise.Id, DateTime.UtcNow, premise, agents);
-        var runner = new SessionRunner(session, aiProviderMock.Object, loggerMock.Object);
+        var runner = new SessionRunner(session, providerManagerMock.Object, loggerMock.Object);
         
         // Setup AI provider to return responses with agent name to verify message assignment
-        aiProviderMock.Setup(p => p.SendMessageAsync(
+        defaultProviderMock.Setup(p => p.SendMessageAsync(
                 agents[0],
                 premise,
                 It.IsAny<List<StormMessage>>()))
             .ReturnsAsync("Response from Agent1");
             
-        aiProviderMock.Setup(p => p.SendMessageAsync(
+        defaultProviderMock.Setup(p => p.SendMessageAsync(
                 agents[1], 
                 premise,
                 It.IsAny<List<StormMessage>>()))
             .ReturnsAsync("Response from Agent2");
             
-        aiProviderMock.Setup(p => p.SendMessageAsync(
+        defaultProviderMock.Setup(p => p.SendMessageAsync(
                 agents[2],
                 premise,
                 It.IsAny<List<StormMessage>>()))
@@ -275,7 +290,7 @@ public class SessionRunnerTests
         
         // Second cycle to ensure the rotation continues correctly
         // Setup with correct parameter order for the next cycle
-        aiProviderMock.Setup(p => p.SendMessageAsync(
+        defaultProviderMock.Setup(p => p.SendMessageAsync(
                 agents[0],
                 premise,
                 It.IsAny<List<StormMessage>>()))
@@ -309,7 +324,7 @@ public class SessionRunnerTests
         existingSession.AddMessage(agent2Msg);
         
         // Act
-        var runner = new SessionRunner(existingSession, aiProviderMock.Object, loggerMock.Object);
+        var runner = new SessionRunner(existingSession, providerManagerMock.Object, loggerMock.Object);
         
         // Assert
         // After Agent2 spoke, Agent3 should be next in rotation
@@ -334,7 +349,7 @@ public class SessionRunnerTests
         existingSession.AddMessage(unknownMsg);
         
         // Act
-        var runner = new SessionRunner(existingSession, aiProviderMock.Object, loggerMock.Object);
+        var runner = new SessionRunner(existingSession, providerManagerMock.Object, loggerMock.Object);
         
         // Assert
         // Should default to first agent since last agent isn't in our list
@@ -348,9 +363,90 @@ public class SessionRunnerTests
         var emptySession = new Session("test-session", DateTime.UtcNow, premise, agents);
         
         // Act
-        var runner = new SessionRunner(emptySession, aiProviderMock.Object, loggerMock.Object);
+        var runner = new SessionRunner(emptySession, providerManagerMock.Object, loggerMock.Object);
         
         // Assert
         Assert.Equal(agents[0], runner.NextAgentToRespond);
+    }
+    
+    [Fact]
+    public async Task Next_WithDifferentAIServiceTypeAgents_ShouldUseCorrectProvider()
+    {
+        // Arrange
+        // Create mock providers
+        var providerAMock = new Mock<IAIProvider>();
+        var providerBMock = new Mock<IAIProvider>();
+        
+        // Set up the provider mocks to return distinct responses
+        providerAMock
+            .Setup(p => p.SendMessageAsync(It.IsAny<Agent>(), It.IsAny<SessionPremise>(), It.IsAny<List<StormMessage>>()))
+            .ReturnsAsync("Response from Provider A");
+        
+        providerBMock
+            .Setup(p => p.SendMessageAsync(It.IsAny<Agent>(), It.IsAny<SessionPremise>(), It.IsAny<List<StormMessage>>()))
+            .ReturnsAsync("Response from Provider B");
+        
+        providerAMock
+            .Setup(p => p.GetProviderName())
+            .Returns("ProviderA");
+            
+        providerBMock
+            .Setup(p => p.GetProviderName())
+            .Returns("ProviderB");
+        
+        // Create a multi-provider manager with both providers
+        var providerList = new List<IAIProvider> { providerAMock.Object, providerBMock.Object };
+        var multiProviderManagerMock = new Mock<AIProviderManager>(
+            providerList, 
+            new Mock<ILogger<AIProviderManager>>().Object);
+            
+        // Setup provider manager to return the correct provider based on name
+        multiProviderManagerMock
+            .Setup(m => m.GetProviderByName("ProviderA"))
+            .Returns(providerAMock.Object);
+            
+        multiProviderManagerMock
+            .Setup(m => m.GetProviderByName("ProviderB"))
+            .Returns(providerBMock.Object);
+        
+        // Create agents with different AIServiceTypes
+        var agentA = new Agent("AgentA", "ProviderA", "model-a", "You are Agent A");
+        var agentB = new Agent("AgentB", "ProviderB", "model-b", "You are Agent B");
+        
+        var agents = new List<Agent> { agentA, agentB };
+        var premise = new SessionPremise("test-premise", "This is a test premise");
+        var session = new Session(premise.Id, DateTime.UtcNow, premise, agents);
+        
+        // Set up the SessionRunner with the multi-provider manager
+        var runner = new SessionRunner(session, multiProviderManagerMock.Object, loggerMock.Object);
+        
+        // Act
+        await runner.Next(); // Agent A should use Provider A
+        await runner.Next(); // Agent B should use Provider B
+        
+        // Assert
+        // Provider A should be used only for Agent A
+        providerAMock.Verify(p => p.SendMessageAsync(
+            agentA, 
+            premise,
+            It.IsAny<List<StormMessage>>()),
+            Times.Once, 
+            "Provider A should be used exactly once for Agent A");
+        
+        // Provider A should NOT be used for Agent B
+        providerAMock.Verify(p => p.SendMessageAsync(
+            agentB,
+            premise,
+            It.IsAny<List<StormMessage>>()),
+            Times.Never,
+            "Provider A should never be used for Agent B");
+        
+        // Provider B should be used only for Agent B
+        providerBMock.Verify(p => p.SendMessageAsync(
+            agentB,
+            premise,
+            It.IsAny<List<StormMessage>>()),
+            Times.Once,
+            "Provider B should be used exactly once for Agent B");
     }
 }

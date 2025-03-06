@@ -10,15 +10,15 @@ using System.Threading.Tasks;
 
 public class SessionRunner
 {
-    private readonly IAIProvider aiProvider;
+    private readonly AIProviderManager providerManager;
     private readonly ILogger<SessionRunner> logger;
     private readonly Session session;
     private int currentAgentIndex = 0;
 
-    public SessionRunner(Session session, IAIProvider aiProvider, ILogger<SessionRunner> logger)
+    public SessionRunner(Session session, AIProviderManager providerManager, ILogger<SessionRunner> logger)
     {
         this.session = session ?? throw new ArgumentNullException(nameof(session));
-        this.aiProvider = aiProvider ?? throw new ArgumentNullException(nameof(aiProvider));
+        this.providerManager = providerManager ?? throw new ArgumentNullException(nameof(providerManager));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         
         this.currentAgentIndex = GetNextAgentIndexFromHistory(session.Messages, session.Agents);
@@ -40,7 +40,26 @@ public class SessionRunner
         string formattedContent;
         try
         {
-            string response = await aiProvider.SendMessageAsync(agent, session.Premise, conversationHistory);
+            IAIProvider provider;
+            try
+            {
+                provider = providerManager.GetProviderByName(agent.AIServiceType);
+                logger.LogInformation("Using provider {ProviderName} for agent {AgentName}", 
+                    agent.AIServiceType, agent.Name);
+            }
+            catch (InvalidOperationException ex)
+            {
+                logger.LogWarning(ex, "Provider {ProviderName} not found for agent {AgentName}", 
+                    agent.AIServiceType, agent.Name);
+                formattedContent = PromptTools.FormatErrorMessageWithAgentNamePrefix(
+                    agent.Name, 
+                    new Exception($"No provider available with name '{agent.AIServiceType}'"));
+                session.AddMessage(new StormMessage(agent.Name, DateTime.UtcNow, formattedContent));
+                MoveToNextAgent();
+                return;
+            }
+            
+            string response = await provider.SendMessageAsync(agent, session.Premise, conversationHistory);
             formattedContent = PromptTools.FormatMessageWithAgentNamePrefix(agent.Name, response);
         }
         catch (Exception ex)
