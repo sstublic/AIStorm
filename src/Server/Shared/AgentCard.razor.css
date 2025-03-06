@@ -6,5 +6,5 @@
 }
 
 .agent-card ::deep .aistorm-card {
-    border-left: 3px solid var(--agent-color, #dee2e6);
+    border-left-color: var(--agent-color, #dee2e6);
 }

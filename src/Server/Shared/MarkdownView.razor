@@ -3,10 +3,6 @@
 
 <div class="markdown-content @(IsInPreviewMode ? "preview" : "expanded")">
     @((MarkupString)RenderedContent)
-    @if(IsInPreviewMode)
-    {
-        <div class="fade-overlay"></div>
-    }
 </div>
 
 @code {

@@ -1,31 +1,41 @@
 .aistorm-card {
-    border-radius: 6px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     transition: all 0.3s ease;
     background-color: #fff;
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
+    margin-top: 0.25rem;
     overflow: hidden;
+    border: none;
+    border-left: 6px solid transparent; /* Default border width for all cards */
 }
 
 .aistorm-card:hover {
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    transform: translateY(-3px);
 }
 
 .aistorm-card.clickable {
     cursor: pointer;
 }
 
-/* Status colors - subtle left border */
+/* Status colors - consistent 6px left border */
+.aistorm-card.status-neutral,
+.aistorm-card.status-empty,
+.aistorm-card.status-active {
+    border-left: 6px solid; /* Standard border width and style */
+}
+
 .aistorm-card.status-neutral {
-    border-left: 3px solid #dee2e6; /* Lighter gray */
+    border-left-color: #dee2e6; /* Lighter gray */
 }
 
 .aistorm-card.status-empty {
-    border-left: 3px solid #cfe2ff; /* Very light blue */
+    border-left-color: #cfe2ff; /* Very light blue */
 }
 
 .aistorm-card.status-active {
-    border-left: 3px solid #d1e7dd; /* Very light green */
+    border-left-color: #d1e7dd; /* Very light green */
 }
 
 /* Card Header */
@@ -93,6 +103,8 @@
     margin: 0 0.5rem;
     border-radius: 4px;
     position: relative;
+    /* Ensure content container handles scaled markdown properly */
+    width: auto;
 }
 
 .content:before {
@@ -107,6 +119,18 @@
 
 .content.preview {
     opacity: 0.5;
+    max-height: 70px; /* Reduced to match visual scaled size */
+}
+
+.fade-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 28px; /* 40px * 0.7 */
+    background: linear-gradient(to bottom, transparent, white);
+    pointer-events: none;
+    z-index: 1;
 }
 
 .content.expanded {

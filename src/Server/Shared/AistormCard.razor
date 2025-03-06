@@ -28,6 +28,10 @@
             <CascadingValue Value="IsExpanded" Name="CardIsExpanded">
                 @ChildContent
             </CascadingValue>
+            @if (!IsExpanded)
+            {
+                <div class="fade-overlay"></div>
+            }
         </div>
     }
     
