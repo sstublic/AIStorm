@@ -33,6 +33,9 @@
                     <i class="oi oi-info" aria-hidden="true"></i>
                 </a>
             }
+            <a href="javascript:void(0)" class="btn btn-danger ms-2" title="Delete Session" @onclick="HandleDelete" @onclick:preventDefault>
+                <i class="oi oi-trash" aria-hidden="true"></i>
+            </a>
         </div>
         <div class="actions-right">
             <a href="/conversation/@Session.Id" class="btn btn-success" title="Open Conversation">
@@ -49,8 +52,16 @@
     [Parameter]
     public EventCallback<Session> OnSelected { get; set; }
     
+    [Parameter]
+    public EventCallback<Session> OnDelete { get; set; }
+    
     private string GetStatusClass()
     {
         return Session.Messages.Count == 0 ? "status-empty" : "status-active";
+    }
+    
+    private void HandleDelete()
+    {
+        OnDelete.InvokeAsync(Session);
     }
 }

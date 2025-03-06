@@ -158,10 +158,8 @@
     justify-content: flex-end;
 }
 
-/* More specific selectors for buttons instead of using !important */
-.aistorm-card ::deep .actions .btn.btn-primary,
-.aistorm-card ::deep .actions .btn.btn-secondary,
-.aistorm-card ::deep .actions .btn.btn-success {
+/* Apply button styling to all buttons in actions */
+.aistorm-card ::deep .actions .btn {
     transition: all 0.2s ease;
     box-shadow: none;
     width: 60px;
@@ -213,9 +211,7 @@
         flex-wrap: wrap;
     }
     
-    .aistorm-card ::deep .actions .btn.btn-primary,
-    .aistorm-card ::deep .actions .btn.btn-secondary,
-    .aistorm-card ::deep .actions .btn.btn-success {
+    .aistorm-card ::deep .actions .btn {
         width: 60px;
         height: 24px;
     }

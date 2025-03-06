@@ -31,6 +31,12 @@
                         <i class="oi oi-pencil" aria-hidden="true"></i>
                     </a>
                 }
+                @if (ShowDeleteButton)
+                {
+                    <a href="javascript:void(0)" class="btn btn-danger ms-2" title="Delete Agent" @onclick="HandleDelete" @onclick:preventDefault>
+                        <i class="oi oi-trash" aria-hidden="true"></i>
+                    </a>
+                }
             </div>
         </ActionContent>
     </AistormCard>
@@ -42,6 +48,9 @@
 
     [Parameter]
     public EventCallback<Agent> OnSelected { get; set; }
+    
+    [Parameter]
+    public EventCallback<Agent> OnDelete { get; set; }
 
     [Parameter]
     public string? ColorIndicator { get; set; }
@@ -51,6 +60,9 @@
     
     [Parameter]
     public bool ShowEditButton { get; set; } = false;
+    
+    [Parameter]
+    public bool ShowDeleteButton { get; set; } = false;
     
     private string GetAgentSubtitle()
     {
@@ -68,5 +80,10 @@
         return !string.IsNullOrEmpty(ColorIndicator) 
             ? $"--agent-color: {ColorIndicator};" 
             : "";
+    }
+    
+    private void HandleDelete()
+    {
+        OnDelete.InvokeAsync(Agent);
     }
 }

@@ -9,6 +9,29 @@
 
 <PageTitle>Sessions & Agent Templates - AIStorm</PageTitle>
 
+@if (showDeleteConfirmation)
+{
+    <div class="modal fade show" style="display: block;" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Delete</h5>
+                    <button type="button" class="btn-close" aria-label="Close" @onclick="CancelDelete"></button>
+                </div>
+                <div class="modal-body">
+                    <p>@confirmationMessage</p>
+                    <p class="text-danger">This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CancelDelete">Cancel</button>
+                    <button type="button" class="btn btn-danger" @onclick="ConfirmDelete">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
+}
+
 <div class="container-fluid mt-4">
     <div class="row">
         <div class="col-md-6">
@@ -39,7 +62,9 @@
                                 Agent="@agent" 
                                 ShowPrompt="true"
                                 ShowEditButton="true"
-                                OnSelected="@OnAgentSelected" />
+                                ShowDeleteButton="true"
+                                OnSelected="@OnAgentSelected" 
+                                OnDelete="@(agent => DeleteWithConfirmation($"agent template '{agent.Name}'", () => DeleteAgent(agent.Name)))" />
                         }
                     }
                 </div>
@@ -72,7 +97,8 @@
                         {
                             <SessionCard 
                                 Session="@session"
-                                OnSelected="@OnSessionSelected" />
+                                OnSelected="@OnSessionSelected" 
+                                OnDelete="@(session => DeleteWithConfirmation($"session '{session.Id}'", () => DeleteSession(session.Id)))" />
                         }
                     }
                 </div>
@@ -81,23 +107,65 @@
     </div>
 </div>
 
-
 @code {
     private IReadOnlyList<Session> sessions = new List<Session>();
     private IReadOnlyList<Agent> agents = new List<Agent>();
     private bool loadingSessions = true;
     private bool loadingAgents = true;
     
+    // Delete confirmation variables
+    private bool showDeleteConfirmation = false;
+    private string confirmationMessage = "";
+    private Func<Task> deleteAction;
+    
     private void OnAgentSelected(Agent agent)
     {
-        // You can implement agent selection logic here if needed
-        // For now, this is a placeholder for future functionality
+        // Placeholder for future functionality
     }
     
     private void OnSessionSelected(Session session)
     {
-        // You can implement session selection logic here if needed
-        // For now, this is a placeholder for future functionality
+        // Placeholder for future functionality
+    }
+    
+    private void DeleteWithConfirmation(string itemDescription, Func<Task> action)
+    {
+        confirmationMessage = $"Are you sure you want to delete this {itemDescription}?";
+        deleteAction = action;
+        showDeleteConfirmation = true;
+    }
+    
+    private void CancelDelete()
+    {
+        showDeleteConfirmation = false;
+    }
+    
+    private async Task ConfirmDelete()
+    {
+        showDeleteConfirmation = false;
+        await deleteAction();
+    }
+    
+    private async Task DeleteSession(string id)
+    {
+        bool success = StorageProvider.DeleteSession(id);
+        
+        if (success)
+        {
+            // Refresh the sessions list
+            sessions = await Task.Run(() => StorageProvider.GetAllSessions());
+        }
+    }
+    
+    private async Task DeleteAgent(string id)
+    {
+        bool success = StorageProvider.DeleteAgent(id);
+        
+        if (success)
+        {
+            // Refresh the agents list
+            agents = await Task.Run(() => StorageProvider.GetAllAgentTemplates());
+        }
     }
 
     protected override async Task OnInitializedAsync()
