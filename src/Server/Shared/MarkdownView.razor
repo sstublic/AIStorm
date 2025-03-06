@@ -1,8 +1,12 @@
 @using Markdig
 @inherits ComponentBase
 
-<div class="markdown-content">
+<div class="markdown-content @(IsInPreviewMode ? "preview" : "expanded")">
     @((MarkupString)RenderedContent)
+    @if(IsInPreviewMode)
+    {
+        <div class="fade-overlay"></div>
+    }
 </div>
 
 @code {
@@ -14,7 +18,16 @@
     
     [Parameter]
     public int MaxLength { get; set; } = 100;
-
+    
+    [Parameter]
+    public bool IsPreview { get; set; } = true;
+    
+    [CascadingParameter(Name = "CardIsExpanded")]
+    public bool? CardIsExpanded { get; set; }
+    
+    // If CardIsExpanded is provided (from AistormCard), use it; otherwise, use the parameter
+    private bool IsInPreviewMode => CardIsExpanded.HasValue ? !CardIsExpanded.Value : IsPreview;
+    
     private string RenderedContent => RenderMarkdown(ProcessContent());
 
     private string ProcessContent()

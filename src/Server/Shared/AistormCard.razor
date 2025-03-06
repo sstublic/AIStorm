@@ -22,10 +22,12 @@
         </div>
     }
     
-    @if (CanExpand && ChildContent != null)
+    @if (ChildContent != null)
     {
-        <div class="content @(IsExpanded ? "expanded" : "collapsed")">
-            @ChildContent
+        <div class="content @(IsExpanded ? "expanded" : "preview")">
+            <CascadingValue Value="IsExpanded" Name="CardIsExpanded">
+                @ChildContent
+            </CascadingValue>
         </div>
     }
     

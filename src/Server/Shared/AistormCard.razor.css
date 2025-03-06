@@ -88,8 +88,7 @@
 /* Card Content */
 .content {
     overflow: hidden;
-    transform-origin: top;
-    transition: transform 0.3s ease, opacity 0.3s ease, max-height 0.3s ease;
+    transition: all 0.3s ease;
     padding: 0.75rem 1rem;
     margin: 0 0.5rem;
     border-radius: 4px;
@@ -106,22 +105,12 @@
     background: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.1), transparent);
 }
 
-.content.collapsed {
-    transform: scaleY(0);
-    opacity: 0;
-    max-height: 0;
-    padding-top: 0;
-    padding-bottom: 0;
-    border-top: none;
-    margin: 0;
+.content.preview {
+    opacity: 0.5;
 }
 
 .content.expanded {
-    transform: scaleY(1);
     opacity: 1;
-    max-height: 500px;
-    overflow-y: auto;
-    margin-bottom: 0.5rem;
 }
 
 /* Card Actions */
@@ -129,8 +118,10 @@
     padding: 0.5rem 1rem 0.75rem 1rem;
     display: flex;
     gap: 0.75rem;
-    border-top: none;
+    border-top: 1px solid rgba(0,0,0,.05);
+    background-color: rgba(0,0,0,.02);
     justify-content: space-between;
+    margin-top: 0.5rem;
 }
 
 .actions-left {
@@ -149,8 +140,8 @@
 .aistorm-card ::deep .actions .btn.btn-success {
     transition: all 0.2s ease;
     box-shadow: none;
-    width: 70px;
-    height: 28px;
+    width: 60px;
+    height: 24px;
     padding: 0;
     display: inline-flex;
     align-items: center;
@@ -165,7 +156,7 @@
 
 /* More specific selector for icons */
 .aistorm-card ::deep .actions .btn i.oi {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     line-height: 1;
     margin: 0;
 }
@@ -201,7 +192,7 @@
     .aistorm-card ::deep .actions .btn.btn-primary,
     .aistorm-card ::deep .actions .btn.btn-secondary,
     .aistorm-card ::deep .actions .btn.btn-success {
-        width: 70px;
-        height: 28px;
+        width: 60px;
+        height: 24px;
     }
 }

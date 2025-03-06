@@ -4,7 +4,7 @@
     Title="@Session.Id"
     Subtitle=""
     StatusClass="@GetStatusClass()"
-    CanExpand="false"
+    CanExpand="true"
     IsClickable="false">
     
     <MetadataContent>
@@ -16,7 +16,7 @@
     </MetadataContent>
     
     <ChildContent>
-        <MarkdownView Content="@(Session.Premise?.Content ?? "")" Truncate="true" MaxLength="100" />
+        <MarkdownView Content="@(Session.Premise?.Content ?? "")" />
     </ChildContent>
     
     <ActionContent>
