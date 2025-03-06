@@ -31,7 +31,7 @@ public static class PromptTools
     public static string FormatErrorMessageWithAgentNamePrefix(string agentName, Exception exception)
     {
         var basePrefix = $"## [{agentName}]: ";
-        var errorContent = "**ERROR FETCHING RESPONSE**";
+        var errorContent = ">>>ERROR FETCHING RESPONSE<<<";
         
         if (exception != null)
         {
