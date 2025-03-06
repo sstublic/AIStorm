@@ -37,19 +37,17 @@ AIStorm consists of several key components that work together to enable AI-power
   - Provides a simple way for UI components to get all registered providers with their models
 - Multiple providers implemented:
   - OpenAI service with built-in endpoint URL
+  - Google Gemini service with built-in endpoint URL
+  - Anthropic Claude service with built-in endpoint URL
   - AIMock provider for testing with predefined behaviors:
     - AlwaysThrows model: Always throws an exception (useful for integration tests and error handling testing)
     - AlwaysReturns model: Always returns a predictable response (useful for UI testing and development)
 - Configuration structure follows the pattern `AI:{ProviderName}` in appsettings.json:
   ```json
   "AI": {
-    "OpenAI": {
+    "ProviderName": {
       "ApiKey": "",
-      "Models": ["gpt-3.5-turbo", "gpt-4"]
-    },
-    "AIMock": {
-      "ApiKey": "not-needed", 
-      "Models": ["AlwaysThrows", "AlwaysReturns"]
+      "Models": ["model1", "model2", "model3"]
     }
   }
   ```
@@ -247,8 +245,11 @@ The user interface provides a comprehensive workflow for creating and managing a
    - Names cannot be changed after creation (to maintain referential integrity)
 
 2. **Agent Service and Model Selection** - Users can select from available AI service providers and models
-   - Fixed dropdown lists for available services (currently OpenAI)
-   - Service-specific model options (gpt-4o, gpt-4, gpt-3.5-turbo)
+   - Dropdown lists for available services (OpenAI, Google Gemini, Anthropic Claude)
+   - Service-specific model options
+     - OpenAI: gpt-4o, gpt-4o-mini, o1, o1-mini, o3-mini
+     - Google Gemini: gemini-2.0-flash, gemini-2.0-flash-lite, gemini-2.0-flash-thinking-exp-01-21
+     - Anthropic Claude: claude-3-5-sonnet-latest, claude-3-5-haiku-latest, claude-3-7-sonnet-latest
    - Extensible design for adding more services and models in the future
 
 3. **Agent System Prompt Editing** - Users can define the agent's personality and behavior

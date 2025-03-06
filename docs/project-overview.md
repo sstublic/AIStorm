@@ -166,7 +166,7 @@ The application uses a structured navigation flow:
 
 ## Open Questions
 
-- What specific AI service APIs will be supported initially? (OpenAI is implemented)
+- What specific AI service APIs will be supported initially? (OpenAI, Google Gemini, and Anthropic Claude are implemented)
 - How should we implement the UI for the brainstorming session?
 - What visualization features should be included for the brainstorming results?
 - What export formats should be supported?
