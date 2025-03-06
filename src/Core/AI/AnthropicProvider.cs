@@ -60,11 +60,27 @@ public class AnthropicProvider : IAIProvider
                 agent.Name, agent.AIModel);
             
             var promptMessages = promptBuilder.BuildPrompt(agent, premise, conversationHistory);
-            var messages = promptMessages.Select(m => new AnthropicMessage(m.Role, m.Content)).ToList();
+            
+            // Extract system message (first message should be the system message)
+            string systemMessage = promptMessages.FirstOrDefault(m => m.Role.ToLower() == "system")?.Content ?? string.Empty;
+            
+            // Filter to only include user and assistant messages for the messages array
+            var messages = promptMessages
+                .Where(m => m.Role.ToLower() != "system")
+                .Select(m => new AnthropicMessage(m.Role, m.Content))
+                .ToList();
+                
+            // Anthropic API requires at least one message
+            if (messages.Count == 0)
+            {
+                logger.LogDebug("No non-system messages found, adding a default user message");
+                messages.Add(new AnthropicMessage("user", "Begin the conversation based on the provided context."));
+            }
             
             var requestData = new
             {
                 model = agent.AIModel,
+                system = systemMessage,
                 messages,
                 max_tokens = 4000,
                 temperature = 0.7f
@@ -98,15 +114,47 @@ public class AnthropicProvider : IAIProvider
             
             var responseJson = JsonDocument.Parse(responseContent);
             
-            var responseText = responseJson.RootElement
-                .GetProperty("content")[0]
-                .GetProperty("text")
-                .GetString();
+            string responseText = string.Empty;
+            try
+            {
+                // Check if the response has a content property that's an array
+                if (responseJson.RootElement.TryGetProperty("content", out var contentElement) && 
+                    contentElement.ValueKind == JsonValueKind.Array && 
+                    contentElement.GetArrayLength() > 0)
+                {
+                    // Get the first content element
+                    var firstContent = contentElement[0];
+                    
+                    // Check if it has a text property
+                    if (firstContent.TryGetProperty("text", out var textElement))
+                    {
+                        responseText = textElement.GetString() ?? string.Empty;
+                    }
+                    else
+                    {
+                        logger.LogWarning("Anthropic response doesn't contain expected 'text' property in the first content element");
+                    }
+                }
+                else
+                {
+                    logger.LogWarning("Anthropic response doesn't contain expected 'content' array or it's empty");
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error parsing Anthropic response JSON");
+                throw new Exception($"Error parsing Anthropic response: {ex.Message}", ex);
+            }
+            
+            if (string.IsNullOrEmpty(responseText))
+            {
+                logger.LogWarning("Empty response text from Anthropic API");
+                responseText = "No response content received from the AI service.";
+            }
+            
+            logger.LogDebug("Received response from Anthropic, length: {Length} characters", responseText.Length);
                 
-            logger.LogDebug("Received response from Anthropic, length: {Length} characters", 
-                responseText?.Length ?? 0);
-                
-            var cleanedResponse = PromptTools.RemoveAgentNamePrefixFromMessage(responseText ?? string.Empty);
+            var cleanedResponse = PromptTools.RemoveAgentNamePrefixFromMessage(responseText);
                 
             return cleanedResponse;
         }
@@ -143,9 +191,8 @@ public class AnthropicProvider : IAIProvider
             // Map OpenAI roles to Anthropic roles
             Role = role.ToLower() switch
             {
-                "system" => "system",
                 "assistant" => "assistant",
-                _ => "user"
+                _ => "user"  // Default to user for any other role
             };
             
             Content = content;

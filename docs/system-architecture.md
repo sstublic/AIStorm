@@ -83,6 +83,7 @@ When responding, DO NOT add the prefix to your response!
 
 Example API request structure (simplified):
 
+For OpenAI and Gemini:
 ```json
 {
   "messages": [
@@ -91,6 +92,44 @@ Example API request structure (simplified):
     { "role": "assistant", "content": "[Agent B]: From an analytical perspective..." },
     { "role": "user", "content": "[Agent A]: Here are some creative ideas..." }
   ]
+}
+```
+
+For Anthropic Claude:
+```json
+{
+  "system": "You are Agent B, a critical analyst...",
+  "messages": [
+    { "role": "user", "content": "[Human]: What are some ideas...?" },
+    { "role": "assistant", "content": "[Agent B]: From an analytical perspective..." },
+    { "role": "user", "content": "[Agent A]: Here are some creative ideas..." }
+  ]
+}
+```
+
+Note that Anthropic's API requires:
+1. System prompts as a top-level parameter rather than as a message in the array
+2. At least one message in the messages array (if there are no user/assistant messages yet, a default starter message is added)
+3. Only "user" and "assistant" roles are allowed in the messages array
+
+The response from Anthropic follows this format:
+```json
+{
+  "id": "msg_01ABCdef123456",
+  "type": "message",
+  "role": "assistant",
+  "content": [
+    {
+      "type": "text",
+      "text": "The actual response text from Claude..."
+    }
+  ],
+  "model": "claude-3-5-sonnet-latest",
+  "stop_reason": "end_turn",
+  "usage": {
+    "input_tokens": 123,
+    "output_tokens": 456
+  }
 }
 ```
 
