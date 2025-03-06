@@ -30,7 +30,7 @@
 
 /* Card Header */
 .card-header {
-    padding: 0.75rem 1rem 0.5rem 1rem;
+    padding: 0.75rem 1rem 0.3rem 1rem; /* Reduced bottom padding */
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -74,13 +74,15 @@
 
 /* Card Metadata */
 .metadata {
-    padding: 0.5rem 1rem 0.5rem 1rem;
+    padding: 0.15rem 1rem 0.5rem 1rem; /* Reduced top padding */
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
     align-items: center;
     border-top: none;
-    margin-top: 0.25rem;
+    margin-top: 0;
+    background-color: rgba(0,0,0,.03); /* Match Bootstrap's card-header background */
+    border-bottom: 1px solid rgba(0,0,0,.125); /* Match Bootstrap's card-header border */
 }
 
 /* Card Content */
@@ -166,6 +168,25 @@
     font-size: 0.9rem;
     line-height: 1;
     margin: 0;
+}
+
+/* Tag styling for all cards */
+::deep .metadata-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+::deep .tag {
+    font-size: 0.75rem;
+    padding: 0.15rem 0.4rem;
+    border-radius: 0.85rem;
+    background-color: #d1e7dd; /* Light teal */
+    color: #0f5132; /* Darker teal for text */
+    border: 1px solid #badbcc; /* Light teal border */
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
 }
 
 /* Responsive adjustments */

@@ -2,13 +2,14 @@
 
 <AistormCard 
     Title="@Session.Id"
-    Subtitle="@($"Created: {Session.Created:yyyy-MM-dd}")"
+    Subtitle=""
     StatusClass="@GetStatusClass()"
     CanExpand="false"
     IsClickable="false">
     
     <MetadataContent>
         <div class="metadata-tags">
+            <span class="tag date">@Session.Created.ToString("yyyy-MM-dd")</span>
             <span class="tag">@Session.Agents.Count Agent@(Session.Agents.Count != 1 ? "s" : "")</span>
             <span class="tag">@Session.Messages.Count Message@(Session.Messages.Count != 1 ? "s" : "")</span>
         </div>

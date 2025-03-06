@@ -54,9 +54,7 @@
     
     private string GetAgentSubtitle()
     {
-        return !string.IsNullOrEmpty(Agent.AIModel) 
-            ? $"{Agent.AIServiceType} {Agent.AIModel}" 
-            : string.Empty;
+        return string.Empty;
     }
     
     private string GetStatusClass()
