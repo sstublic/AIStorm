@@ -14,41 +14,8 @@
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Sessions</h5>
-                    <a href="/session-editor" class="btn btn-sm btn-primary">Create New Session</a>
-                </div>
-                <div class="list-group list-group-flush p-3">
-                    @if (loadingSessions)
-                    {
-                        <div class="text-center py-3">
-                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                            Loading sessions...
-                        </div>
-                    }
-                    else if (sessions.Count == 0)
-                    {
-                        <div class="text-center py-3">
-                            <em>No sessions available</em>
-                        </div>
-                    }
-                    else
-                    {
-                        @foreach (var session in sessions)
-                        {
-                            <SessionCard 
-                                Session="@session"
-                                OnSelected="@OnSessionSelected" />
-                        }
-                    }
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Agent Templates</h5>
-                    <a href="/agent-editor" class="btn btn-sm btn-primary">Create New Agent</a>
+                    <a href="/agent-editor" class="btn btn-sm btn-primary">Create New Agent Template</a>
                 </div>
                 <div class="list-group list-group-flush p-3">
                     @if (loadingAgents)
@@ -73,6 +40,39 @@
                                 ShowPrompt="true"
                                 ShowEditButton="true"
                                 OnSelected="@OnAgentSelected" />
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Sessions</h5>
+                    <a href="/session-editor" class="btn btn-sm btn-primary">Create New Session</a>
+                </div>
+                <div class="list-group list-group-flush p-3">
+                    @if (loadingSessions)
+                    {
+                        <div class="text-center py-3">
+                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                            Loading sessions...
+                        </div>
+                    }
+                    else if (sessions.Count == 0)
+                    {
+                        <div class="text-center py-3">
+                            <em>No sessions available</em>
+                        </div>
+                    }
+                    else
+                    {
+                        @foreach (var session in sessions)
+                        {
+                            <SessionCard 
+                                Session="@session"
+                                OnSelected="@OnSessionSelected" />
                         }
                     }
                 </div>
