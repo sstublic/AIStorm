@@ -169,7 +169,7 @@ public class SessionRunnerTests
     }
     
     [Fact]
-    public async Task Next_WhenAIProviderFails_PropagatesException()
+    public async Task Next_WhenAIProviderFails_AddsErrorMessageAndRotatesAgent()
     {
         // Arrange
         var session = new Session(premise.Id, DateTime.UtcNow, premise, agents);
@@ -182,15 +182,19 @@ public class SessionRunnerTests
                 It.IsAny<List<StormMessage>>()))
             .ThrowsAsync(expectedException);
         
-        // Act & Assert
-        var exception = await Assert.ThrowsAsync<Exception>(() => runner.Next());
-        Assert.Same(expectedException, exception);
+        // Act
+        await runner.Next();
         
-        // Verify no messages were added
-        Assert.Empty(runner.Session.Messages);
+        // Assert
+        Assert.Single(runner.Session.Messages);
+        var message = runner.Session.Messages[0];
+        Assert.Equal(agents[0].Name, message.AgentName);
+        Assert.Contains("**ERROR FETCHING RESPONSE**", message.Content);
+        Assert.Contains(expectedException.Message, message.Content);
+        Assert.Contains(expectedException.GetType().Name, message.Content);
         
-        // Verify the agent wasn't rotated
-        Assert.Equal(agents[0], runner.NextAgentToRespond);
+        // Verify the agent was rotated
+        Assert.Equal(agents[1], runner.NextAgentToRespond);
     }
     
     [Fact]

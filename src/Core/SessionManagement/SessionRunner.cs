@@ -37,12 +37,19 @@ public class SessionRunner
         
         List<StormMessage> conversationHistory = GetConversationHistory();
         
-        string response = await aiProvider.SendMessageAsync(agent, session.Premise, conversationHistory);
+        string formattedContent;
+        try
+        {
+            string response = await aiProvider.SendMessageAsync(agent, session.Premise, conversationHistory);
+            formattedContent = PromptTools.FormatMessageWithAgentNamePrefix(agent.Name, response);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error getting response from AI provider for agent {AgentName}", agent.Name);
+            formattedContent = PromptTools.FormatErrorMessageWithAgentNamePrefix(agent.Name, ex);
+        }
         
-        // Format the response with the agent name prefix
-        string formattedContent = PromptTools.FormatMessageWithAgentNamePrefix(agent.Name, response);
         var message = new StormMessage(agent.Name, DateTime.UtcNow, formattedContent);
-        
         session.AddMessage(message);
         
         MoveToNextAgent();

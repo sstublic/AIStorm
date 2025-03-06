@@ -1,6 +1,7 @@
 namespace AIStorm.Core.SessionManagement;
 
 using AIStorm.Core.Models;
+using System;
 using System.Text.RegularExpressions;
 
 public static class PromptTools
@@ -25,6 +26,27 @@ public static class PromptTools
     public static string FormatMessageWithAgentNamePrefix(string agentName, string content)
     {
         return $"## [{agentName}]:\n\n{content}";
+    }
+    
+    public static string FormatErrorMessageWithAgentNamePrefix(string agentName, Exception exception)
+    {
+        var basePrefix = $"## [{agentName}]: ";
+        var errorContent = "**ERROR FETCHING RESPONSE**";
+        
+        if (exception != null)
+        {
+            errorContent += $"\n\n{exception.GetType().Name}: {exception.Message}";
+            
+            // Add nested exception messages if available
+            var innerException = exception.InnerException;
+            while (innerException != null)
+            {
+                errorContent += $"\n{innerException.GetType().Name}: {innerException.Message}";
+                innerException = innerException.InnerException;
+            }
+        }
+        
+        return basePrefix + errorContent;
     }
 
     public static string CreateExtendedSystemPrompt(Agent agent, SessionPremise premise)
