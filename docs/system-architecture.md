@@ -25,13 +25,22 @@ AIStorm consists of several key components that work together to enable AI-power
 
 ### AI Service Integration
 
-- Support for multiple AI service APIs
-- Configurable API settings (endpoints, keys, etc.)
-- Interface-based design with `IAIProvider` for common operations
-- OpenAI service implemented as the first provider
-- Configuration options for OpenAI integration:
+- Support for multiple AI service APIs through a provider-based architecture
+- Base options class (`AIOptionsBase`) with common configuration:
   - API key provision via user secrets, environment variables, or appsettings.json
-  - Configurable base URL for custom endpoints
+  - Configurable list of models available for each provider
+- Provider-specific options (e.g., `OpenAIOptions`) that inherit from the base class
+- Interface-based design with `IAIProvider` for common operations
+- OpenAI service implemented as the first provider with built-in endpoint URL
+- Configuration structure follows the pattern `AI:{ProviderName}` in appsettings.json:
+  ```json
+  "AI": {
+    "OpenAI": {
+      "ApiKey": "",
+      "Models": ["gpt-3.5-turbo", "gpt-4"]
+    }
+  }
+  ```
 
 ### Prompt Building System
 

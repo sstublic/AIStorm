@@ -13,9 +13,9 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddAIStormCore(this IServiceCollection services, IConfiguration configuration)
     {
-        // Configure options using nameof() for section names
+        // Configure AI options
         services.Configure<OpenAIOptions>(
-            configuration.GetSection(nameof(OpenAIOptions)));
+            configuration.GetSection($"AI:{OpenAIOptions.ProviderName}"));
         
         services.Configure<MarkdownStorageOptions>(
             configuration.GetSection(nameof(MarkdownStorageOptions)));

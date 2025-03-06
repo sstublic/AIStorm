@@ -15,9 +15,12 @@ using System.Threading.Tasks;
 
 public class OpenAIProvider : IAIProvider
 {
+    private const string BASE_URL = "https://api.openai.com/v1/";
+    
     private readonly HttpClient httpClient;
     private readonly ILogger<OpenAIProvider> logger;
     private readonly IPromptBuilder promptBuilder;
+    private readonly OpenAIOptions options;
     
     public OpenAIProvider(
         IOptions<OpenAIOptions> options, 
@@ -26,12 +29,12 @@ public class OpenAIProvider : IAIProvider
     {
         this.logger = logger;
         this.promptBuilder = promptBuilder;
-        var openAIOptions = options.Value;
+        this.options = options.Value;
         
-        logger.LogInformation("Initializing OpenAIProvider with base URL: {BaseUrl}", openAIOptions.BaseUrl);
+        logger.LogInformation("Initializing OpenAIProvider");
         
         // Validate options
-        if (string.IsNullOrEmpty(openAIOptions.ApiKey))
+        if (string.IsNullOrEmpty(this.options.ApiKey))
         {
             logger.LogError("OpenAI API key is missing");
             throw new ArgumentException("OpenAI API key is missing. Please provide a valid API key in your configuration. ", nameof(options));
@@ -39,9 +42,9 @@ public class OpenAIProvider : IAIProvider
             
         this.httpClient = new HttpClient
         {
-            BaseAddress = new Uri(openAIOptions.BaseUrl)
+            BaseAddress = new Uri(BASE_URL)
         };
-        this.httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {openAIOptions.ApiKey}");
+        this.httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {this.options.ApiKey}");
     }
     
     public async Task<string> SendMessageAsync(Agent agent, SessionPremise premise, List<StormMessage> conversationHistory)
@@ -114,59 +117,10 @@ public class OpenAIProvider : IAIProvider
         }
     }
     
-    public async Task<string[]> GetAvailableModelsAsync()
+    public Task<string[]> GetAvailableModelsAsync()
     {
-        try
-        {
-            logger.LogInformation("Retrieving available models from OpenAI");
-            
-            var response = await httpClient.GetAsync("models");
-            
-            if (!response.IsSuccessStatusCode)
-            {
-                string errorContent = await response.Content.ReadAsStringAsync();
-                logger.LogError("Failed to retrieve models: Status code {StatusCode}, Details: {ErrorContent}", 
-                    (int)response.StatusCode, errorContent);
-                    
-                throw new HttpRequestException(
-                    $"OpenAI API returned {(int)response.StatusCode} ({response.StatusCode}). " +
-                    $"Details: {errorContent}. " +
-                    "Please check your API key and configuration."
-                );
-            }
-            
-            var responseContent = await response.Content.ReadAsStringAsync();
-            logger.LogDebug("OpenAI models response: {ResponseContent}", responseContent);
-            
-            var responseJson = JsonDocument.Parse(responseContent);
-            var models = new List<string>();
-            
-            if (responseJson != null)
-            {
-                var modelsArray = responseJson.RootElement.GetProperty("data");
-                foreach (var model in modelsArray.EnumerateArray())
-                {
-                    var id = model.GetProperty("id").GetString();
-                    if (id != null && id.StartsWith("gpt-"))
-                    {
-                        models.Add(id);
-                    }
-                }
-            }
-            
-            logger.LogInformation("Retrieved {Count} GPT models from OpenAI", models.Count);
-            return models.ToArray();
-        }
-        catch (HttpRequestException ex)
-        {
-            logger.LogError(ex, "HTTP error retrieving models from OpenAI API");
-            throw;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error retrieving models from OpenAI API: {Message}", ex.Message);
-            throw new Exception($"Error retrieving models from OpenAI API: {ex.Message}", ex);
-        }
+        logger.LogInformation("Returning {Count} models from configuration", options.Models.Count);
+        return Task.FromResult(options.Models.ToArray());
     }
     
     private class OpenAIMessage
