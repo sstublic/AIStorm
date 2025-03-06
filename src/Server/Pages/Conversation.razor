@@ -134,10 +134,10 @@
             
             if (sessionRunner != null)
             {
-                Logger.LogInformation("SessionRunner created for session: {SessionId}", SessionId);
-                Logger.LogInformation("Session loaded successfully. Session ID: '{Id}', Messages: {Count}, Agents: {AgentCount}", 
+                Logger.LogDebug("SessionRunner created for session: {SessionId}", SessionId);
+                Logger.LogDebug("Session loaded successfully. Session ID: '{Id}', Messages: {Count}, Agents: {AgentCount}", 
                     sessionRunner.Session.Id, sessionRunner.Session.Messages.Count, sessionRunner.Session.Agents.Count);
-                Logger.LogInformation("Next agent to respond: {AgentName}", sessionRunner.NextAgentToRespond.Name);
+                Logger.LogDebug("Next agent to respond: {AgentName}", sessionRunner.NextAgentToRespond.Name);
                     
                 // Assign colors to embedded agents
                 for (int i = 0; i < sessionRunner.Session.Agents.Count; i++)
@@ -183,7 +183,7 @@
             isProcessing = true;
             StateHasChanged();
             
-            Logger.LogInformation("Triggering next agent response: {AgentName}", sessionRunner.NextAgentToRespond.Name);
+            Logger.LogDebug("Triggering next agent response: {AgentName}", sessionRunner.NextAgentToRespond.Name);
             
             await sessionRunner.Next();
             
@@ -214,7 +214,7 @@
             string message = userMessage;
             userMessage = string.Empty;
             
-            Logger.LogInformation("Adding user message to session: {SessionId}", SessionId);
+            Logger.LogDebug("Adding user message to session: {SessionId}", SessionId);
             
             sessionRunner.AddUserMessage(message);
             
@@ -250,7 +250,7 @@
         {
             // Save the updated session
             StorageProvider.SaveSession(SessionId, sessionRunner.Session);
-            Logger.LogInformation("Session saved successfully: {SessionId}", SessionId);
+            Logger.LogDebug("Session saved successfully: {SessionId}", SessionId);
             
             await Task.Delay(50); // Brief delay to ensure UI updates
             StateHasChanged();

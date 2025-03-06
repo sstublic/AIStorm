@@ -35,7 +35,7 @@ public class AIMockProvider : IAIProvider
     
     public Task<string> SendMessageAsync(Agent agent, SessionPremise premise, List<StormMessage> conversationHistory)
     {
-        logger.LogInformation("Processing mock request for agent: {AgentName} using model: {Model}", 
+        logger.LogDebug("Processing mock request for agent: {AgentName} using model: {Model}", 
             agent.Name, agent.AIModel);
             
         // Check which model is being used and respond accordingly
@@ -46,7 +46,7 @@ public class AIMockProvider : IAIProvider
                 throw new Exception("This is a mock exception from AIMockProvider's AlwaysThrows model");
                 
             case "AlwaysReturns":
-                logger.LogInformation("Returning mock response from AlwaysReturns model");
+                logger.LogDebug("Returning mock response from AlwaysReturns model");
                 var messageTemplate = "This is a mock response from AIMockProvider's AlwaysReturns model.\n\n" +
                                "Agent: {0}\n" + 
                                "Premise: {1}\n" +
@@ -75,7 +75,7 @@ public class AIMockProvider : IAIProvider
             return Task.FromResult(Array.Empty<string>());
         }
         
-        logger.LogInformation("Returning {Count} mock models from configuration", options.Models.Count);
+        logger.LogTrace("Returning {Count} mock models from configuration", options.Models.Count);
         return Task.FromResult(options.Models.ToArray());
     }
 

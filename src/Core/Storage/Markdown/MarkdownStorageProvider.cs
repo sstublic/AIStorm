@@ -90,10 +90,10 @@ public class MarkdownStorageProvider : IStorageProvider
 
     public Session LoadSession(string id)
     {
-        logger.LogInformation("LoadSession called with ID: '{SessionId}'", id);
+        logger.LogDebug("LoadSession called with ID: '{SessionId}'", id);
         
         var fullPath = GetSessionPath(id);
-        logger.LogInformation("Attempting to load session from path: '{FullPath}'", fullPath);
+        logger.LogDebug("Attempting to load session from path: '{FullPath}'", fullPath);
         
         var content = ReadFile(fullPath);
         var segments = MarkdownSegment.ParseSegments(content, serializer, throwOnNone: true);
@@ -138,10 +138,10 @@ public class MarkdownStorageProvider : IStorageProvider
     
     public IReadOnlyList<Session> GetAllSessions()
     {
-        logger.LogInformation("GetAllSessions called");
+        logger.LogDebug("GetAllSessions called");
         
         var sessionFiles = Directory.GetFiles(sessionsPath, "*.session.md");
-        logger.LogInformation("Found {Count} session files", sessionFiles.Length);
+        logger.LogDebug("Found {Count} session files", sessionFiles.Length);
         
         var sessions = new List<Session>();
         
@@ -165,10 +165,10 @@ public class MarkdownStorageProvider : IStorageProvider
     
     public IReadOnlyList<Agent> GetAllAgentTemplates()
     {
-        logger.LogInformation("GetAllAgentTemplates called");
+        logger.LogDebug("GetAllAgentTemplates called");
         
         var agentFiles = Directory.GetFiles(agentTemplatesPath, "*.md");
-        logger.LogInformation("Found {Count} agent template files", agentFiles.Length);
+        logger.LogDebug("Found {Count} agent template files", agentFiles.Length);
         
         var agents = new List<Agent>();
         
@@ -192,7 +192,7 @@ public class MarkdownStorageProvider : IStorageProvider
     
     public bool DeleteAgent(string id)
     {
-        logger.LogInformation("DeleteAgent called with ID: '{AgentId}'", id);
+        logger.LogDebug("DeleteAgent called with ID: '{AgentId}'", id);
         
         var fullPath = GetAgentPath(id);
         
@@ -205,7 +205,7 @@ public class MarkdownStorageProvider : IStorageProvider
         try
         {
             File.Delete(fullPath);
-            logger.LogInformation("Successfully deleted agent file at path: '{FullPath}'", fullPath);
+            logger.LogDebug("Successfully deleted agent file at path: '{FullPath}'", fullPath);
             return true;
         }
         catch (Exception ex)
@@ -217,7 +217,7 @@ public class MarkdownStorageProvider : IStorageProvider
     
     public bool DeleteSession(string id)
     {
-        logger.LogInformation("DeleteSession called with ID: '{SessionId}'", id);
+        logger.LogDebug("DeleteSession called with ID: '{SessionId}'", id);
         
         var fullPath = GetSessionPath(id);
         
@@ -230,7 +230,7 @@ public class MarkdownStorageProvider : IStorageProvider
         try
         {
             File.Delete(fullPath);
-            logger.LogInformation("Successfully deleted session file at path: '{FullPath}'", fullPath);
+            logger.LogDebug("Successfully deleted session file at path: '{FullPath}'", fullPath);
             return true;
         }
         catch (Exception ex)

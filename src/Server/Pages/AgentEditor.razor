@@ -147,7 +147,7 @@
                 LoadExistingAgent();
             }
             
-            Logger.LogInformation("Agent editor initialized in {Mode} mode", isEditMode ? "Edit" : "Create");
+            Logger.LogDebug("Agent editor initialized in {Mode} mode", isEditMode ? "Edit" : "Create");
         }
         catch (Exception ex)
         {
@@ -196,7 +196,7 @@
                 
             systemPrompt = agent.SystemPrompt;
             
-            Logger.LogInformation("Loaded existing agent for editing: '{AgentName}'", AgentName);
+            Logger.LogDebug("Loaded existing agent for editing: '{AgentName}'", AgentName);
         }
         catch (Exception ex)
         {
@@ -284,7 +284,7 @@
             // Save the agent
             StorageProvider.SaveAgent(agentName, agent);
             
-            Logger.LogInformation("Agent {Mode} successfully: '{AgentName}'", 
+            Logger.LogDebug("Agent {Mode} successfully: '{AgentName}'", 
                 isEditMode ? "updated" : "created", agentName);
             
             // Navigate back to sessions overview

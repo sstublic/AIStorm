@@ -190,7 +190,7 @@
             agents = agentsTask.Result;
             loadingAgents = false;
             
-            Logger.LogInformation("Loaded {SessionCount} sessions and {AgentCount} agent templates", 
+            Logger.LogDebug("Loaded {SessionCount} sessions and {AgentCount} agent templates", 
                 sessions.Count, agents.Count);
         }
         catch (Exception ex)

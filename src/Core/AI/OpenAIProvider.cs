@@ -54,7 +54,7 @@ public class OpenAIProvider : IAIProvider
     {
         try
         {
-            logger.LogInformation("Sending message to OpenAI for agent: {AgentName} using model: {Model}", 
+            logger.LogDebug("Sending message to OpenAI for agent: {AgentName} using model: {Model}", 
                 agent.Name, agent.AIModel);
             
             var promptMessages = promptBuilder.BuildPrompt(agent, premise, conversationHistory);
@@ -101,7 +101,7 @@ public class OpenAIProvider : IAIProvider
                 .GetProperty("content")
                 .GetString();
                 
-            logger.LogInformation("Received response from OpenAI, length: {Length} characters", 
+            logger.LogDebug("Received response from OpenAI, length: {Length} characters", 
                 responseText?.Length ?? 0);
                 
             var cleanedResponse = PromptTools.RemoveAgentNamePrefixFromMessage(responseText ?? string.Empty);
@@ -122,7 +122,7 @@ public class OpenAIProvider : IAIProvider
     
     public Task<string[]> GetAvailableModelsAsync()
     {
-        logger.LogInformation("Returning {Count} models from configuration", options.Models.Count);
+        logger.LogTrace("Returning {Count} models from configuration", options.Models.Count);
         return Task.FromResult(options.Models.ToArray());
     }
 

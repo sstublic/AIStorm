@@ -33,7 +33,7 @@ public class SessionRunner
     {
         Agent agent = NextAgentToRespond;
         
-        logger.LogInformation("Getting response from next agent: {AgentName}", agent.Name);
+        logger.LogDebug("Getting response from next agent: {AgentName}", agent.Name);
         
         List<StormMessage> conversationHistory = GetConversationHistory();
         
@@ -44,7 +44,7 @@ public class SessionRunner
             try
             {
                 provider = providerManager.GetProviderByName(agent.AIServiceType);
-                logger.LogInformation("Using provider {ProviderName} for agent {AgentName}", 
+                logger.LogDebug("Using provider {ProviderName} for agent {AgentName}", 
                     agent.AIServiceType, agent.Name);
             }
             catch (InvalidOperationException ex)

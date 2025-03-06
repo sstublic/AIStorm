@@ -37,7 +37,7 @@ public class AIProviderManager
                 if (models.Length > 0)
                 {
                     result[providerName] = models;
-                    logger.LogDebug("Provider {ProviderName} has {ModelsCount} available models", 
+                    logger.LogTrace("Provider {ProviderName} has {ModelsCount} available models", 
                         providerName, models.Length);
                 }
                 else
@@ -66,7 +66,7 @@ public class AIProviderManager
             throw new InvalidOperationException($"No provider found with name '{providerName}'");
         }
             
-        logger.LogDebug("Found provider {ProviderType} for name '{ProviderName}'", 
+        logger.LogTrace("Found provider {ProviderType} for name '{ProviderName}'", 
             provider.GetType().Name, providerName);
             
         return provider;

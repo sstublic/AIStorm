@@ -152,13 +152,13 @@
     {
         try
         {
-            Logger.LogInformation("Loading agent templates for session editor");
+            Logger.LogDebug("Loading agent templates for session editor");
             
             var agents = await Task.Run(() => StorageProvider.GetAllAgentTemplates());
             availableAgents = new List<Agent>(agents);
             loadingAgents = false;
             
-            Logger.LogInformation("Loaded {AgentCount} agent templates", availableAgents.Count);
+            Logger.LogDebug("Loaded {AgentCount} agent templates", availableAgents.Count);
             
             // Check if we're in edit mode
             isEditMode = !string.IsNullOrEmpty(SessionId);
@@ -217,10 +217,10 @@
             {
                 isReadOnly = true;
                 pageTitle = "View Session";
-                Logger.LogInformation("Session has messages, setting to read-only mode");
+                Logger.LogDebug("Session has messages, setting to read-only mode");
             }
             
-            Logger.LogInformation("Loaded existing session for editing: '{SessionId}', ReadOnly: {IsReadOnly}", 
+            Logger.LogDebug("Loaded existing session for editing: '{SessionId}', ReadOnly: {IsReadOnly}",
                 SessionId, isReadOnly);
         }
         catch (Exception ex)

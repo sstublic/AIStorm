@@ -298,10 +298,28 @@ The SessionsOverview page serves as the central hub for managing both sessions a
 
 ## Logging
 
-- Different log levels for appropriate information detail
-- API requests and responses logging
-- Error details and operation information
-- Log files can be found in the application's log directory
+The application uses a structured logging approach with clearly defined log levels:
+
+- **Information Level**: Used only for top-level operations
+  - Service initialization and startup
+  - Session creation/loading (top-level entry points)
+  - User-initiated actions completion (creating/updating agents and sessions)
+  - Critical path operations
+
+- **Debug Level**: Used for implementation details and secondary operations
+  - Function entry/exit logging
+  - Data loading/processing details
+  - Session and message handling details
+  - UI component lifecyle events
+  - File operations details
+
+- **Trace Level**: Used for highly detailed and frequently executed operations
+  - Provider and model details
+  - Detailed message content
+  - Request/response payloads
+  - Low-level implementation details
+
+Log files can be found in the application's log directory:
   - Default location: `logs/` relative to the application's output directory
   - File naming pattern: `aistorm-{date}.log`
 
