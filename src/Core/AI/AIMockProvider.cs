@@ -78,4 +78,6 @@ public class AIMockProvider : IAIProvider
         logger.LogInformation("Returning {Count} mock models from configuration", options.Models.Count);
         return Task.FromResult(options.Models.ToArray());
     }
+
+    public string GetProviderName() => AIMockOptions.ProviderName;
 }

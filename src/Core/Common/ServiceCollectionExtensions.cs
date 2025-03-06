@@ -30,6 +30,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IAIProvider, OpenAIProvider>();
         services.AddSingleton<IAIProvider, AIMockProvider>();
         services.AddSingleton<ISessionRunnerFactory, SessionRunnerFactory>();
+        services.AddSingleton<AIProviderManager>();
         
         // Add logging (already provided by default through DI in most .NET apps)
         services.AddLogging();

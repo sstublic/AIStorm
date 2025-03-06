@@ -31,6 +31,10 @@ AIStorm consists of several key components that work together to enable AI-power
   - Configurable list of models available for each provider
 - Provider-specific options (e.g., `OpenAIOptions`, `AIMockOptions`) that inherit from the base class
 - Interface-based design with `IAIProvider` for common operations
+- Provider Manager for dynamic discovery of available providers and models:
+  - Uses dependency injection to discover all provider implementations
+  - Filters out providers that have no available models
+  - Provides a simple way for UI components to get all registered providers with their models
 - Multiple providers implemented:
   - OpenAI service with built-in endpoint URL
   - AIMock provider for testing with predefined behaviors:

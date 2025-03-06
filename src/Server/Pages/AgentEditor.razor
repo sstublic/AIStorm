@@ -4,9 +4,11 @@
 @using AIStorm.Core.Storage
 @using Microsoft.Extensions.Logging
 @using AIStorm.Server.Shared
+@using AIStorm.Core.AI
 @inject IStorageProvider StorageProvider
 @inject NavigationManager NavigationManager
 @inject ILogger<AgentEditor> Logger
+@inject AIProviderManager ProviderManager
 
 <PageTitle>@pageTitle - AIStorm</PageTitle>
 
@@ -112,25 +114,27 @@
     private string modelError = string.Empty;
     private string promptError = string.Empty;
     
-    // Fixed options for dropdowns
-    private readonly List<string> serviceTypes = new()
-    {
-        "OpenAI"
-        // Additional service types can be added in the future
-    };
-
-    private readonly Dictionary<string, List<string>> modelsByService = new()
-    {
-        ["OpenAI"] = new List<string> { "gpt-4o", "gpt-4", "gpt-3.5-turbo" }
-        // Additional models can be added in the future
-    };
-    
+    // Provider and model data
+    private List<string> serviceTypes = new();
+    private Dictionary<string, string[]> providerModels = new();
     private List<string> availableModels = new();
     
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         try
         {
+            // Get providers and models from AIProviderManager
+            providerModels = await ProviderManager.GetProvidersWithModelsAsync();
+            
+            // Update service types list from available providers
+            serviceTypes = providerModels.Keys.ToList();
+            
+            // Set default service type if available
+            if (serviceTypes.Count > 0 && !serviceTypes.Contains(aiServiceType))
+            {
+                aiServiceType = serviceTypes[0];
+            }
+            
             // Initialize available models based on default service type
             UpdateModelOptions();
             
@@ -153,7 +157,7 @@
     
     private void UpdateModelOptions()
     {
-        if (modelsByService.TryGetValue(aiServiceType, out var models))
+        if (providerModels.TryGetValue(aiServiceType, out var models))
         {
             availableModels = new List<string>(models);
             

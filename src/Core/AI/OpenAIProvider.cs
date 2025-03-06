@@ -125,6 +125,8 @@ public class OpenAIProvider : IAIProvider
         logger.LogInformation("Returning {Count} models from configuration", options.Models.Count);
         return Task.FromResult(options.Models.ToArray());
     }
+
+    public string GetProviderName() => OpenAIOptions.ProviderName;
     
     private class OpenAIMessage
     {

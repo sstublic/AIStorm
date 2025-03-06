@@ -11,4 +11,7 @@ public interface IAIProvider
     
     // Get supported models from the service
     Task<string[]> GetAvailableModelsAsync();
+    
+    // Get provider's display name
+    string GetProviderName();
 }
