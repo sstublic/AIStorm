@@ -1,4 +1,5 @@
 @using Markdig
+@using Markdig.Extensions.Bootstrap
 @inherits ComponentBase
 
 <div class="markdown-content @(IsInPreviewMode ? "preview" : "expanded")">
@@ -47,6 +48,7 @@
         // Use Markdig to render markdown to HTML
         var pipeline = new MarkdownPipelineBuilder()
             .UseAdvancedExtensions()
+            .UseBootstrap()
             .Build();
             
         return Markdown.ToHtml(markdownContent, pipeline);
