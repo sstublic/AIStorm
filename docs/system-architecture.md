@@ -37,7 +37,7 @@ AIStorm consists of several key components that work together to enable AI-power
   - Provides a simple way for UI components to get all registered providers with their models
 - Multiple providers implemented:
   - OpenAI service with built-in endpoint URL
-  - Google Gemini service with built-in endpoint URL
+  - Google Gemini service with built-in endpoint URL (v1beta API)
   - Anthropic Claude service with built-in endpoint URL
   - AIMock provider for testing with predefined behaviors:
     - AlwaysThrows model: Always throws an exception (useful for integration tests and error handling testing)
@@ -83,7 +83,7 @@ When responding, DO NOT add the prefix to your response!
 
 Example API request structure (simplified):
 
-For OpenAI and Gemini:
+For OpenAI:
 ```json
 {
   "messages": [
@@ -94,6 +94,37 @@ For OpenAI and Gemini:
   ]
 }
 ```
+
+For Gemini (v1beta):
+```json
+{
+  "contents": [
+    { 
+      "role": "user",
+      "parts": [
+        { "text": "You are Agent B, a critical analyst...\n\n[Human]: What are some ideas...?" }
+      ]
+    },
+    { 
+      "role": "model",
+      "parts": [
+        { "text": "[Agent B]: From an analytical perspective..." }
+      ]
+    },
+    { 
+      "role": "user",
+      "parts": [
+        { "text": "[Agent A]: Here are some creative ideas..." }
+      ]
+    }
+  ]
+}
+```
+
+Note that Gemini's v1beta API requires:
+1. Each content object must have a valid "role" (only "user" and "model" are allowed)
+2. At least one user message must be present in the conversation
+3. System messages must be incorporated into the first user message
 
 For Anthropic Claude:
 ```json
