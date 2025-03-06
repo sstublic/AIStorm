@@ -51,12 +51,13 @@ public static class PromptTools
 
     public static string CreateExtendedSystemPrompt(Agent agent, SessionPremise premise)
     {
-        string enhancedSystemPrompt = $"You are {agent.Name}. {agent.SystemPrompt}\n\n";
-        enhancedSystemPrompt += $"Context: {premise.Content}\n\n";
+        string enhancedSystemPrompt = $"# You are {agent.Name}. {agent.SystemPrompt}\n\n";
+        enhancedSystemPrompt += $"## Context of the conversation\n{premise.Content}\n\n";
         
         enhancedSystemPrompt += 
             $"You will be provided with the history of the conversation so far with each participant's message prefixed by the name of the speaker in the form `[<SpeakerName>]: `\n\n" +
-            "When responding, DO NOT add the prefix to your response!\n\n";
+            "When responding, DO NOT add the prefix to your response!\n\n" +
+            "Continue conversation when asked for a response even without further user input.\n\n";;
             
         return enhancedSystemPrompt;
     }

@@ -131,6 +131,7 @@ For Anthropic Claude:
 {
   "system": "You are Agent B, a critical analyst...",
   "messages": [
+    { "role": "user", "content": "You are Agent B, a critical analyst..." },
     { "role": "user", "content": "[Human]: What are some ideas...?" },
     { "role": "assistant", "content": "[Agent B]: From an analytical perspective..." },
     { "role": "user", "content": "[Agent A]: Here are some creative ideas..." }
@@ -140,7 +141,7 @@ For Anthropic Claude:
 
 Note that Anthropic's API requires:
 1. System prompts as a top-level parameter rather than as a message in the array
-2. At least one message in the messages array (if there are no user/assistant messages yet, a default starter message is added)
+2. At least one message in the messages array
 3. Only "user" and "assistant" roles are allowed in the messages array
 
 The response from Anthropic follows this format:

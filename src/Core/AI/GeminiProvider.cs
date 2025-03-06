@@ -53,12 +53,12 @@ public class GeminiProvider : IAIProvider
             
             var promptMessages = promptBuilder.BuildPrompt(agent, premise, conversationHistory);
             
-            // Handle system message separately as Gemini doesn't have a system role
-            var systemMessage = promptMessages.FirstOrDefault(m => m.Role.Equals("system", StringComparison.OrdinalIgnoreCase));
-            string systemContent = systemMessage?.Content ?? "";
-            
             // Prepare message contents in new API format
             var contents = new List<GeminiContent>();
+            
+            // Skip the system message as Gemini doesn't have a system role
+            // First user message will already contain the system content
+            // PromptBuilder ensures we always have at least one user message
             
             // Convert regular messages to Gemini format
             foreach (var message in promptMessages.Where(m => !m.Role.Equals("system", StringComparison.OrdinalIgnoreCase)))
@@ -70,49 +70,12 @@ public class GeminiProvider : IAIProvider
                     _ => "user"
                 };
                 
-                // For the first user message, prepend system content if it exists
-                if (contents.Count == 0 && 
-                    message.Role.Equals("user", StringComparison.OrdinalIgnoreCase) && 
-                    !string.IsNullOrEmpty(systemContent))
-                {
-                    contents.Add(new GeminiContent
-                    {
-                        role = geminiRole,
-                        parts = new[] 
-                        { 
-                            new GeminiPart { text = $"{systemContent}\n\n{message.Content}" } 
-                        }
-                    });
-                }
-                else
-                {
-                    contents.Add(new GeminiContent
-                    {
-                        role = geminiRole,
-                        parts = new[] 
-                        { 
-                            new GeminiPart { text = message.Content } 
-                        }
-                    });
-                }
-            }
-            
-            // Gemini API requires at least one user message
-            if (contents.Count == 0)
-            {
-                logger.LogDebug("No non-system messages found, adding a default user message");
-                
-                // Add a default user message with the system content if it exists
                 contents.Add(new GeminiContent
                 {
-                    role = "user",
+                    role = geminiRole,
                     parts = new[] 
                     { 
-                        new GeminiPart { 
-                            text = !string.IsNullOrEmpty(systemContent) 
-                                ? $"{systemContent}\n\nBegin the conversation based on the provided context." 
-                                : "Begin the conversation." 
-                        } 
+                        new GeminiPart { text = message.Content } 
                     }
                 });
             }

@@ -65,17 +65,11 @@ public class AnthropicProvider : IAIProvider
             string systemMessage = promptMessages.FirstOrDefault(m => m.Role.ToLower() == "system")?.Content ?? string.Empty;
             
             // Filter to only include user and assistant messages for the messages array
+            // PromptBuilder ensures we always have at least one user message
             var messages = promptMessages
                 .Where(m => m.Role.ToLower() != "system")
                 .Select(m => new AnthropicMessage(m.Role, m.Content))
                 .ToList();
-                
-            // Anthropic API requires at least one message
-            if (messages.Count == 0)
-            {
-                logger.LogDebug("No non-system messages found, adding a default user message");
-                messages.Add(new AnthropicMessage("user", "Begin the conversation based on the provided context."));
-            }
             
             var requestData = new
             {

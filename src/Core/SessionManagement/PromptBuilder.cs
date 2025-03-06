@@ -19,9 +19,16 @@ public class PromptBuilder : IPromptBuilder
         logger.LogDebug("Building prompt for agent {AgentName} with premise and {MessageCount} history messages", 
             agent.Name, history.Count);
             
+        string systemPrompt = PromptTools.CreateExtendedSystemPrompt(agent, premise);
+        
         var messages = new List<PromptMessage>
         {
-            new PromptMessage("system", PromptTools.CreateExtendedSystemPrompt(agent, premise))
+            // Always add system message
+            new PromptMessage("system", systemPrompt),
+            
+            // Always add first user message with same content as system message
+            // This ensures the conversation always has at least one user message
+            new PromptMessage("user", systemPrompt)
         };
         
         // Add conversation history
