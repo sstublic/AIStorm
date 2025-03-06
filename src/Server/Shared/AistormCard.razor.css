@@ -149,7 +149,7 @@
 .aistorm-card ::deep .actions .btn.btn-success {
     transition: all 0.2s ease;
     box-shadow: none;
-    width: 36px;
+    width: 70px;
     height: 28px;
     padding: 0;
     display: inline-flex;
@@ -178,8 +178,8 @@
 }
 
 ::deep .tag {
-    font-size: 0.75rem;
-    padding: 0.15rem 0.4rem;
+    font-size: 0.70rem;
+    padding: 0.125rem 0.4rem;
     border-radius: 0.85rem;
     background-color: #d1e7dd; /* Light teal */
     color: #0f5132; /* Darker teal for text */
@@ -187,6 +187,8 @@
     white-space: nowrap;
     display: inline-flex;
     align-items: center;
+    font-weight: bold;
+    line-height: 1;
 }
 
 /* Responsive adjustments */
@@ -199,7 +201,7 @@
     .aistorm-card ::deep .actions .btn.btn-primary,
     .aistorm-card ::deep .actions .btn.btn-secondary,
     .aistorm-card ::deep .actions .btn.btn-success {
-        width: 36px;
+        width: 70px;
         height: 28px;
     }
 }
