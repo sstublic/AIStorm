@@ -1,7 +1,8 @@
 @using Markdig
+@using AIStorm.Server.Shared
 @inherits ComponentBase
 
-<div class="markdown-content @(IsInPreviewMode ? "preview" : "expanded")">
+<div class="markdown-content @GetContentClass()">
     @((MarkupString)RenderedContent)
 </div>
 
@@ -18,11 +19,24 @@
     [Parameter]
     public bool IsPreview { get; set; } = true;
     
-    [CascadingParameter(Name = "CardIsExpanded")]
-    public bool? CardIsExpanded { get; set; }
+    [CascadingParameter(Name = "CardState")]
+    public AistormCard.CardState? ParentCardState { get; set; }
     
-    // If CardIsExpanded is provided (from AistormCard), use it; otherwise, use the parameter
-    private bool IsInPreviewMode => CardIsExpanded.HasValue ? !CardIsExpanded.Value : IsPreview;
+    [CascadingParameter(Name = "CardIsExpanded")]
+    public bool? CardIsExpandedLegacy { get; set; }
+    
+    private string GetContentClass()
+    {
+        // First try to use the new CardState if available
+        if (ParentCardState.HasValue)
+        {
+            return ParentCardState.Value.ToString().ToLower();
+        }
+        
+        // Fall back to legacy behavior for backward compatibility
+        bool isPreviewMode = CardIsExpandedLegacy.HasValue ? !CardIsExpandedLegacy.Value : IsPreview;
+        return isPreviewMode ? "preview" : "expanded";
+    }
     
     private string RenderedContent => RenderMarkdown(ProcessContent());
 

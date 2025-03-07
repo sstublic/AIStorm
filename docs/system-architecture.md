@@ -230,7 +230,10 @@ AIStorm uses a component-based UI architecture with several reusable components 
 ### Core UI Components
 
 1. **AistormCard** - A flexible card component used as the foundation for various content displays:
-   - Supports expandable/collapsible content sections
+   - Supports three content display states: Collapsed, Preview, and Expanded
+   - Configurable toggle states via the `AvailableToggleStates` parameter
+   - AgentCard toggles between Preview and Expanded (default behavior)
+   - SessionCard toggles between Collapsed and Expanded (more dramatic transition)
    - Includes title, subtitle, and metadata display areas
    - Provides a standardized container for various content types
 

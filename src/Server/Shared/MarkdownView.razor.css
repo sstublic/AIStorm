@@ -11,9 +11,19 @@
     opacity: 0.5;
 }
 
+.markdown-content.collapsed {
+    overflow: hidden;
+    opacity: 0;
+    max-height: 0;
+    height: 0;
+    /* Removing visibility: hidden as it's not animatable */
+    pointer-events: none; /* Better alternative to visibility: hidden */
+}
+
 .markdown-content.expanded {
     overflow: visible;
     opacity: 1;
+    max-height: 1500px; /* Very generous height to match AistormCard */
 }
 
 

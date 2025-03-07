@@ -1,4 +1,4 @@
-<div class="aistorm-card @StatusClass @(IsClickable ? "clickable" : "") @(IsExpanded ? "expanded" : "")" @onclick="HandleCardClick">
+<div class="aistorm-card @StatusClass @(IsClickable ? "clickable" : "") @(_currentState == CardState.Expanded ? "expanded" : "")" @onclick="HandleCardClick">
     <div class="card-header">
         <div>
             <div class="title">@Title</div>
@@ -10,7 +10,7 @@
         @if (CanExpand)
         {
             <div class="expand-icon" @onclick:stopPropagation>
-                <i class="oi @(IsExpanded ? "oi-chevron-top" : "oi-chevron-bottom")" aria-hidden="true"></i>
+                <i class="oi @(_currentState == CardState.Expanded ? "oi-chevron-top" : "oi-chevron-bottom")" aria-hidden="true"></i>
             </div>
         }
     </div>
@@ -24,13 +24,13 @@
     
     @if (ChildContent != null)
     {
-        <div class="content @(IsExpanded ? "expanded" : "preview")">
-            <CascadingValue Value="IsExpanded" Name="CardIsExpanded">
+        <div class="content @_currentState.ToString().ToLower()">
+            <CascadingValue Value="_currentState" Name="CardState">
                 @ChildContent
             </CascadingValue>
-            @if (!IsExpanded)
+            @if (_currentState != CardState.Expanded)
             {
-                <div class="fade-overlay"></div>
+                <div class="fade-overlay @(_currentState == CardState.Collapsed ? "full-overlay" : "")"></div>
             }
         </div>
     }
@@ -44,6 +44,9 @@
 </div>
 
 @code {
+    // Card state enum
+    public enum CardState { Collapsed, Preview, Expanded }
+    
     [Parameter]
     public string Title { get; set; } = string.Empty;
     
@@ -71,14 +74,29 @@
     [Parameter]
     public EventCallback<MouseEventArgs> OnCardClick { get; set; }
     
-    private bool IsExpanded { get; set; } = false;
+    [Parameter]
+    public CardState[] AvailableToggleStates { get; set; } = new[] { CardState.Preview, CardState.Expanded };
+    
+    [Parameter]
+    public CardState InitialState { get; set; } = CardState.Preview;
+    
+    private CardState _currentState;
+    
+    protected override void OnInitialized()
+    {
+        _currentState = InitialState;
+        base.OnInitialized();
+    }
     
     private async Task HandleCardClick(MouseEventArgs args)
     {
         // Only toggle expansion if we can expand and have content to show
-        if (CanExpand && ChildContent != null)
+        if (CanExpand && ChildContent != null && AvailableToggleStates.Length > 0)
         {
-            IsExpanded = !IsExpanded;
+            int currentIndex = Array.IndexOf(AvailableToggleStates, _currentState);
+            int nextIndex = (currentIndex + 1) % AvailableToggleStates.Length;
+            _currentState = AvailableToggleStates[nextIndex];
+            
             StateHasChanged();
         }
         

@@ -2,12 +2,14 @@
 @using AIStorm.Server.Shared
 
 <div class="agent-card" style="@GetColorStyle()">
-    <AistormCard 
+<AistormCard 
         Title="@Agent.Name"
         Subtitle="@GetAgentSubtitle()"
         StatusClass="@GetStatusClass()"
         CanExpand="@(ShowPrompt && !string.IsNullOrEmpty(Agent.SystemPrompt))"
-        IsClickable="false">
+        IsClickable="false"
+        AvailableToggleStates="new[] { AistormCard.CardState.Preview, AistormCard.CardState.Expanded }"
+        InitialState="AistormCard.CardState.Preview">
         
         <MetadataContent>
             @if (!string.IsNullOrEmpty(Agent.AIModel))

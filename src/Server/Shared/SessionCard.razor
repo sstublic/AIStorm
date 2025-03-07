@@ -5,7 +5,9 @@
     Subtitle=""
     StatusClass="@GetStatusClass()"
     CanExpand="true"
-    IsClickable="false">
+    IsClickable="false"
+    AvailableToggleStates="new[] { AistormCard.CardState.Collapsed, AistormCard.CardState.Expanded }"
+    InitialState="AistormCard.CardState.Collapsed">
     
     <MetadataContent>
         <div class="metadata-tags">

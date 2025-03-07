@@ -70,6 +70,10 @@ AIStorm uses a component-based UI architecture with reusable components for cons
 ### Core Components
 
 - **AistormCard** - A flexible card component serving as the foundation for various content displays
+  - Supports three content display states: Collapsed, Preview, and Expanded
+  - Configurable toggle states via the `AvailableToggleStates` parameter
+  - AgentCard toggles between Preview and Expanded (default behavior)
+  - SessionCard toggles between Collapsed and Expanded
 - **MarkdownView** - Renders markdown content with support for advanced markdown extensions
 - **AgentCard** - Displays agent information with optional color indicators and expandable content
 - **ConversationMessage** - Renders conversation messages with markdown support and agent styling
