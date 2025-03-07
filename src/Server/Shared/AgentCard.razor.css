@@ -8,3 +8,8 @@
 .agent-card ::deep .aistorm-card {
     border-left-color: var(--agent-color, #dee2e6);
 }
+
+/* Preserve the agent-specific left border color on hover */
+.agent-card ::deep .aistorm-card:hover {
+    border-left-color: var(--agent-color, #dee2e6);
+}
