@@ -7,9 +7,8 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Xunit;
 
-namespace Core.IntegrationTests;
+namespace AIStorm.Core.Tests.Services;
 
 public class AIMockProviderTests
 {
@@ -23,7 +22,6 @@ public class AIMockProviderTests
         // Configure test services
         services.AddLogging(config => 
         {
-            config.AddConsole();
             config.SetMinimumLevel(LogLevel.Debug);
         });
         
@@ -62,13 +60,13 @@ public class AIMockProviderTests
     {
         // Arrange
         var provider = serviceProvider.GetRequiredService<IAIProvider>();
-        var agent = new Agent 
-        { 
-            Name = "TestAgent", 
-            AIModel = "AlwaysReturns",
-            SystemPrompt = "Test system prompt"
-        };
-        var premise = new SessionPremise { Content = "Test premise" };
+        var agent = new Agent(
+            "TestAgent", 
+            "MockAI", 
+            "AlwaysReturns",
+            "Test system prompt"
+        );
+        var premise = new SessionPremise("test-id", "Test premise");
         var messages = new List<StormMessage>();
         
         // Act
@@ -87,13 +85,13 @@ public class AIMockProviderTests
     {
         // Arrange
         var provider = serviceProvider.GetRequiredService<IAIProvider>();
-        var agent = new Agent 
-        { 
-            Name = "TestAgent", 
-            AIModel = "AlwaysThrows",
-            SystemPrompt = "Test system prompt"
-        };
-        var premise = new SessionPremise { Content = "Test premise" };
+        var agent = new Agent(
+            "TestAgent", 
+            "MockAI", 
+            "AlwaysThrows",
+            "Test system prompt"
+        );
+        var premise = new SessionPremise("test-id", "Test premise");
         var messages = new List<StormMessage>();
         
         // Act & Assert
@@ -108,13 +106,13 @@ public class AIMockProviderTests
     {
         // Arrange
         var provider = serviceProvider.GetRequiredService<IAIProvider>();
-        var agent = new Agent 
-        { 
-            Name = "TestAgent", 
-            AIModel = "InvalidModel",
-            SystemPrompt = "Test system prompt"
-        };
-        var premise = new SessionPremise { Content = "Test premise" };
+        var agent = new Agent(
+            "TestAgent", 
+            "MockAI", 
+            "InvalidModel",
+            "Test system prompt"
+        );
+        var premise = new SessionPremise("test-id", "Test premise");
         var messages = new List<StormMessage>();
         
         // Act & Assert
