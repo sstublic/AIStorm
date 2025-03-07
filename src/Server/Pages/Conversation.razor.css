@@ -11,6 +11,19 @@
     height: 100%;
 }
 
+.agent-list-container {
+    min-height: 0;
+    max-height: calc(100vh - 170px);
+}
+
+.next-button-container {
+    position: sticky;
+    bottom: 0;
+    background-color: white;
+    padding-top: 0.5rem;
+    z-index: 10;
+}
+
 .conversation-history {
     flex: 1 1 auto;
     min-height: 0;
@@ -29,23 +42,8 @@
 
 .send-button {
     width: 80px;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
 }
 
-.send-button:hover:not(:disabled) {
-    transform: scale(1.05);
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-}
-
-.next-agent-button {
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    transition: all 0.2s ease;
-}
-
-.next-agent-button:hover:not(:disabled) {
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+.send-button .oi {
+    font-size: 1.5rem;
 }

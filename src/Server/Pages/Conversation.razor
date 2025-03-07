@@ -13,22 +13,24 @@
 
 <div class="container-fluid mt-3 conversation-container">
     <div class="row h-100">
-        <div class="col-md-3 py-2">
-            <AgentList 
-                Agents="@(sessionRunner?.Session?.Agents ?? Array.Empty<Agent>())" 
-                AgentColors="@agentColors" 
-                OnAgentSelected="@OnAgentSelected" />
+        <div class="col-md-3 py-2 d-flex flex-column">
+            <div class="agent-list-container flex-grow-1 overflow-auto">
+                <AgentList 
+                    Agents="@(sessionRunner?.Session?.Agents ?? Array.Empty<Agent>())" 
+                    AgentColors="@agentColors" 
+                    OnAgentSelected="@OnAgentSelected" />
+            </div>
                 
             @if (sessionRunner != null)
             {
-                <div class="mt-3">
+                <div class="next-button-container mt-3">
                     <button class="btn btn-primary w-100 next-agent-button aistorm-btn aistorm-btn-md" 
                             @onclick="HandleNextClick" 
                             disabled="@isProcessing">
                         @if (isProcessing)
                         {
                             <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                            <span> Processing...</span>
+                            <span> Waiting for @sessionRunner.NextAgentToRespond.Name...</span>
                         }
                         else
                         {
@@ -62,7 +64,7 @@
                             <button type="submit" 
                                     class="btn btn-primary send-button aistorm-btn aistorm-btn-md" 
                                     disabled="@(isProcessing || string.IsNullOrWhiteSpace(userMessage))">
-                                Send
+                                <i class="oi oi-arrow-right" aria-hidden="true"></i>
                             </button>
                         </div>
                     </form>
