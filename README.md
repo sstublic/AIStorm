@@ -45,7 +45,7 @@ AIStorm allows you to create brainstorming sessions with multiple AI agents as p
    dotnet run
    ```
 
-4. Open your browser and navigate to `https://localhost:5001`
+4. Open your browser and navigate to the URL shown in the terminal output
 
 ### Configuration
 
@@ -103,10 +103,11 @@ This provides users with examples right out of the box, without requiring manual
 ### Starting a Brainstorming Session
 
 1. From the Sessions Overview, click on the session you created
-2. Enter your initial message in the input area at the bottom
-3. Submit your message to start the conversation
-4. AI agents will respond based on their roles and personalities
-5. Continue the conversation by submitting additional messages
+2. Either:
+   - Enter your initial message in the input area at the bottom and submit it, or
+   - Click the "Next: [Agent Name]" button to have an AI agent start the conversation
+3. AI agents will respond based on their roles and personalities
+4. Continue the conversation by either adding your own messages or clicking the "Next" button to prompt the next agent to respond
 
 The session will be automatically saved to the storage location specified in your configuration.
 
