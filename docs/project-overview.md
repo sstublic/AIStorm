@@ -101,6 +101,8 @@ StorageRoot/
 │   └── ...
 ```
 
+The application includes a sample storage folder (`src/Server/SampleDataStorage`) that contains predefined agent templates and example sessions. This folder is set as the default storage location in the application's configuration (`appsettings.json`).
+
 Benefits of this approach:
 
 - Clear separation between templates and instances

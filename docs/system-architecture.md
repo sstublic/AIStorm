@@ -214,6 +214,15 @@ The storage provider interface defines operations for:
 - Loading and saving session premises
 - Retrieving all available sessions and agent templates
 
+#### Sample Data
+
+The application includes a sample storage folder (`src/Server/SampleDataStorage`) that contains:
+- Predefined agent templates (e.g., Creative Thinker, Critical Analyst)
+- Example conversation sessions
+- This folder is set as the default storage location via the `MarkdownStorageOptions.BasePath` setting in `appsettings.json`
+
+This provides users with examples of agent templates and sessions right out of the box, without requiring manual setup or creation of initial content.
+
 #### Markdown Storage
 
 The markdown implementation in the `AIStorm.Core.Storage.Markdown` namespace includes:
