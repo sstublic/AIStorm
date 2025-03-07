@@ -89,10 +89,10 @@
     
     <div class="row mt-4 mb-5">
         <div class="col">
-            <button class="btn btn-primary" @onclick="SaveAgent" disabled="@(!CanSaveAgent())">
+            <button class="btn btn-primary aistorm-btn aistorm-btn-md" @onclick="SaveAgent" disabled="@(!CanSaveAgent())">
                 @(isEditMode ? "Save Changes" : "Create Agent Template")
             </button>
-            <a href="/sessions" class="btn btn-secondary ms-2">Cancel</a>
+            <a href="/sessions" class="btn btn-secondary ms-2 aistorm-btn aistorm-btn-md">Cancel</a>
         </div>
     </div>
 </div>

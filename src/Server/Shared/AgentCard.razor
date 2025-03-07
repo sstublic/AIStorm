@@ -27,13 +27,13 @@
             <div class="actions-left">
                 @if (ShowEditButton)
                 {
-                    <a href="/agent-editor/@Agent.Name" class="btn btn-primary" title="Edit Agent">
+                    <a href="/agent-editor/@Agent.Name" class="btn btn-primary aistorm-btn aistorm-btn-icon" title="Edit Agent">
                         <i class="oi oi-pencil" aria-hidden="true"></i>
                     </a>
                 }
                 @if (ShowDeleteButton)
                 {
-                    <a href="javascript:void(0)" class="btn btn-danger ms-2" title="Delete Agent" @onclick="HandleDelete" @onclick:preventDefault>
+                    <a href="javascript:void(0)" class="btn btn-danger ms-2 aistorm-btn aistorm-btn-icon" title="Delete Agent" @onclick="HandleDelete" @onclick:preventDefault>
                         <i class="oi oi-trash" aria-hidden="true"></i>
                     </a>
                 }

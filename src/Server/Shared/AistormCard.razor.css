@@ -172,29 +172,10 @@
     justify-content: flex-end;
 }
 
-/* Apply button styling to all buttons in actions */
+/* Button styling references the site-wide aistorm-btn classes */
 .aistorm-card ::deep .actions .btn {
-    transition: all 0.2s ease;
-    box-shadow: none;
-    width: 60px;
-    height: 24px;
-    padding: 0;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 4px;
-}
-
-.aistorm-card ::deep .actions .btn:hover {
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    transform: translateY(-1px);
-}
-
-/* More specific selector for icons */
-.aistorm-card ::deep .actions .btn i.oi {
-    font-size: 0.8rem;
-    line-height: 1;
-    margin: 0;
+    /* Apply our standardized button style */
+    /* We'll keep the class .btn for Bootstrap compatibility but add our custom classes */
 }
 
 /* Tag styling for all cards */

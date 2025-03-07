@@ -121,11 +121,11 @@
         <div class="col">
             @if (!isReadOnly)
             {
-                <button class="btn btn-primary" @onclick="SaveSession" disabled="@(!CanSaveSession())">
+                <button class="btn btn-primary aistorm-btn aistorm-btn-md" @onclick="SaveSession" disabled="@(!CanSaveSession())">
                     @(isEditMode ? "Save Changes" : "Create Session")
                 </button>
             }
-            <a href="/sessions" class="btn btn-secondary ms-2">Back to Sessions</a>
+            <a href="/sessions" class="btn btn-secondary ms-2 aistorm-btn aistorm-btn-md">Back to Sessions</a>
         </div>
     </div>
 </div>

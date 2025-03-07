@@ -23,22 +23,22 @@
         <div class="actions-left">
             @if (Session.Messages.Count == 0)
             {
-                <a href="/session-editor/@Session.Id" class="btn btn-primary" title="Edit Session">
+                <a href="/session-editor/@Session.Id" class="btn btn-primary aistorm-btn aistorm-btn-icon" title="Edit Session">
                     <i class="oi oi-pencil" aria-hidden="true"></i>
                 </a>
             }
             else
             {
-                <a href="/session-editor/@Session.Id" class="btn btn-secondary" title="View Session Details">
+                <a href="/session-editor/@Session.Id" class="btn btn-secondary aistorm-btn aistorm-btn-icon" title="View Session Details">
                     <i class="oi oi-info" aria-hidden="true"></i>
                 </a>
             }
-            <a href="javascript:void(0)" class="btn btn-danger ms-2" title="Delete Session" @onclick="HandleDelete" @onclick:preventDefault>
+            <a href="javascript:void(0)" class="btn btn-danger ms-2 aistorm-btn aistorm-btn-icon" title="Delete Session" @onclick="HandleDelete" @onclick:preventDefault>
                 <i class="oi oi-trash" aria-hidden="true"></i>
             </a>
         </div>
         <div class="actions-right">
-            <a href="/conversation/@Session.Id" class="btn btn-success" title="Open Conversation">
+            <a href="/conversation/@Session.Id" class="btn btn-success aistorm-btn aistorm-btn-icon" title="Open Conversation">
                 <i class="oi oi-media-play" aria-hidden="true"></i>
             </a>
         </div>

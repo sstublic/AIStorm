@@ -23,8 +23,8 @@
                     <p class="text-danger">This action cannot be undone.</p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" @onclick="CancelDelete">Cancel</button>
-                    <button type="button" class="btn btn-danger" @onclick="ConfirmDelete">Delete</button>
+                    <button type="button" class="btn btn-secondary aistorm-btn aistorm-btn-md" @onclick="CancelDelete">Cancel</button>
+                    <button type="button" class="btn btn-danger aistorm-btn aistorm-btn-md" @onclick="ConfirmDelete">Delete</button>
                 </div>
             </div>
         </div>
@@ -38,7 +38,7 @@
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Agent Templates</h5>
-                    <a href="/agent-editor" class="btn btn-sm btn-primary">Create New Agent Template</a>
+                    <a href="/agent-editor" class="btn btn-sm btn-primary aistorm-btn aistorm-btn-sm">Create New Agent Template</a>
                 </div>
                 <div class="list-group list-group-flush p-3">
                     @if (loadingAgents)
@@ -75,7 +75,7 @@
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Sessions</h5>
-                    <a href="/session-editor" class="btn btn-sm btn-primary">Create New Session</a>
+                    <a href="/session-editor" class="btn btn-sm btn-primary aistorm-btn aistorm-btn-sm">Create New Session</a>
                 </div>
                 <div class="list-group list-group-flush p-3">
                     @if (loadingSessions)

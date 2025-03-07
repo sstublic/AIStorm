@@ -22,7 +22,7 @@
             @if (sessionRunner != null)
             {
                 <div class="mt-3">
-                    <button class="btn btn-primary w-100 next-agent-button" 
+                    <button class="btn btn-primary w-100 next-agent-button aistorm-btn aistorm-btn-md" 
                             @onclick="HandleNextClick" 
                             disabled="@isProcessing">
                         @if (isProcessing)
@@ -60,7 +60,7 @@
                                     @ref="userMessageTextArea"
                                     disabled="@isProcessing"></textarea>
                             <button type="submit" 
-                                    class="btn btn-primary send-button" 
+                                    class="btn btn-primary send-button aistorm-btn aistorm-btn-md" 
                                     disabled="@(isProcessing || string.IsNullOrWhiteSpace(userMessage))">
                                 Send
                             </button>
