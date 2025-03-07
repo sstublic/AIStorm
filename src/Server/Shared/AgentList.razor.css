@@ -1,11 +1,11 @@
 .agent-list-card {
     display: flex;
     flex-direction: column;
-    max-height: calc(100vh - 170px); /* Allow room for header and Next button */
+    height: 100%;
 }
 
 .agent-list-card .card-body {
     flex: 1;
-    overflow-y: auto; /* Enable scrolling */
+    overflow-y: auto; /* Keep scrolling here */
     padding-right: 6px; /* Compensate for scrollbar */
 }

@@ -119,6 +119,37 @@ a, .btn-link {
         content: "An error has occurred."
     }
 
+/* AIStorm Column Card Styling */
+.aistorm-column-card {
+    border-radius: 8px;
+    box-shadow: 0 4px 8px -3px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.05);
+    background-color: #fff;
+    margin-bottom: 1.5rem;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.aistorm-column-card .card-header {
+    background-color: rgba(0, 0, 0, 0.02);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    padding: 0.75rem 1rem;
+}
+
+.aistorm-column-card .card-header h5 {
+    font-weight: 600;
+    color: #212529;
+    margin-bottom: 0;
+}
+
+.aistorm-column-card:hover {
+    box-shadow: 0 6px 12px -4px rgba(0, 0, 0, 0.12), 0 3px 6px -2px rgba(0, 0, 0, 0.08);
+}
+
+.aistorm-column-card .list-group-flush {
+    padding: 0.5rem;
+}
+
 /* Markdown Content Styling */
 .markdown-content p {
     margin-bottom: 0.5rem;

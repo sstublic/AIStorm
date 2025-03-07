@@ -14,7 +14,7 @@
 <div class="container-fluid mt-3 conversation-container">
     <div class="row h-100">
         <div class="col-md-3 py-2 d-flex flex-column">
-            <div class="agent-list-container flex-grow-1 overflow-auto">
+            <div class="agent-list-container flex-grow-1">
                 <AgentList 
                     Agents="@(sessionRunner?.Session?.Agents ?? Array.Empty<Agent>())" 
                     AgentColors="@agentColors" 
@@ -41,7 +41,7 @@
             }
         </div>
         <div class="col-md-9 conversation-column py-2">
-            <div class="conversation-history">
+            <div class="conversation-history aistorm-column-card">
                 <ConversationHistory 
                     Messages="@(sessionRunner?.Session?.Messages ?? Array.Empty<StormMessage>())" 
                     AgentColors="@agentColors" 
