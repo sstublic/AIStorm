@@ -178,4 +178,4 @@ The application uses a structured navigation flow:
 
 ## Useful info
 
-Cline data is at `%APPDATA%\Roaming\Code\User\globalStorage\saoudrizwan.claude-dev\tasks`.
+Cline data is at `%APPDATA%\Code\User\globalStorage\saoudrizwan.claude-dev\tasks`.
