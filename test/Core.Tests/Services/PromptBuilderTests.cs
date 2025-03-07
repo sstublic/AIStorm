@@ -38,7 +38,7 @@ namespace AIStorm.Core.Tests.Services
 
 
         [Fact]
-        public void BuildPrompt_WithEmptyHistory_ReturnsOnlySystemMessage()
+        public void BuildPrompt_WithEmptyHistory_ReturnsSystemAndUserMessage()
         {
             // Arrange
             var history = new List<StormMessage>();
@@ -47,12 +47,32 @@ namespace AIStorm.Core.Tests.Services
             var result = promptBuilder.BuildPrompt(agent, premise, history);
             
             // Assert
-            Assert.Single(result);
+            Assert.Equal(2, result.Length);
             Assert.Equal("system", result[0].Role);
+            Assert.Equal("user", result[1].Role);
             
             // Verify system message contains extended prompt
             string expectedSystemPrompt = PromptTools.CreateExtendedSystemPrompt(agent, premise);
             Assert.Equal(expectedSystemPrompt, result[0].Content);
+            Assert.Equal(expectedSystemPrompt, result[1].Content);
+        }
+        
+        [Fact]
+        public void BuildPrompt_AlwaysIncludesUserMessageWithSystemContent()
+        {
+            // This test is redundant with BuildPrompt_WithEmptyHistory_ReturnsSystemAndUserMessage
+            // But we're keeping it to maintain consistency with the test suite structure
+            // Arrange
+            var history = new List<StormMessage>();
+            
+            // Act
+            var result = promptBuilder.BuildPrompt(agent, premise, history);
+            
+            // Assert
+            Assert.Equal(2, result.Length);
+            Assert.Equal("system", result[0].Role);
+            Assert.Equal("user", result[1].Role);
+            Assert.Equal(result[0].Content, result[1].Content);
         }
         
         [Fact]
@@ -68,14 +88,18 @@ namespace AIStorm.Core.Tests.Services
             var result = promptBuilder.BuildPrompt(agent, premise, history);
             
             // Assert
-            Assert.Equal(2, result.Length);
+            Assert.Equal(3, result.Length);
             
             // Verify first message is system prompt
             Assert.Equal("system", result[0].Role);
             
-            // Verify user message is assigned "user" role
+            // Verify second message is user message with system content
             Assert.Equal("user", result[1].Role);
-            Assert.Equal(history[0].Content, result[1].Content);
+            Assert.Equal(result[0].Content, result[1].Content);
+            
+            // Verify third message is the user message from history
+            Assert.Equal("user", result[2].Role);
+            Assert.Equal(history[0].Content, result[2].Content);
         }
         
         [Fact]
@@ -93,20 +117,24 @@ namespace AIStorm.Core.Tests.Services
             var result = promptBuilder.BuildPrompt(agent, premise, history);
             
             // Assert
-            Assert.Equal(4, result.Length);
+            Assert.Equal(5, result.Length);
             
             // Verify system message
             Assert.Equal("system", result[0].Role);
             
-            // Verify roles are assigned correctly
-            Assert.Equal("user", result[1].Role); // Human
-            Assert.Equal("assistant", result[2].Role); // Test Agent (matching current agent)
-            Assert.Equal("user", result[3].Role); // Human
+            // Verify second message is user message with system content
+            Assert.Equal("user", result[1].Role);
+            Assert.Equal(result[0].Content, result[1].Content);
+            
+            // Verify roles are assigned correctly for history messages
+            Assert.Equal("user", result[2].Role); // Human
+            Assert.Equal("assistant", result[3].Role); // Test Agent (matching current agent)
+            Assert.Equal("user", result[4].Role); // Human
             
             // Verify content is preserved
-            Assert.Equal(history[0].Content, result[1].Content);
-            Assert.Equal(history[1].Content, result[2].Content);
-            Assert.Equal(history[2].Content, result[3].Content);
+            Assert.Equal(history[0].Content, result[2].Content);
+            Assert.Equal(history[1].Content, result[3].Content);
+            Assert.Equal(history[2].Content, result[4].Content);
         }
         
         [Fact]
@@ -125,16 +153,26 @@ namespace AIStorm.Core.Tests.Services
             var result = promptBuilder.BuildPrompt(agent, premise, history);
             
             // Assert
-            Assert.Equal(5, result.Length);
+            Assert.Equal(6, result.Length);
             
             // Verify system message
             Assert.Equal("system", result[0].Role);
             
+            // Verify second message is user message with system content
+            Assert.Equal("user", result[1].Role);
+            Assert.Equal(result[0].Content, result[1].Content);
+            
             // Verify roles are assigned correctly
-            Assert.Equal("user", result[1].Role); // Human
-            Assert.Equal("assistant", result[2].Role); // Test Agent (matching current agent)
-            Assert.Equal("user", result[3].Role); // Other Agent
-            Assert.Equal("user", result[4].Role); // Third Agent
+            Assert.Equal("user", result[2].Role); // Human
+            Assert.Equal("assistant", result[3].Role); // Test Agent (matching current agent)
+            Assert.Equal("user", result[4].Role); // Other Agent
+            Assert.Equal("user", result[5].Role); // Third Agent
+            
+            // Verify content is preserved
+            Assert.Equal(history[0].Content, result[2].Content);
+            Assert.Equal(history[1].Content, result[3].Content);
+            Assert.Equal(history[2].Content, result[4].Content);
+            Assert.Equal(history[3].Content, result[5].Content);
         }
         
         [Fact]
@@ -154,20 +192,23 @@ namespace AIStorm.Core.Tests.Services
             var result = promptBuilder.BuildPrompt(agent, premise, history);
             
             // Assert
-            Assert.Equal(11, result.Length); // 10 messages + 1 system message
+            Assert.Equal(12, result.Length); // 10 messages + system + initial user message
+            
+            // Verify system message and initial user message
+            Assert.Equal("system", result[0].Role);
+            Assert.Equal("user", result[1].Role);
+            Assert.Equal(result[0].Content, result[1].Content);
             
             // Verify message order and roles
-            Assert.Equal("system", result[0].Role);
-            
             for (int i = 0; i < 5; i++)
             {
                 // Human messages should have "user" role
-                Assert.Equal("user", result[i*2 + 1].Role);
-                Assert.Equal($"Human message {i+1}", result[i*2 + 1].Content);
+                Assert.Equal("user", result[i*2 + 2].Role);
+                Assert.Equal($"Human message {i+1}", result[i*2 + 2].Content);
                 
                 // Agent messages should have "assistant" role
-                Assert.Equal("assistant", result[i*2 + 2].Role);
-                Assert.Equal($"Agent message {i+1}", result[i*2 + 2].Content);
+                Assert.Equal("assistant", result[i*2 + 3].Role);
+                Assert.Equal($"Agent message {i+1}", result[i*2 + 3].Content);
             }
         }
         
@@ -185,9 +226,9 @@ namespace AIStorm.Core.Tests.Services
             var result = promptBuilder.BuildPrompt(agent, premise, history);
             
             // Assert
-            Assert.Equal(2, result.Length);
-            Assert.Equal("user", result[1].Role);
-            Assert.Equal(specialMessage, result[1].Content);
+            Assert.Equal(3, result.Length);
+            Assert.Equal("user", result[2].Role);
+            Assert.Equal(specialMessage, result[2].Content);
         }
         
         [Fact]
@@ -206,13 +247,22 @@ namespace AIStorm.Core.Tests.Services
             var result = promptBuilder.BuildPrompt(differentAgent, premise, history);
             
             // Assert
-            Assert.Equal(4, result.Length);
+            Assert.Equal(5, result.Length);
             
-            // Verify all non-system messages are assigned "user" role
+            // Verify system message and initial user message
             Assert.Equal("system", result[0].Role);
             Assert.Equal("user", result[1].Role);
+            Assert.Equal(result[0].Content, result[1].Content);
+            
+            // Verify all history messages are assigned "user" role
             Assert.Equal("user", result[2].Role);
             Assert.Equal("user", result[3].Role);
+            Assert.Equal("user", result[4].Role);
+            
+            // Verify content is preserved
+            Assert.Equal(history[0].Content, result[2].Content);
+            Assert.Equal(history[1].Content, result[3].Content);
+            Assert.Equal(history[2].Content, result[4].Content);
         }
         
         [Fact]
@@ -233,13 +283,22 @@ namespace AIStorm.Core.Tests.Services
             var result = promptBuilder.BuildPrompt(mixedCaseAgent, premise, history);
             
             // Assert
-            Assert.Equal(4, result.Length);
+            Assert.Equal(5, result.Length);
+            
+            // Verify system message and initial user message
+            Assert.Equal("system", result[0].Role);
+            Assert.Equal("user", result[1].Role);
+            Assert.Equal(result[0].Content, result[1].Content);
             
             // Verify roles - case-sensitive comparison should make all agent messages "user"
-            Assert.Equal("system", result[0].Role);
-            Assert.Equal("user", result[1].Role); // Human
-            Assert.Equal("user", result[2].Role); // MIXEDCASE - different case from MixedCase
-            Assert.Equal("user", result[3].Role); // mixedcase - different case from MixedCase
+            Assert.Equal("user", result[2].Role); // Human
+            Assert.Equal("user", result[3].Role); // MIXEDCASE - different case from MixedCase
+            Assert.Equal("user", result[4].Role); // mixedcase - different case from MixedCase
+            
+            // Verify content is preserved
+            Assert.Equal(history[0].Content, result[2].Content);
+            Assert.Equal(history[1].Content, result[3].Content);
+            Assert.Equal(history[2].Content, result[4].Content);
         }
     }
 }

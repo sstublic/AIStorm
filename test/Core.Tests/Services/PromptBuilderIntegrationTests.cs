@@ -60,31 +60,39 @@ namespace AIStorm.Core.Tests.Services
             var result = promptBuilder.BuildPrompt(creativeAgent, premise, messages);
 
             // Assert
-            Assert.Equal(4, result.Length);
+            Assert.Equal(5, result.Length);
             
             // Verify system message contains agent name
             Assert.Equal("system", result[0].Role);
             Assert.Contains("You are Creative Thinker.", result[0].Content);
             
+            // Verify second message is user message with system content
+            Assert.Equal("user", result[1].Role);
+            Assert.Equal(result[0].Content, result[1].Content);
+            
             // Verify roles assigned correctly (creative agent's perspective)
-            Assert.Equal("user", result[1].Role); // user message
-            Assert.Equal("assistant", result[2].Role); // Creative Thinker message (current agent)
-            Assert.Equal("user", result[3].Role); // Critical Analyst message (different agent)
+            Assert.Equal("user", result[2].Role); // user message
+            Assert.Equal("assistant", result[3].Role); // Creative Thinker message (current agent)
+            Assert.Equal("user", result[4].Role); // Critical Analyst message (different agent)
             
             // Act - build prompt for critical agent
             result = promptBuilder.BuildPrompt(criticalAgent, premise, messages);
             
             // Assert
-            Assert.Equal(4, result.Length);
+            Assert.Equal(5, result.Length);
             
             // Verify system message contains agent name
             Assert.Equal("system", result[0].Role);
             Assert.Contains("You are Critical Analyst.", result[0].Content);
             
+            // Verify second message is user message with system content
+            Assert.Equal("user", result[1].Role);
+            Assert.Equal(result[0].Content, result[1].Content);
+            
             // Verify roles assigned correctly (critical agent's perspective)
-            Assert.Equal("user", result[1].Role); // user message
-            Assert.Equal("user", result[2].Role); // Creative Thinker message (different agent)
-            Assert.Equal("assistant", result[3].Role); // Critical Analyst message (current agent)
+            Assert.Equal("user", result[2].Role); // user message
+            Assert.Equal("user", result[3].Role); // Creative Thinker message (different agent)
+            Assert.Equal("assistant", result[4].Role); // Critical Analyst message (current agent)
         }
         
         [Fact]
@@ -120,16 +128,20 @@ namespace AIStorm.Core.Tests.Services
                 var result = promptBuilder.BuildPrompt(currentAgent, premise, messages);
                 
                 // Assert
-                Assert.Equal(messages.Count + 1, result.Length); // +1 for system message
+                Assert.Equal(messages.Count + 2, result.Length); // +1 for system message, +1 for initial user message
                 
                 Assert.Equal("system", result[0].Role);
                 Assert.Contains($"You are {currentAgent.Name}.", result[0].Content);
+                
+                // Verify second message is user message with system content
+                Assert.Equal("user", result[1].Role);
+                Assert.Equal(result[0].Content, result[1].Content);
                 
                 // Check each message role
                 for (int i = 0; i < messages.Count; i++)
                 {
                     string expectedRole = messages[i].AgentName == currentAgent.Name ? "assistant" : "user";
-                    Assert.Equal(expectedRole, result[i + 1].Role);
+                    Assert.Equal(expectedRole, result[i + 2].Role);
                 }
             }
         }
@@ -152,11 +164,16 @@ namespace AIStorm.Core.Tests.Services
             var result = promptBuilder.BuildPrompt(agent, premise, messages);
             
             // Assert
-            Assert.Equal(3, result.Length);
+            Assert.Equal(4, result.Length);
+            
+            // Verify system message and initial user message
+            Assert.Equal("system", result[0].Role);
+            Assert.Equal("user", result[1].Role);
+            Assert.Equal(result[0].Content, result[1].Content);
             
             // Verify message content is preserved with prefixes
-            Assert.Equal(messages[0].Content, result[1].Content);
-            Assert.Equal(messages[1].Content, result[2].Content);
+            Assert.Equal(messages[0].Content, result[2].Content);
+            Assert.Equal(messages[1].Content, result[3].Content);
         }
     }
 }

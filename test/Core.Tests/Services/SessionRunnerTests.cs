@@ -204,7 +204,7 @@ public class SessionRunnerTests
         Assert.Single(runner.Session.Messages);
         var message = runner.Session.Messages[0];
         Assert.Equal(agents[0].Name, message.AgentName);
-        Assert.Contains("**ERROR FETCHING RESPONSE**", message.Content);
+        Assert.Contains(">>>ERROR FETCHING RESPONSE<<<", message.Content);
         Assert.Contains(expectedException.Message, message.Content);
         Assert.Contains(expectedException.GetType().Name, message.Content);
         

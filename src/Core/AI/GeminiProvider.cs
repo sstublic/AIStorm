@@ -121,13 +121,13 @@ public class GeminiProvider : IAIProvider
             // Deserialize response with proper classes
             var geminiResponse = JsonSerializer.Deserialize<GeminiResponse>(responseContent);
             
-            if (geminiResponse?.candidates == null || geminiResponse.candidates.Length == 0 ||
-                geminiResponse.candidates[0].content?.parts == null || geminiResponse.candidates[0].content.parts.Length == 0)
+            if (geminiResponse?.candidates == null || geminiResponse?.candidates?.Length == 0 ||
+                geminiResponse?.candidates?[0]?.content?.parts == null || geminiResponse?.candidates?[0]?.content?.parts?.Length == 0)
             {
                 throw new Exception("Invalid or empty response from Gemini API");
             }
             
-            var responseText = geminiResponse.candidates[0].content.parts[0].text;
+            var responseText = geminiResponse?.candidates?[0]?.content?.parts?[0]?.text ?? string.Empty;
             
             logger.LogDebug("Received response from Gemini, length: {Length} characters", 
                 responseText?.Length ?? 0);
@@ -159,45 +159,45 @@ public class GeminiProvider : IAIProvider
     // Response models for the new API format
     private class GeminiResponse
     {
-        public Candidate[] candidates { get; set; }
-        public PromptFeedback promptFeedback { get; set; }
+        public Candidate[]? candidates { get; set; }
+        public PromptFeedback? promptFeedback { get; set; }
     }
 
     private class Candidate
     {
-        public Content content { get; set; }
-        public string finishReason { get; set; }
+        public Content? content { get; set; }
+        public string? finishReason { get; set; }
         public int index { get; set; }
-        public SafetyRating[] safetyRatings { get; set; }
+        public SafetyRating[]? safetyRatings { get; set; }
     }
 
     private class Content
     {
-        public GeminiPart[] parts { get; set; }
+        public GeminiPart[]? parts { get; set; }
     }
 
     private class GeminiContent
     {
         [JsonPropertyName("role")]
-        public string role { get; set; }
+        public string? role { get; set; }
         
-        public GeminiPart[] parts { get; set; }
+        public GeminiPart[]? parts { get; set; }
     }
 
     private class GeminiPart
     {
-        public string text { get; set; }
+        public string? text { get; set; }
     }
 
     private class PromptFeedback
     {
-        public SafetyRating[] safetyRatings { get; set; }
-        public string blockReason { get; set; }
+        public SafetyRating[]? safetyRatings { get; set; }
+        public string? blockReason { get; set; }
     }
 
     private class SafetyRating
     {
-        public string category { get; set; }
-        public string probability { get; set; }
+        public string? category { get; set; }
+        public string? probability { get; set; }
     }
 }

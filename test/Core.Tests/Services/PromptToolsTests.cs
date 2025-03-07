@@ -130,7 +130,7 @@ namespace AIStorm.Core.Tests.Services
             string result = PromptTools.CreateExtendedSystemPrompt(agent, premise);
             
             // Assert
-            Assert.Contains("Context: This is a test premise with specific instructions.", result);
+            Assert.Contains("## Context of the conversation\nThis is a test premise with specific instructions.", result);
         }
         
         [Fact]
