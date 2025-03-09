@@ -17,20 +17,38 @@ public class Program
     {
         try
         {
+            // Check if we should only run Gemini tests
+            bool runOnlyGeminiTests = args.Contains("gemini");
+            
             // Set up the host with configuration
             using var host = CreateHostBuilder(args).Build();
-        
-        // Run the OpenAI tests
-        var logger = host.Services.GetRequiredService<ILogger<Program>>();
-        logger.LogInformation("=== Running OpenAI Tests ===");
-        var openAITests = host.Services.GetRequiredService<OpenAITests>();
-        await openAITests.RunAllTests();
-        
-        logger.LogInformation("=== Running Session Integration Tests ===");
-        var sessionTests = host.Services.GetRequiredService<SessionIntegrationTests>();
-        await sessionTests.RunTest();
-        
-        logger.LogInformation("All tests completed!");
+            
+            var logger = host.Services.GetRequiredService<ILogger<Program>>();
+            
+            if (runOnlyGeminiTests)
+            {
+                // Run only Gemini tests
+                logger.LogInformation("=== Running Gemini Tests Only ===");
+                var geminiTests = host.Services.GetRequiredService<GeminiTests>();
+                await geminiTests.RunTest();
+            }
+            else
+            {
+                // Run all tests
+                logger.LogInformation("=== Running OpenAI Tests ===");
+                var openAITests = host.Services.GetRequiredService<OpenAITests>();
+                await openAITests.RunAllTests();
+                
+                logger.LogInformation("=== Running Session Integration Tests ===");
+                var sessionTests = host.Services.GetRequiredService<SessionIntegrationTests>();
+                await sessionTests.RunTest();
+                
+                logger.LogInformation("=== Running Gemini Tests ===");
+                var geminiTests = host.Services.GetRequiredService<GeminiTests>();
+                await geminiTests.RunTest();
+            }
+            
+            logger.LogInformation("All tests completed!");
         }
         finally
         {
@@ -87,5 +105,6 @@ public class Program
                 // Register the test classes
                 services.AddSingleton<OpenAITests>();
                 services.AddSingleton<SessionIntegrationTests>();
+                services.AddSingleton<GeminiTests>();
             });
 }
