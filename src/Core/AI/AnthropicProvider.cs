@@ -71,22 +71,26 @@ public class AnthropicProvider : IAIProvider
                 .Select(m => new AnthropicMessage(m.Role, m.Content))
                 .ToList();
             
-            var requestData = new
+            // Create the request object
+            var request = new AnthropicRequest
             {
-                model = agent.AIModel,
-                system = systemMessage,
-                messages,
-                max_tokens = 4000,
-                temperature = 0.7f
+                Model = agent.AIModel,
+                System = systemMessage,
+                Messages = messages,
+                MaxTokens = 8000,
+                Temperature = 0.7f
             };
             
-            var requestJson = JsonSerializer.Serialize(requestData, new JsonSerializerOptions { WriteIndented = true });
+            // Add thinking capability for Claude 3.7 models
+            if (IsClaude37Model(agent.AIModel))
+            {
+                request.EnableThinking();
+            }
+            
+            var requestJson = JsonSerializer.Serialize(request, new JsonSerializerOptions { WriteIndented = true });
             logger.LogDebug("Anthropic request payload: {RequestJson}", requestJson);
             
-            var content = new StringContent(
-                requestJson, 
-                Encoding.UTF8, 
-                "application/json");
+            var content = new StringContent(requestJson, Encoding.UTF8, "application/json");
                 
             var response = await httpClient.PostAsync("messages", content);
             
@@ -106,27 +110,34 @@ public class AnthropicProvider : IAIProvider
             var responseContent = await response.Content.ReadAsStringAsync();
             logger.LogDebug("Anthropic response: {ResponseContent}", responseContent);
             
-            var responseJson = JsonDocument.Parse(responseContent);
-            
+            // Parse the response
+            var anthropicResponse = JsonSerializer.Deserialize<AnthropicResponse>(responseContent);
             string responseText = string.Empty;
+            
             try
             {
-                // Check if the response has a content property that's an array
-                if (responseJson.RootElement.TryGetProperty("content", out var contentElement) && 
-                    contentElement.ValueKind == JsonValueKind.Array && 
-                    contentElement.GetArrayLength() > 0)
+                if (anthropicResponse?.Content != null)
                 {
-                    // Get the first content element
-                    var firstContent = contentElement[0];
-                    
-                    // Check if it has a text property
-                    if (firstContent.TryGetProperty("text", out var textElement))
+                    // When thinking is enabled, response has multiple content items with different types
+                    // Find the "text" type content which contains the actual response
+                    var textContent = anthropicResponse.Content.FirstOrDefault(c => c.Type == "text");
+                    if (textContent != null && !string.IsNullOrEmpty(textContent.Text))
                     {
-                        responseText = textElement.GetString() ?? string.Empty;
+                        responseText = textContent.Text;
+                        
+                        // Log thinking content if available (useful for debugging)
+                        var thinkingContent = anthropicResponse.Content.FirstOrDefault(c => c.Type == "thinking");
+                        if (thinkingContent != null && !string.IsNullOrEmpty(thinkingContent.Thinking))
+                        {
+                            logger.LogDebug("Thinking content: {Thinking}", 
+                                thinkingContent.Thinking.Length > 100 
+                                    ? thinkingContent.Thinking.Substring(0, 100) + "..." 
+                                    : thinkingContent.Thinking);
+                        }
                     }
                     else
                     {
-                        logger.LogWarning("Anthropic response doesn't contain expected 'text' property in the first content element");
+                        logger.LogWarning("No text content found in Anthropic response");
                     }
                 }
                 else
@@ -136,7 +147,7 @@ public class AnthropicProvider : IAIProvider
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Error parsing Anthropic response JSON");
+                logger.LogError(ex, "Error parsing Anthropic response: {Response}", responseContent);
                 throw new Exception($"Error parsing Anthropic response: {ex.Message}", ex);
             }
             
@@ -172,13 +183,74 @@ public class AnthropicProvider : IAIProvider
 
     public string GetProviderName() => AnthropicOptions.ProviderName;
     
+    private bool IsClaude37Model(string modelName)
+    {
+        return modelName.Contains("claude-3-7", StringComparison.OrdinalIgnoreCase);
+    }
+    
+    private class AnthropicThinking
+    {
+        [JsonPropertyName("type")]
+        public string Type { get; set; } = "enabled";
+        
+        [JsonPropertyName("budget_tokens")]
+        public int BudgetTokens { get; set; } = 4000;
+    }
+    
+    private class AnthropicRequest
+    {
+        [JsonPropertyName("model")]
+        public required string Model { get; set; }
+        
+        [JsonPropertyName("system")]
+        public required string System { get; set; }
+        
+        [JsonPropertyName("messages")]
+        public required List<AnthropicMessage> Messages { get; set; }
+        
+        [JsonPropertyName("max_tokens")]
+        public int MaxTokens { get; set; } = 8000;
+        
+        [JsonPropertyName("temperature")]
+        public float Temperature { get; set; } = 0.7f;
+        
+        [JsonPropertyName("thinking")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public AnthropicThinking? Thinking { get; set; }
+        
+        // Important: When thinking is enabled, temperature must be set to 1
+        public void EnableThinking()
+        {
+            Thinking = new AnthropicThinking();
+            Temperature = 1.0f; // Required when thinking is enabled
+        }
+    }
+    
+    private class AnthropicResponse
+    {
+        [JsonPropertyName("content")]
+        public required List<AnthropicContentItem> Content { get; set; }
+    }
+    
+    private class AnthropicContentItem
+    {
+        [JsonPropertyName("type")]
+        public required string Type { get; set; }
+        
+        [JsonPropertyName("text")]
+        public string? Text { get; set; }
+        
+        [JsonPropertyName("thinking")]
+        public string? Thinking { get; set; }
+    }
+    
     private class AnthropicMessage
     {
         [JsonPropertyName("role")]
-        public string Role { get; set; }
+        public string Role { get; set; } = string.Empty;
         
         [JsonPropertyName("content")]
-        public string Content { get; set; }
+        public string Content { get; set; } = string.Empty;
         
         public AnthropicMessage(string role, string content)
         {

@@ -17,8 +17,9 @@ public class Program
     {
         try
         {
-            // Check if we should only run Gemini tests
+            // Check if we should only run specific tests
             bool runOnlyGeminiTests = args.Contains("gemini");
+            bool runOnlyAnthropicTests = args.Contains("anthropic");
             
             // Set up the host with configuration
             using var host = CreateHostBuilder(args).Build();
@@ -31,6 +32,13 @@ public class Program
                 logger.LogInformation("=== Running Gemini Tests Only ===");
                 var geminiTests = host.Services.GetRequiredService<GeminiTests>();
                 await geminiTests.RunTest();
+            }
+            else if (runOnlyAnthropicTests)
+            {
+                // Run only Anthropic tests
+                logger.LogInformation("=== Running Anthropic Tests Only ===");
+                var anthropicTests = host.Services.GetRequiredService<AnthropicTests>();
+                await anthropicTests.RunTest();
             }
             else
             {
@@ -46,6 +54,10 @@ public class Program
                 logger.LogInformation("=== Running Gemini Tests ===");
                 var geminiTests = host.Services.GetRequiredService<GeminiTests>();
                 await geminiTests.RunTest();
+                
+                logger.LogInformation("=== Running Anthropic Tests ===");
+                var anthropicTests = host.Services.GetRequiredService<AnthropicTests>();
+                await anthropicTests.RunTest();
             }
             
             logger.LogInformation("All tests completed!");
@@ -106,5 +118,6 @@ public class Program
                 services.AddSingleton<OpenAITests>();
                 services.AddSingleton<SessionIntegrationTests>();
                 services.AddSingleton<GeminiTests>();
+                services.AddSingleton<AnthropicTests>();
             });
 }
