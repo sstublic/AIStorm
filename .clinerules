@@ -1,47 +1,45 @@
-# AI Assistant Guidelines
+====
 
-## Security
 
-### Sensitive Files
+QUALITY CODING RULES
 
-DO NOT read or modify:
 
-1. .env files
-2. \*_/config/secrets._
-3. \*_/_.pem
-4. Any file containing API keys, tokens, or credentials
+# Code changes
 
-### Security Practices
+1. If you find errors or suggestions in code which is not DIRECTLY related to user's current request, never change it without asking first.
+2. Before suggesting changes to files, always assume user might have changed the file since your last read and consider reading the file again.
+
+
+# Security
 
 1. Never commit sensitive files
 2. Use environment variables for secrets
 3. Keep credentials out of logs and output
 
-## Project specifications
 
-Whenever project specifications are changed or updated, update `docs/project-overview.md` and `docs/system-architecture.md` files to reflect that and to keep it up to date.
-Reread `docs/project-overview.md` and `docs/system-architecture.md` often and whenever you need to refresh your context with what the project is about and we agreed about it so far.
+# Project Specifications
 
-## Behavior Guidelines
+1. Project documention is maintained in files in `docs/` folder.
+2. `docs/project-overview.md` is a high level overview of project purpose and structure.
+3. `docs/system-architecture.md` describes project architecture without implementation details (no method info, etc...)
+4. Maintain these files to be up to date with project. Create them if they don't exist.
+5. Reread `docs/project-overview.md` and `docs/system-architecture.md` often and whenever you need to refresh your context with what the project is about.
+6. This should often be your first step in understanding a task.
+
+
+# Software Development Behavior Guidelines
 
 1. Don't guess and do things which you are not certain about. Ask the user instead.
 2. Don't do or add code unrelated to user specific request and context at the moment.
 3. When using git, only stage changes and propose a commit message. Let the user review the changes and commit them.
-4. **Always** prior to finishing a task and considering it completed, revise all the changes and update specs.md
+4. **Always** prior to finishing a task and considering it completed, revise all the changes and update Project Specification files.
 5. **Always** prior to finishing a task and considering it completed, try to git stage everything and suggest commit message
 6. When trying to fix any bug or compiler error **ALWAYS** think carefully and analyze in detail what happened and WHY? Explain and confirm with user.
 
-## Conventions
 
-1. Update `## Convention Rules` section of `.clinerules` file whenever user specifies a specific way he wants the code to look or the project to be organized. These rules should be **generic** and not tied to **this specific project**. If you want to document the rule you inferred from this project, generalize it first and don't use any names specific to the project.
-2. These conventions are the way user prefers to organize and handle technical aspects of the project, but unrelated to the project specification itself.
-3. Keep the rules concise and as an enumerated list.
-4. When creating markdown content, properly format it and use backticks for names of files, folder, classes, etc.
-5. Don't add generic C# or .NET conventions to the rules to keep it concise.
+# Code Conventions
 
-## Convention Rules
-
-1. Project structure with `docs/`, `src/` and `test/` folders
+1. Project structure contains `docs/`, `src/` and `test/` folders at the root
 2. C# project folder and file names do not include namespaces.
 3. Namespaces follow the pattern `{ProjectName}.{Module}`
 4. Use `appsettings.json` for application settings and `appsettings.local.json` for local development settings (not committed to Git)
@@ -50,7 +48,7 @@ Reread `docs/project-overview.md` and `docs/system-architecture.md` often and wh
    - Lists should be surrounded by blank lines
 6. Code should be self-descriptive without XML-style comments
    - Only add comments for tricky or complex parts of the code
-   - Avoid redundant comments that simply restate what the code does
+   - NO redundant and trivial comments that simply restate what the code does
 7. Avoid parameterless constructors by default
    - Don't include default values for properties used in constructors
    - Only add parameterless constructors when needed for serialization or frameworks
@@ -68,4 +66,8 @@ Reread `docs/project-overview.md` and `docs/system-architecture.md` often and wh
 12. Use declarative or functional code whenever possible (e.g. LINQ instead of for loops)
 
 
-## Don't forget any of 'AI Assistant Guidelines' above!!!
+==== 
+
+**Don't forget any of the 'QUALITY CODING RULES' above!!!**
+
+
