@@ -19,7 +19,7 @@ QUALITY CODING RULES
 
 # Project Specifications
 
-1. Project documention is maintained in files in `docs/` folder.
+1. Project documentation is maintained in files in `docs/` folder.
 2. `docs/project-overview.md` is a high level overview of project purpose and structure.
 3. `docs/system-architecture.md` describes project architecture without implementation details (no method info, etc...)
 4. Maintain these files to be up to date with project. Create them if they don't exist.
